@@ -1,4 +1,4 @@
-```python
+
 import os
 
 from fastapi import Depends, FastAPI
@@ -87,4 +87,3 @@ def database_test(admin_id: int = Depends(require_admin)):
         "status": "connected",
         "postgresql_version": version
     }
-```
