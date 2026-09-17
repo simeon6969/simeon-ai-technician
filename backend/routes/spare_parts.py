@@ -1,6 +1,7 @@
 import json
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,7 @@ from backend.auth import get_current_user_id
 from backend.database import SessionLocal
 from backend.models.spare_parts import SparePart
 from backend.models.spare_part_requests import SparePartRequest
+from backend.models.users import User
 from backend.schemas.spare_parts import SparePartCreate
 
 
@@ -134,10 +136,47 @@ def get_my_spare_parts(
             "attachments_data": part.attachments_data,
             "availability_status": part.availability_status,
             "notification_count": notification_count,
+            "posted_at": part.posted_at,
             "created_at": part.created_at,
         }
         for part, notification_count in parts
     ]
+
+
+@router.get('/posts')
+def list_posts(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=50),
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    query = db.query(SparePart, User.full_name).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))
+    total = query.count()
+    rows = query.order_by(SparePart.posted_at.desc(), SparePart.spare_part_id.desc()).offset(offset).limit(limit).all()
+    return {'total': total, 'posts': [
+        {'spare_part_id': part.spare_part_id, 'part_name': part.part_name,
+         'part_number': part.part_number, 'manufacturer': part.manufacturer,
+         'description': part.description, 'specifications': part.specifications,
+         'compatibility': part.compatibility, 'photo_data': part.photo_data,
+         'availability_status': part.availability_status, 'posted_at': part.posted_at,
+         'technician_name': name, 'technician_id': part.submitted_by}
+        for part, name in rows
+    ]}
+
+
+@router.post('/{spare_part_id}/post')
+def post_spare_part(
+    spare_part_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    part = db.query(SparePart).filter(SparePart.spare_part_id == spare_part_id, SparePart.submitted_by == user_id).first()
+    if not part:
+        raise HTTPException(status_code=404, detail='Spare part not found')
+    db.query(SparePart).filter(SparePart.spare_part_id == spare_part_id, SparePart.posted_at.is_(None)).update({'posted_at': datetime.utcnow()}, synchronize_session=False)
+    db.commit()
+    db.refresh(part)
+    return {'spare_part_id': part.spare_part_id, 'posted_at': part.posted_at}
 
 
 @router.get("/requests/my")

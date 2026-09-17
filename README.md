@@ -1,6 +1,14 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+In **My Spare Parts**, each stored part has a **Post spare part** button. Posting
+adds it to the shared **View posts** board with its photo, details and technician
+name. Only the owner can post a part; repeated clicks do not create duplicates.
+Stored parts are not posted automatically. The board displays newest posts first
+and offers Load more and Refresh. Deleting a part removes its post too.
+Restart the backend after updating: startup adds the nullable `spare_parts.posted_at`
+column to existing databases. Existing spare-part search continues to work as before.
+
 Technicians store job cards and spare parts through a guided conversation with
 Simeon: choose a store action, answer one question at a time, skip optional items,
 upload an optional photo, and review or edit answers before saving. The flow works

@@ -50,6 +50,9 @@ def create_missing_tables():
 
     with engine.begin() as connection:
         connection.exec_driver_sql(
+            "ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS posted_at TIMESTAMP"
+        )
+        connection.exec_driver_sql(
             "ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS photo_data TEXT"
         )
         connection.exec_driver_sql(

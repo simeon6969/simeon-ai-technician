@@ -3,6 +3,17 @@ import { swahili } from './swahili.js'
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
 Language|Ururimi|Langue
+Post spare part|Tangaza igice gisimbura|Publier la pièce
+Posted|Byatangajwe|Publiée
+Posting...|Birimo gutangazwa...|Publication...
+View posts|Reba ibyatangajwe|Voir les publications
+Hide posts|Hisha ibyatangajwe|Masquer les publications
+Spare-part board|Urubuga rw’ibice bisimbura|Tableau des pièces
+Loading posts...|Ibyatangajwe birimo gutegurwa...|Chargement des publications...
+No spare parts have been posted yet.|Nta bice bisimbura biratangazwa.|Aucune pièce publiée pour le moment.
+Unable to post spare part.|Gutangaza igice gisimbura byanze.|Impossible de publier la pièce.
+Unable to load posts.|Kubona ibyatangajwe byanze.|Impossible de charger les publications.
+Load more|Reba ibindi|Afficher plus
 Account status:|Uko konti ihagaze:|État du compte :
 Job Card #|Ifishi y'akazi #|Fiche d’intervention n°
 Technician #|Umutekinisiye #|Technicien n°

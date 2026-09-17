@@ -1,5 +1,16 @@
 const rows = `
 Language|Lugha
+Post spare part|Chapisha kipuri
+Posted|Kimechapishwa
+Posting...|Inachapisha...
+View posts|Tazama machapisho
+Hide posts|Ficha machapisho
+Spare-part board|Ubao wa vipuri
+Loading posts...|Inapakia machapisho...
+No spare parts have been posted yet.|Bado hakuna vipuri vilivyochapishwa.
+Unable to post spare part.|Imeshindwa kuchapisha kipuri.
+Unable to load posts.|Imeshindwa kupakia machapisho.
+Load more|Onyesha zaidi
 Account status:|Hali ya akaunti:
 Job Card #|Kadi ya kazi #
 Technician #|Fundi #

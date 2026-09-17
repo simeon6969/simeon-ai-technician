@@ -2,6 +2,7 @@ import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 import AdminChat from './AdminChat'
 import StoreConversation from './StoreConversation'
+import SparePartPosts, { PostSparePartButton } from './SparePartPosts'
 import { useEffect, useState } from 'react'
 import {
   validateJobCard,
@@ -914,6 +915,7 @@ if (storeConversation) {
             > {t("Refresh")} </button>
           </div>
 
+          <div className="mb-6"><SparePartPosts /></div>
           {mySparePartsLoading && (
             <p className="text-sm text-slate-500">{t("Loading your spare parts...")}</p>
           )}
@@ -932,6 +934,7 @@ if (storeConversation) {
                 key={part.spare_part_id}
                 className="rounded-xl border border-slate-200 p-5"
               >
+                <PostSparePartButton part={part} onPosted={(posted) => setMySpareParts((parts) => parts.map((item) => item.spare_part_id === posted.spare_part_id ? { ...item, posted_at: posted.posted_at } : item))} />
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h4 className="font-semibold text-slate-900">

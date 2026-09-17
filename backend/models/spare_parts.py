@@ -9,6 +9,8 @@ from backend.base import Base
 class SparePart(Base):
     __tablename__ = "spare_parts"
 
+    posted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     spare_part_id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,

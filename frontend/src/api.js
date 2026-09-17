@@ -327,6 +327,20 @@ export function getAdminUsers() {
   return adminRequest('/users')
 }
 
+export async function postSparePart(id) {
+  const response = await fetch(`${API_BASE_URL}/spare-parts/${id}/post`, {
+    method: 'POST', headers: getAuthHeaders(),
+  })
+  if (!response.ok) throw new Error('Unable to post spare part.')
+  return response.json()
+}
+
+export async function getSparePartPosts(offset = 0) {
+  const response = await fetch(`${API_BASE_URL}/spare-parts/posts?offset=${offset}&limit=20`, { headers: getAuthHeaders() })
+  if (!response.ok) throw new Error('Unable to load posts.')
+  return response.json()
+}
+
 export function sendAdminChatMessage(message, history, language) {
   return adminRequest('/chat', {
     method: 'POST',
