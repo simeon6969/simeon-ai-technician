@@ -12,6 +12,10 @@ Restart the backend to add the attribution columns and populate existing technic
 cards. Public registration cannot create administrator accounts.
 
 The public homepage (`#home`) introduces Simeon and shows a searchable sales board.
+The board combines explicitly posted spare parts and sale items from every account
+type. Spare parts without a price show “Price not provided.” Drafts remain excluded.
+Posted items include a “View on homepage” link; returning focus to the homepage
+refreshes the board so posts from another tab are picked up.
 Visitors can browse published item photos, descriptions, prices and seller names
 without an account. Login (`#login`) is required to enter Simeon (`#app`), create
 records, publish or delete listings, and use chat. Both dashboards provide a way

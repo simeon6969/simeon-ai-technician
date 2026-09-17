@@ -1,5 +1,7 @@
 const rows = `
 Language|Lugha
+Price not provided|Bei haijawekwa
+View on homepage|Tazama kwenye ukurasa wa mwanzo
 Account type|Aina ya akaunti
 Accounts|Akaunti
 Name must be 150 characters or fewer.|Jina lisizidi herufi 150.

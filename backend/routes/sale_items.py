@@ -4,7 +4,8 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, literal, String, Numeric, cast
+from backend.models.spare_parts import SparePart
 from backend.auth import get_current_user_id
 from backend.routes.spare_parts import get_db
 from backend.models.sale_items import SaleItem
@@ -49,14 +50,26 @@ def public_posts(
     offset: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=24),
     search: str = Query('', max_length=200), db: Session = Depends(get_db),
 ):
-    query = db.query(SaleItem, User.full_name).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
+    sales = db.query(
+        SaleItem.item_id.label('item_id'), SaleItem.name.label('name'),
+        SaleItem.description.label('description'), SaleItem.price.label('price'),
+        SaleItem.currency.label('currency'), SaleItem.photo_data.label('photo_data'),
+        SaleItem.posted_at.label('posted_at'), User.full_name.label('seller_name'),
+        literal('sale').label('item_type'), cast(literal(None), String).label('availability_status'),
+    ).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
+    parts = db.query(
+        SparePart.spare_part_id, SparePart.part_name, SparePart.description,
+        cast(literal(None), Numeric(14, 2)), cast(literal(None), String),
+        SparePart.photo_data, SparePart.posted_at, User.full_name,
+        literal('spare_part'), SparePart.availability_status,
+    ).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))
+    listings = sales.union_all(parts).subquery()
+    query = db.query(listings)
     if search.strip():
-        query = query.filter(or_(SaleItem.name.icontains(search.strip(), autoescape=True), SaleItem.description.icontains(search.strip(), autoescape=True)))
+        query = query.filter(or_(listings.c.name.icontains(search.strip(), autoescape=True), listings.c.description.icontains(search.strip(), autoescape=True)))
     return {'total': query.count(), 'items': [
-        {'item_id': item.item_id, 'name': item.name, 'description': item.description,
-         'price': item.price, 'currency': item.currency, 'photo_data': item.photo_data,
-         'posted_at': item.posted_at, 'seller_name': name}
-        for item, name in query.order_by(SaleItem.posted_at.desc(), SaleItem.item_id.desc()).offset(offset).limit(limit).all()
+        {**dict(row._mapping), 'listing_key': f'{row.item_type}-{row.item_id}'}
+        for row in query.order_by(listings.c.posted_at.desc(), listings.c.item_type, listings.c.item_id.desc()).offset(offset).limit(limit).all()
     ]}
 
 

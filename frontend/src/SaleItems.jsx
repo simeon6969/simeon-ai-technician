@@ -97,6 +97,7 @@ export default function SaleItems() {
     {busy && <p role="status">{t('Updating...')}</p>}
     {!busy && !error && !items.length && <p className="text-slate-500">{w[14]}</p>}
     <div className="mt-4 grid gap-4 md:grid-cols-2">{items.map((item) => <article key={item.item_id} className="rounded-xl border border-slate-200 p-4">
+      {!board && item.posted_at && <a href="#sales-board" className="mb-2 block text-sm font-medium text-teal-700 underline">{t('View on homepage')}</a>}
       <h4 className="font-semibold">{item.name}</h4><p className="my-2 text-lg font-bold">{new Intl.NumberFormat(language, { style: 'currency', currency: item.currency }).format(Number(item.price))}</p>
       <img src={item.photo_data} alt={item.name} className="my-3 max-h-52 rounded-lg object-contain" />
       <p className="whitespace-pre-wrap break-words text-sm text-slate-600">{item.description}</p>

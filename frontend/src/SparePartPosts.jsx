@@ -7,6 +7,7 @@ export function PostSparePartButton({ part, onPosted }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
   return <div className="mb-4">
+    {part.posted_at && <a href="#sales-board" className="mb-2 block text-sm font-medium text-teal-700 underline">{t('View on homepage')}</a>}
     <button disabled={busy || !!part.posted_at} onClick={async () => {
       setBusy(true); setError(false)
       try { onPosted(await postSparePart(part.spare_part_id)) }

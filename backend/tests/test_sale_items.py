@@ -1,5 +1,6 @@
 import unittest
 import test_spare_part_posts
+from backend.models import User
 from backend.routes.sale_items import router
 from backend.auth import get_current_user_id
 
@@ -40,6 +41,31 @@ class SaleItemTests(unittest.TestCase):
         del self.app.dependency_overrides[get_current_user_id]
         self.assertEqual(self.client.get('/sale-items/posts').status_code, 401)
         self.assertEqual(self.client.post('/sale-items/', json=self.payload).status_code, 401)
+
+    def test_all_account_types_publish_to_public_board(self):
+        for role in ['technician', 'organization', 'institution', 'health_facility', 'other_business']:
+            account = self.db.get(User, 1)
+            account.role = role
+            self.db.commit()
+            response = self.client.post('/sale-items/', json={**self.payload, 'name': role})
+            self.assertEqual(response.status_code, 200)
+            item_id = response.json()['item_id']
+            self.assertEqual(self.client.post(f'/sale-items/{item_id}/post').status_code, 200)
+        result = self.client.get('/sale-items/public').json()
+        self.assertEqual(result['total'], 5)
+
+    def test_public_board_combines_posts_without_id_collisions(self):
+        first = self.client.post('/sale-items/', json=self.payload).json()
+        self.client.post(f"/sale-items/{first['item_id']}/post")
+        self.client.post('/spare-parts/1/post')
+        del self.app.dependency_overrides[get_current_user_id]
+        data = self.client.get('/sale-items/public').json()
+        self.assertEqual(data['total'], 2)
+        self.assertEqual(len({item['listing_key'] for item in data['items']}), 2)
+        part = next(item for item in data['items'] if item['item_type'] == 'spare_part')
+        self.assertIsNone(part['price'])
+        self.assertEqual(part['name'], 'Part 1')
+        self.assertEqual(self.client.get('/sale-items/public?limit=1&offset=1').json()['items'][0]['listing_key'], data['items'][1]['listing_key'])
 
     def test_public_board_shows_only_published_items_without_account_details(self):
         first = self.client.post('/sale-items/', json=self.payload).json()
