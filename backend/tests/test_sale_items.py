@@ -40,3 +40,24 @@ class SaleItemTests(unittest.TestCase):
         del self.app.dependency_overrides[get_current_user_id]
         self.assertEqual(self.client.get('/sale-items/posts').status_code, 401)
         self.assertEqual(self.client.post('/sale-items/', json=self.payload).status_code, 401)
+
+    def test_public_board_shows_only_published_items_without_account_details(self):
+        first = self.client.post('/sale-items/', json=self.payload).json()
+        self.client.post('/sale-items/', json={**self.payload, 'name': 'Private draft'})
+        self.client.post(f"/sale-items/{first['item_id']}/post")
+        del self.app.dependency_overrides[get_current_user_id]
+        response = self.client.get('/sale-items/public')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['total'], 1)
+        item = response.json()['items'][0]
+        self.assertEqual(item['name'], 'Analyzer')
+        self.assertEqual(item['seller_name'], 'Tech 1')
+        for field in ['seller_id', 'email', 'phone', 'password_hash']:
+            self.assertNotIn(field, item)
+        self.assertEqual(self.client.get('/sale-items/public?search=analyzer').json()['total'], 1)
+        self.assertEqual(self.client.get('/sale-items/public?search=Private').json()['total'], 0)
+        self.assertEqual(self.client.get('/sale-items/public?search=%25').json()['total'], 0)
+        self.assertEqual(self.client.get('/sale-items/public?offset=1').json()['items'], [])
+        self.assertEqual(self.client.get('/sale-items/my').status_code, 401)
+        self.assertEqual(self.client.post(f"/sale-items/{first['item_id']}/post").status_code, 401)
+        self.assertEqual(self.client.delete(f"/sale-items/{first['item_id']}").status_code, 401)

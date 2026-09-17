@@ -1,6 +1,15 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+The public homepage (`#home`) introduces Simeon and shows a searchable sales board.
+Visitors can browse published item photos, descriptions, prices and seller names
+without an account. Login (`#login`) is required to enter Simeon (`#app`), create
+records, publish or delete listings, and use chat. Both dashboards provide a way
+back to the homepage. Browser Back/Forward and direct hash links are supported.
+The public `/sale-items/public` API returns only published listing fields;
+unpublished items and account contact details are not exposed. Publishing a sale
+item makes its listing and seller name visible to visitors.
+
 Technicians can use **Items for sale → Store an item** to record equipment or other
 items through Simeon's guided questions. A name, description, positive price,
 currency and JPEG/PNG/WebP photo (up to 5 MB) are required. RWF is the default;

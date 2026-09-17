@@ -1,6 +1,13 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
+export async function getPublicSaleItems(search = '', offset = 0, signal) {
+  const params = new URLSearchParams({ search, offset, limit: 12 })
+  const response = await fetch(`${API_BASE_URL}/sale-items/public?${params}`, { signal })
+  if (!response.ok) throw new Error('Unable to load listings')
+  return response.json()
+}
+
 function getAuthHeaders() {
   const token = localStorage.getItem('access_token')
 

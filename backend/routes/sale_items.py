@@ -4,6 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from backend.auth import get_current_user_id
 from backend.routes.spare_parts import get_db
 from backend.models.sale_items import SaleItem
@@ -41,6 +42,22 @@ def create_item(data: SaleItemCreate, user_id: int = Depends(get_current_user_id
 @router.get('/my')
 def my_items(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
     return [serialize(item) for item in db.query(SaleItem).filter(SaleItem.seller_id == user_id).order_by(SaleItem.item_id.desc()).all()]
+
+
+@router.get('/public')
+def public_posts(
+    offset: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=24),
+    search: str = Query('', max_length=200), db: Session = Depends(get_db),
+):
+    query = db.query(SaleItem, User.full_name).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
+    if search.strip():
+        query = query.filter(or_(SaleItem.name.icontains(search.strip(), autoescape=True), SaleItem.description.icontains(search.strip(), autoescape=True)))
+    return {'total': query.count(), 'items': [
+        {'item_id': item.item_id, 'name': item.name, 'description': item.description,
+         'price': item.price, 'currency': item.currency, 'photo_data': item.photo_data,
+         'posted_at': item.posted_at, 'seller_name': name}
+        for item, name in query.order_by(SaleItem.posted_at.desc(), SaleItem.item_id.desc()).offset(offset).limit(limit).all()
+    ]}
 
 
 @router.get('/posts')

@@ -4,6 +4,8 @@ import AdminChat from './AdminChat'
 import StoreConversation from './StoreConversation'
 import SparePartPosts, { PostSparePartButton } from './SparePartPosts'
 import SaleItems from './SaleItems'
+import HomePage from './HomePage'
+import { homeCopy } from './homeCopy'
 import { useEffect, useState } from 'react'
 import {
   validateJobCard,
@@ -73,8 +75,8 @@ function downloadJobCardPdf(card) {
   pdf.save(`simeon-job-card-${card.job_card_id}.pdf`)
 }
 
-function AdminDashboard({ onLogout }) {
-  const { t } = useLanguage()
+function AdminDashboard({ onLogout, onHome }) {
+  const { t, language } = useLanguage()
   const [activeSection, setActiveSection] = useState('users')
   const [users, setUsers] = useState([])
   const [jobCards, setJobCards] = useState([])
@@ -304,6 +306,7 @@ function AdminDashboard({ onLogout }) {
             <h1 className="text-2xl font-bold">{t("Simeon Admin")}</h1>
             <p className="text-sm text-slate-300">{t("Governance and technical knowledge control")}</p>
           </div>
+          <button onClick={onHome} className="rounded-lg border border-slate-500 px-3 py-2">← {(homeCopy[language] || homeCopy.en).home}</button>
           <LanguageSwitcher />
           <button
             onClick={onLogout}
@@ -345,7 +348,19 @@ function AdminDashboard({ onLogout }) {
 }
 
 function App() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const homeText = homeCopy[language] || homeCopy.en
+  const [page, setPage] = useState(() => ['#login', '#app'].includes(window.location.hash) ? window.location.hash.slice(1) : 'home')
+  useEffect(() => {
+    const change = () => setPage(['#login', '#app'].includes(window.location.hash) ? window.location.hash.slice(1) : 'home')
+    window.addEventListener('hashchange', change)
+    return () => window.removeEventListener('hashchange', change)
+  }, [])
+  function navigate(next) {
+    setPage(next)
+    window.location.hash = next
+    window.scrollTo(0, 0)
+  }
 
  const [loggedIn, setLoggedIn] = useState(
   () => Boolean(localStorage.getItem('access_token'))
@@ -457,6 +472,7 @@ function handleLogout() {
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_role')
   setLoggedIn(false)
+  navigate('home')
   setUserRole('technician')
   setChatSessionId(null)
   setChatQuestion('')
@@ -467,10 +483,15 @@ function handleLogout() {
   setMySpareParts([])
 }
 
+if (page === 'home') {
+  return <HomePage loggedIn={loggedIn} onEnter={() => { setIsRegistering(false); navigate(loggedIn ? 'app' : 'login') }} onRegister={() => { setIsRegistering(true); navigate('login') }} />
+}
+
 if (!loggedIn) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        <button onClick={() => navigate('home')} className="mb-5 text-sm font-medium text-teal-700">← {homeText.home}</button>
         <div className="mb-6 flex justify-end"><LanguageSwitcher /></div>
 
         <div className="mb-8 text-center">
@@ -577,6 +598,7 @@ if (!loggedIn) {
               setUserRole(result.role)
 
               setLoggedIn(true)
+              navigate('app')
 
             } catch (error) {
               setLoginError(error.message)
@@ -612,7 +634,7 @@ if (!loggedIn) {
 }
 
 if (loggedIn && userRole === 'admin') {
-  return <AdminDashboard onLogout={handleLogout} />
+  return <AdminDashboard onLogout={handleLogout} onHome={() => navigate('home')} />
 }
 
 if (storeConversation) {
@@ -646,6 +668,7 @@ if (storeConversation) {
   <LanguageSwitcher />
   <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700"> {t("Technician")} </span>
 
+  <button onClick={() => navigate('home')} className="rounded-xl border border-slate-500 px-4 py-2 text-sm text-white">{homeText.home}</button>
   <button
     onClick={handleLogout}
     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
