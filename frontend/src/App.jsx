@@ -3,6 +3,7 @@ import LanguageSwitcher from './LanguageSwitcher'
 import AdminChat from './AdminChat'
 import StoreConversation from './StoreConversation'
 import SparePartPosts, { PostSparePartButton } from './SparePartPosts'
+import SaleItems from './SaleItems'
 import { useEffect, useState } from 'react'
 import {
   validateJobCard,
@@ -1010,6 +1011,7 @@ if (storeConversation) {
         </section>
 
         {/* Digital Job Card form */}
+        <SaleItems />
         {/* Chat area */}
     {/* Help area */}
 {helpMode === 'maintenance' && (

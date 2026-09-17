@@ -327,6 +327,15 @@ export function getAdminUsers() {
   return adminRequest('/users')
 }
 
+export async function saleItemsRequest(path, method = 'GET', data) {
+  const response = await fetch(`${API_BASE_URL}/sale-items${path}`, {
+    method, headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    ...(data ? { body: JSON.stringify(data) } : {}),
+  })
+  if (!response.ok) throw new Error('Unable to update or load sale items.')
+  return response.json()
+}
+
 export async function postSparePart(id) {
   const response = await fetch(`${API_BASE_URL}/spare-parts/${id}/post`, {
     method: 'POST', headers: getAuthHeaders(),

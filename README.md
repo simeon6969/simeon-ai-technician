@@ -1,6 +1,14 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+Technicians can use **Items for sale → Store an item** to record equipment or other
+items through Simeon's guided questions. A name, description, positive price,
+currency and JPEG/PNG/WebP photo (up to 5 MB) are required. RWF is the default;
+USD, EUR, KES, TZS and UGX are also supported. Review before saving, then use
+**Post** to publish to **View sale posts**, or **Delete** to remove the item and
+its post. Only owners can publish/delete their items. Restart the backend to
+create the new `sale_items` table. This is a listings board; it does not process payments.
+
 In **My Spare Parts**, each stored part has a **Post spare part** button. Posting
 adds it to the shared **View posts** board with its photo, details and technician
 name. Only the owner can post a part; repeated clicks do not create duplicates.
