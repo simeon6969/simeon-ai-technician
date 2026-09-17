@@ -1,6 +1,16 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+Registration supports Technician (personal), Organization, Institution, Health
+facility, and Other business accounts. All five use the same workspace, displaying
+the account's registered name and type. For shared accounts, Simeon asks for the
+person's full name on every new job card. Technician cards automatically use the
+account holder's name, enforced by the server. Job cards store the account name
+and submitter name separately; PDFs show the account name as their heading and
+the submitter beneath it. Names are preserved when a card is later confirmed.
+Restart the backend to add the attribution columns and populate existing technician
+cards. Public registration cannot create administrator accounts.
+
 The public homepage (`#home`) introduces Simeon and shows a searchable sales board.
 Visitors can browse published item photos, descriptions, prices and seller names
 without an account. Login (`#login`) is required to enter Simeon (`#app`), create

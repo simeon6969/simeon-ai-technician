@@ -25,9 +25,17 @@ export const partFields = [
 export function jobPayload(answers, equipmentId) {
   return {
     equipment_id: equipmentId, maintenance_type: 'corrective',
+    submitter_name: answers.submitter_name || null,
     fault_description: answers.problem_description, symptoms: answers.symptoms || null,
     diagnosis: answers.diagnosis || null, actions_taken: answers.solution || null,
     parts_used: answers.parts_used || null, result: answers.solution || null,
     photo_data: answers.photo_data || null, successful: answers.successful === true,
   }
+}
+
+export function jobFieldsForAccount(role) {
+  return role === 'technician' ? jobFields : [
+    ['submitter_name', 'Submitter name', 'Who is completing this job card? Enter your full name.', true],
+    ...jobFields,
+  ]
 }

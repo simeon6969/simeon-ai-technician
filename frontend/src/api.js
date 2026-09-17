@@ -400,7 +400,13 @@ export function updateAdminSparePartRequest(requestId, status, notes = '') {
   })
 }
 
-export async function registerUser(fullName, email, phone, password) {
+export async function getMyProfile() {
+  const response = await fetch(`${API_BASE_URL}/users/me`, { headers: getAuthHeaders() })
+  if (!response.ok) throw new Error('Unable to load account. Please log in again.')
+  return response.json()
+}
+
+export async function registerUser(fullName, email, phone, password, role = 'technician') {
   const response = await fetch(`${API_BASE_URL}/users/register`, {
     method: 'POST',
     headers: {
@@ -408,6 +414,7 @@ export async function registerUser(fullName, email, phone, password) {
     },
     body: JSON.stringify({
       full_name: fullName,
+      role,
       email,
       phone: phone || null,
       password,

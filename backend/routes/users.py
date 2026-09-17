@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from backend.auth import create_access_token
 from backend.database import SessionLocal
@@ -45,15 +46,22 @@ def register_user(
         email=user_data.email,
         phone=user_data.phone,
         password_hash=hash_password(user_data.password),
-        role="technician"
+        role=user_data.role
     )
 
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        code = getattr(error.orig, 'sqlstate', None)
+        if code == '23505':
+            raise HTTPException(status_code=409, detail='Email already registered') from error
+        raise HTTPException(status_code=503, detail='Account creation is temporarily unavailable. Please contact support.') from error
     db.refresh(new_user)
 
     return {
-        "message": "Technician registered successfully",
+        "message": "Account registered successfully",
         "user_id": new_user.user_id,
         "full_name": new_user.full_name,
         "email": new_user.email,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createEquipment, createJobCard, createSparePart, validateJobCard } from './api'
-import { jobFields, partFields, jobPayload } from './conversationFields'
+import { jobFieldsForAccount, partFields, jobPayload } from './conversationFields'
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 
@@ -11,11 +11,11 @@ const words = {
   sw: ['Rudi kwenye dashibodi', 'Turekodi pamoja. Nitakuuliza swali moja baada ya jingine.', 'Ungependa kurekodi nini kuhusu', 'Tuma jibu', 'Ruka kwa sasa', 'Kagua majibu yako kabla ya kuhifadhi.', 'Badilisha jibu', 'Haijaongezwa', 'Ndiyo, yamekamilika kwa mafanikio', 'Bado haijathibitishwa', 'Imehifadhiwa. Asante kwa kushiriki uzoefu wako.', 'Tafadhali jibu swali hili kabla ya kuendelea.', 'Uondoke kwenye mazungumzo? Majibu ambayo hayajahifadhiwa yatapotea.', 'Kadi imehifadhiwa lakini uthibitisho umeshindikana. Ithibitishe kutoka kwenye kadi zako za kazi.', 'Picha imeongezwa'],
 }
 
-export default function StoreConversation({ kind, onClose, onSaved }) {
+export default function StoreConversation({ kind, account, onClose, onSaved }) {
   const { t, language } = useLanguage()
   const w = words[language] || words.en
-  const fields = kind === 'job' ? jobFields : partFields
-  const [answers, setAnswers] = useState({})
+  const fields = kind === 'job' ? jobFieldsForAccount(account.role) : partFields
+  const [answers, setAnswers] = useState(() => account.role === 'technician' ? { submitter_name: account.full_name } : {})
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
@@ -42,6 +42,7 @@ export default function StoreConversation({ kind, onClose, onSaved }) {
 
   function reply(value) {
     if (busy) return
+    if (field[0] === 'submitter_name' && value.length > 150) { setError(t('Name must be 150 characters or fewer.')); return }
     if (field[3] && (value === '' || value === null)) { setError(w[11]); return }
     setAnswers((previous) => ({ ...previous, [field[0]]: value }))
     setDraft('')
@@ -113,6 +114,8 @@ export default function StoreConversation({ kind, onClose, onSaved }) {
   return <div className="min-h-screen bg-slate-100">
     <header className="bg-slate-900 px-6 py-4 text-white"><div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-bold">Simeon</h1><p className="text-sm text-slate-300">{t(kind === 'job' ? 'Digital Job Card' : 'Spare Part')}</p></div><LanguageSwitcher /></div></header>
     <main className="mx-auto max-w-3xl px-4 py-6">
+      <p className="mb-4 font-semibold text-slate-700">{account.full_name} · {t(account.role)}</p>
+      {kind === 'job' && account.role === 'technician' && <p className="mb-4 text-sm text-slate-600">{t('Submitter name')}: {account.full_name}</p>}
       <button disabled={busy} onClick={() => { if (saved || (!Object.keys(answers).length && !draft) || window.confirm(w[12])) onClose() }} className="mb-5 text-sm font-medium text-slate-600 disabled:opacity-50">← {w[0]}</button>
       <p className="mb-6 rounded-2xl bg-white p-5 text-slate-700">{w[1]}</p>
       <div className="space-y-4">

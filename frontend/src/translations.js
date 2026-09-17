@@ -3,6 +3,22 @@ import { swahili } from './swahili.js'
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
 Language|Ururimi|Langue
+Account type|Ubwoko bwa konti|Type de compte
+Accounts|Konti|Comptes
+Name must be 150 characters or fewer.|Izina ntirigomba kurenza inyuguti 150.|Le nom ne doit pas dépasser 150 caractères.
+organization|Umuryango|Organisation
+institution|Ikigo|Institution
+health_facility|Ikigo nderabuzima|Établissement de santé
+other_business|Ubundi bucuruzi|Autre entreprise
+Organization or business name|Izina ry’umuryango cyangwa ikigo|Nom de l’organisation ou de l’entreprise
+Enter the name of your organization or business|Andika izina ry’umuryango cyangwa ikigo cyawe|Saisissez le nom de votre organisation ou entreprise
+Personal account. Your name is recorded automatically on job cards.|Konti bwite. Izina ryawe ryandikwa ku mafishi y’akazi mu buryo bwikora.|Compte personnel. Votre nom est automatiquement inscrit sur les fiches d’intervention.
+Shared account. Each job card records the name of the person submitting it.|Konti isangiwe. Buri fishi y’akazi yandikwaho izina ry’uyitanze.|Compte partagé. Chaque fiche indique le nom de la personne qui la soumet.
+Submitter name|Izina ry’uwatanze ifishi|Nom du déclarant
+Who is completing this job card? Enter your full name.|Ni nde wuzuza iyi fishi y’akazi? Andika amazina yawe yose.|Qui remplit cette fiche ? Saisissez votre nom complet.
+Submitter name is required for shared accounts|Izina ry’uwatanze ifishi rirakenewe kuri konti isangiwe|Le nom du déclarant est obligatoire pour les comptes partagés
+Loading account...|Konti irimo gutegurwa...|Chargement du compte...
+Unable to load account. Please log in again.|Konti ntiyabonetse. Ongera winjire.|Impossible de charger le compte. Veuillez vous reconnecter.
 Support email|Imeyili y’ubufasha|E-mail d’assistance
 Phone|Telefoni|Téléphone
 All rights reserved.|Uburenganzira bwose burabitswe.|Tous droits réservés.

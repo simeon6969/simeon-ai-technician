@@ -1,5 +1,21 @@
 const rows = `
 Language|Lugha
+Account type|Aina ya akaunti
+Accounts|Akaunti
+Name must be 150 characters or fewer.|Jina lisizidi herufi 150.
+organization|Shirika
+institution|Taasisi
+health_facility|Kituo cha afya
+other_business|Biashara nyingine
+Organization or business name|Jina la shirika au biashara
+Enter the name of your organization or business|Weka jina la shirika au biashara yako
+Personal account. Your name is recorded automatically on job cards.|Akaunti binafsi. Jina lako huandikwa moja kwa moja kwenye kadi za kazi.
+Shared account. Each job card records the name of the person submitting it.|Akaunti ya pamoja. Kila kadi ya kazi huonyesha jina la anayeiwasilisha.
+Submitter name|Jina la mwasilishaji
+Who is completing this job card? Enter your full name.|Nani anajaza kadi hii ya kazi? Weka jina lako kamili.
+Submitter name is required for shared accounts|Jina la mwasilishaji linahitajika kwa akaunti za pamoja
+Loading account...|Inapakia akaunti...
+Unable to load account. Please log in again.|Imeshindwa kupakia akaunti. Tafadhali ingia tena.
 Support email|Barua pepe ya msaada
 Phone|Simu
 All rights reserved.|Haki zote zimehifadhiwa.

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from backend.auth import get_current_user_id
 from backend.database import SessionLocal
 from backend.models.job_cards import JobCard
+from backend.models.users import User
 from backend.models.maintenance_knowledge import MaintenanceKnowledge
 from backend.schemas.job_cards import JobCardCreate
 
@@ -31,7 +32,15 @@ def create_job_card(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
+    account = db.query(User).filter(User.user_id == user_id).first()
+    if not account:
+        raise HTTPException(status_code=401, detail='Account not found')
+    submitter = account.full_name if account.role == 'technician' else (job_card_data.submitter_name or '').strip()
+    if not submitter:
+        raise HTTPException(status_code=422, detail='Submitter name is required for shared accounts')
     new_job_card = JobCard(
+        account_name=account.full_name,
+        submitter_name=submitter,
         technician_id=user_id,
         equipment_id=job_card_data.equipment_id,
         maintenance_type=job_card_data.maintenance_type,
@@ -53,6 +62,8 @@ def create_job_card(
     return {
         "message": "Job card created successfully",
         "job_card_id": new_job_card.job_card_id,
+        "account_name": new_job_card.account_name,
+        "submitter_name": new_job_card.submitter_name,
         "technician_id": new_job_card.technician_id,
         "equipment_id": new_job_card.equipment_id,
         "maintenance_type": new_job_card.maintenance_type,
@@ -76,6 +87,8 @@ def get_my_job_cards(
     return [
         {
             "job_card_id": card.job_card_id,
+            "account_name": card.account_name,
+            "submitter_name": card.submitter_name,
             "equipment_id": card.equipment_id,
             "maintenance_type": card.maintenance_type,
             "fault_description": card.fault_description,
@@ -117,6 +130,8 @@ def get_job_card(
 
     return {
         "job_card_id": job_card.job_card_id,
+        "account_name": job_card.account_name,
+        "submitter_name": job_card.submitter_name,
         "technician_id": job_card.technician_id,
         "equipment_id": job_card.equipment_id,
         "maintenance_type": job_card.maintenance_type,

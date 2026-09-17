@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from backend.schemas.spare_parts import (
     validate_attachments_data,
@@ -7,6 +7,7 @@ from backend.schemas.spare_parts import (
 
 
 class JobCardCreate(BaseModel):
+    submitter_name: str | None = Field(default=None, max_length=150)
     equipment_id: int
     maintenance_type: str
     fault_description: str

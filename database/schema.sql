@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT users_role_check
-        CHECK (role IN ('technician', 'admin'))
+        CHECK (role IN ('technician', 'admin', 'organization', 'institution', 'health_facility', 'other_business'))
 );
 
 CREATE TABLE IF NOT EXISTS equipment (

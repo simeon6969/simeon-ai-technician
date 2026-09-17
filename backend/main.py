@@ -8,6 +8,7 @@ from sqlalchemy import text
 from backend.base import Base
 from backend.auth import require_admin
 from backend.database import engine
+from backend.account_migration import migrate_account_roles
 import backend.models
 
 from backend.routes.users import router as users_router
@@ -51,6 +52,11 @@ def create_missing_tables():
     Base.metadata.create_all(bind=engine)
 
     with engine.begin() as connection:
+        migrate_account_roles(connection)
+        connection.exec_driver_sql("ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS account_name VARCHAR(150)")
+        connection.exec_driver_sql("ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS submitter_name VARCHAR(150)")
+        connection.exec_driver_sql("UPDATE job_cards SET account_name = users.full_name FROM users WHERE job_cards.technician_id = users.user_id AND job_cards.account_name IS NULL")
+        connection.exec_driver_sql("UPDATE job_cards SET submitter_name = users.full_name FROM users WHERE job_cards.technician_id = users.user_id AND users.role = 'technician' AND job_cards.submitter_name IS NULL")
         connection.exec_driver_sql(
             "ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS posted_at TIMESTAMP"
         )

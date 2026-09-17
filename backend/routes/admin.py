@@ -59,6 +59,8 @@ def get_all_job_cards(
     return [
         {
             "job_card_id": card.job_card_id,
+            "account_name": card.account_name,
+            "submitter_name": card.submitter_name,
             "technician_id": card.technician_id,
             "equipment_id": card.equipment_id,
             "maintenance_type": card.maintenance_type,

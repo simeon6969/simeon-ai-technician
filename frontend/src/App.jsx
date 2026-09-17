@@ -21,6 +21,7 @@ import {
   sendChatMessage,
   loginUser,
   registerUser,
+  getMyProfile,
   getAdminUsers,
   updateAdminUserStatus,
   getAdminJobCards,
@@ -35,6 +36,7 @@ function downloadJobCardPdf(card) {
   const pdf = new jsPDF()
   const lines = [
     `Job Card #${card.job_card_id}`,
+    `Submitted by: ${card.submitter_name || 'Not recorded'}`,
     `Equipment ID: ${card.equipment_id}`,
     `Maintenance type: ${card.maintenance_type}`,
     `Status: ${card.status}`,
@@ -49,10 +51,11 @@ function downloadJobCardPdf(card) {
   ]
 
   pdf.setFontSize(16)
-  pdf.text('Simeon Job Card', 20, 20)
+  const heading = pdf.splitTextToSize(card.account_name || 'Simeon Job Card', 170)
+  pdf.text(heading, 20, 20)
   pdf.setFontSize(11)
 
-  let y = 34
+  let y = 24 + heading.length * 7
   for (const line of lines) {
     const wrapped = pdf.splitTextToSize(line, 170)
     pdf.text(wrapped, 20, y)
@@ -121,7 +124,7 @@ function AdminDashboard({ onLogout, onHome }) {
   }, [])
 
   const sections = [
-    ['users', 'Technicians', users.length],
+    ['users', 'Accounts', users.length],
     ['job-cards', 'Job Cards', jobCards.length],
     ['knowledge', 'Knowledge', knowledge.length],
     ['spare-parts', 'Spare Parts', spareParts.length],
@@ -184,6 +187,7 @@ function AdminDashboard({ onLogout, onHome }) {
             <p className="mt-2 text-sm text-slate-600"> {t("Technician #")}{card.technician_id} {t("· Equipment #")}{card.equipment_id}
             </p>
             <p className="mt-3 text-sm text-slate-800">{card.fault_description}</p>
+            <p className="mt-2 text-sm text-slate-600">{card.account_name} · {t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
             <p className="mt-2 text-sm text-slate-600"> {t("Outcome:")} {card.successful ? t('Successful') : t('Not confirmed')}
             </p>
           </div>
@@ -373,6 +377,9 @@ const [password, setPassword] = useState('')
 const [fullName, setFullName] = useState('')
 const [phone, setPhone] = useState('')
 const [isRegistering, setIsRegistering] = useState(false)
+const [accountType, setAccountType] = useState('technician')
+const [profile, setProfile] = useState(null)
+const [profileError, setProfileError] = useState('')
 const [loginError, setLoginError] = useState('')
 const [authMessage, setAuthMessage] = useState('')
 
@@ -404,6 +411,19 @@ const [chatSessionId, setChatSessionId] = useState(null)
 const [chatQuestion, setChatQuestion] = useState('')
 const [chatAnswer, setChatAnswer] = useState('')
 const [chatLoading, setChatLoading] = useState(false)
+
+useEffect(() => {
+  if (!loggedIn) return
+  let active = true
+  getMyProfile().then((account) => {
+    if (!active) return
+    setProfile(account)
+    setUserRole(account.role)
+    localStorage.setItem('user_role', account.role)
+    setProfileError('')
+  }).catch(() => { if (active) setProfileError('Unable to load account. Please log in again.') })
+  return () => { active = false }
+}, [loggedIn])
 
 useEffect(() => {
   if (!loggedIn || userRole === 'admin') {
@@ -472,6 +492,8 @@ function handleLogout() {
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_role')
   setLoggedIn(false)
+  setProfile(null)
+  setProfileError('')
   navigate('home')
   setUserRole('technician')
   setChatSessionId(null)
@@ -503,18 +525,25 @@ if (!loggedIn) {
         </div>
 
         <h2 className="text-xl font-semibold text-slate-900">
-          {isRegistering ? t('Create Technician Account') : t('Technician Login')}
+          {isRegistering ? t('Create account') : t('Login')}
         </h2>
 
         {isRegistering && (
           <div className="mt-6">
-            <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Full name")} </label>
+            <label htmlFor="account-type" className="mb-2 block text-sm font-medium text-slate-700">{t('Account type')}</label>
+            <select id="account-type" value={accountType} onChange={(event) => setAccountType(event.target.value)} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3">
+              {['technician', 'organization', 'institution', 'health_facility', 'other_business'].map((role) => <option key={role} value={role}>{t(role)}</option>)}
+            </select>
+            <p className="mb-4 text-sm text-slate-500">{t(accountType === 'technician' ? 'Personal account. Your name is recorded automatically on job cards.' : 'Shared account. Each job card records the name of the person submitting it.')}</p>
+            <label htmlFor="account-name" className="mb-2 block text-sm font-medium text-slate-700">{t(accountType === 'technician' ? 'Full name' : 'Organization or business name')}</label>
 
             <input
+              id="account-name"
+              maxLength={150}
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder={t("Enter your full name")}
+              placeholder={t(accountType === 'technician' ? 'Enter your full name' : 'Enter the name of your organization or business')}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
             />
           </div>
@@ -576,7 +605,7 @@ if (!loggedIn) {
                   return
                 }
 
-                await registerUser(fullName, email, phone, password)
+                await registerUser(fullName, email, phone, password, accountType)
                 setIsRegistering(false)
                 setAuthMessage('Account created. You can now log in.')
                 return
@@ -596,6 +625,8 @@ if (!loggedIn) {
 
               localStorage.setItem('user_role', result.role)
               setUserRole(result.role)
+              setProfile(result)
+              setProfileError('')
 
               setLoggedIn(true)
               navigate('app')
@@ -633,6 +664,10 @@ if (!loggedIn) {
   )
 }
 
+if (!profile || profileError) {
+  return <div className="min-h-screen bg-slate-100 p-8"><p role="status">{t(profileError || 'Loading account...')}</p><button onClick={handleLogout} className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-white">{t('Logout')}</button></div>
+}
+
 if (loggedIn && userRole === 'admin') {
   return <AdminDashboard onLogout={handleLogout} onHome={() => navigate('home')} />
 }
@@ -640,6 +675,7 @@ if (loggedIn && userRole === 'admin') {
 if (storeConversation) {
   return <StoreConversation
     kind={storeConversation}
+    account={profile}
     onClose={() => setStoreConversation(null)}
     onSaved={async (kind) => {
       try {
@@ -661,12 +697,12 @@ if (storeConversation) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div>
             <h1 className="text-2xl font-bold">Simeon</h1>
-            <p className="text-sm text-slate-300"> {t("Intelligent Technician Friend")} </p>
+            <p className="text-sm text-slate-300">{profile.full_name}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
   <LanguageSwitcher />
-  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700"> {t("Technician")} </span>
+  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">{t(profile.role)}</span>
 
   <button onClick={() => navigate('home')} className="rounded-xl border border-slate-500 px-4 py-2 text-sm text-white">{homeText.home}</button>
   <button
@@ -682,6 +718,7 @@ if (storeConversation) {
 
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900"> {t("Welcome to Simeon")} </h2>
+          <p className="mt-3 text-xl font-semibold text-teal-800">{profile.full_name}</p>
 
           <p className="mt-2 text-slate-600"> {t("What would you like to do today?")} </p>
         </div>
@@ -838,6 +875,7 @@ if (storeConversation) {
                 )}
 
                 <div className="mt-4 flex flex-col items-start gap-3">
+                  <p className="text-sm text-slate-600">{t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
                   <button
                     onClick={() => downloadJobCardPdf(card)}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"

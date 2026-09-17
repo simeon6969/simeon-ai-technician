@@ -9,6 +9,9 @@ from backend.base import Base
 class JobCard(Base):
     __tablename__ = "job_cards"
 
+    account_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    submitter_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+
     job_card_id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,

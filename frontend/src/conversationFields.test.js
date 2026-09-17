@@ -1,6 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { jobPayload } from './conversationFields.js'
+import { jobPayload, jobFieldsForAccount } from './conversationFields.js'
+
+test('shared accounts ask for a submitter while technician accounts do not', () => {
+  assert.ok(!jobFieldsForAccount('technician').some(([key]) => key === 'submitter_name'))
+  for (const role of ['organization', 'institution', 'health_facility', 'other_business']) {
+    assert.equal(jobFieldsForAccount(role)[0][0], 'submitter_name')
+    assert.equal(jobFieldsForAccount(role)[0][3], true)
+  }
+  assert.equal(jobPayload({ submitter_name: 'Jane Doe' }, 1).submitter_name, 'Jane Doe')
+})
 
 test('conversation answers preserve the repair, equipment ID and photo', () => {
   const photo = 'data:image/png;base64,aGVsbG8='
