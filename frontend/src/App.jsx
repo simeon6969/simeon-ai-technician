@@ -1,3 +1,5 @@
+import { useLanguage } from './language'
+import LanguageSwitcher from './LanguageSwitcher'
 import { useEffect, useState } from 'react'
 import {
   createJobCard,
@@ -129,6 +131,7 @@ function downloadJobCardPdf(card) {
 }
 
 function AdminDashboard({ onLogout }) {
+  const { t } = useLanguage()
   const [activeSection, setActiveSection] = useState('users')
   const [users, setUsers] = useState([])
   const [jobCards, setJobCards] = useState([])
@@ -189,10 +192,10 @@ function AdminDashboard({ onLogout }) {
               <div>
                 <h3 className="font-semibold text-slate-900">{user.full_name}</h3>
                 <p className="mt-1 text-sm text-slate-600">{user.email}</p>
-                <p className="text-sm text-slate-600">{user.phone || 'No phone provided'}</p>
+                <p className="text-sm text-slate-600">{user.phone || t('No phone provided')}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-700">{user.role}</p>
+                <p className="text-sm font-medium text-slate-700">{t(user.role)}</p>
                 <button
                   onClick={async () => {
                     try {
@@ -209,13 +212,12 @@ function AdminDashboard({ onLogout }) {
                   className="mt-2 rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                 >
                   {updatingUserId === user.user_id
-                    ? 'Updating...'
-                    : user.is_active ? 'Deactivate' : 'Activate'}
+                    ? t('Updating...')
+                    : user.is_active ? t('Deactivate') : t('Activate')}
                 </button>
               </div>
             </div>
-            <p className="mt-3 text-xs text-slate-500">
-              Account status: {user.is_active ? 'Active' : 'Inactive'}
+            <p className="mt-3 text-xs text-slate-500"> {t("Account status:")} {user.is_active ? t('Active') : t('Inactive')}
             </p>
           </div>
         ))}
@@ -229,17 +231,15 @@ function AdminDashboard({ onLogout }) {
         {jobCards.map((card) => (
           <div key={card.job_card_id} className="rounded-xl border border-slate-200 p-5">
             <div className="flex flex-wrap justify-between gap-3">
-              <h3 className="font-semibold text-slate-900">Job Card #{card.job_card_id}</h3>
+              <h3 className="font-semibold text-slate-900">{t("Job Card #")}{card.job_card_id}</h3>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {card.status}
+                {t(card.status)}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-600">
-              Technician #{card.technician_id} · Equipment #{card.equipment_id}
+            <p className="mt-2 text-sm text-slate-600"> {t("Technician #")}{card.technician_id} {t("· Equipment #")}{card.equipment_id}
             </p>
             <p className="mt-3 text-sm text-slate-800">{card.fault_description}</p>
-            <p className="mt-2 text-sm text-slate-600">
-              Outcome: {card.successful ? 'Successful' : 'Not confirmed'}
+            <p className="mt-2 text-sm text-slate-600"> {t("Outcome:")} {card.successful ? t('Successful') : t('Not confirmed')}
             </p>
           </div>
         ))}
@@ -253,13 +253,13 @@ function AdminDashboard({ onLogout }) {
         {knowledge.map((item) => (
           <div key={item.knowledge_id} className="rounded-xl border border-slate-200 p-5">
             <div className="flex flex-wrap justify-between gap-3">
-              <h3 className="font-semibold text-slate-900">Knowledge #{item.knowledge_id}</h3>
-              <span className="text-sm text-slate-600">Confidence {item.confidence}</span>
+              <h3 className="font-semibold text-slate-900">{t("Knowledge #")}{item.knowledge_id}</h3>
+              <span className="text-sm text-slate-600">{t("Confidence")} {item.confidence}</span>
             </div>
-            <p className="mt-2 text-sm text-slate-600">Source Job Card #{item.source_job_card_id}</p>
+            <p className="mt-2 text-sm text-slate-600">{t("Source Job Card #")}{item.source_job_card_id}</p>
             <p className="mt-3 text-sm text-slate-800">{item.problem_description}</p>
-            <p className="mt-2 text-sm text-slate-600">Diagnosis: {item.diagnosis || 'Not recorded'}</p>
-            <p className="mt-2 text-sm text-slate-600">Solution: {item.solution || 'Not recorded'}</p>
+            <p className="mt-2 text-sm text-slate-600">{t("Diagnosis:")} {item.diagnosis || t('Not recorded')}</p>
+            <p className="mt-2 text-sm text-slate-600">{t("Solution:")} {item.solution || t('Not recorded')}</p>
           </div>
         ))}
       </div>
@@ -274,12 +274,12 @@ function AdminDashboard({ onLogout }) {
             <div className="flex flex-wrap justify-between gap-3">
               <h3 className="font-semibold text-slate-900">{part.part_name}</h3>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {part.availability_status}
+                {t(part.availability_status)}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-600">Part number: {part.part_number || 'Not provided'}</p>
-            <p className="mt-1 text-sm text-slate-600">Stored by technician #{part.submitted_by}</p>
-            <p className="mt-3 text-sm text-slate-800">{part.description || 'No description provided'}</p>
+            <p className="mt-2 text-sm text-slate-600">{t("Part number:")} {part.part_number || t('Not provided')}</p>
+            <p className="mt-1 text-sm text-slate-600">{t("Stored by technician #")}{part.submitted_by}</p>
+            <p className="mt-3 text-sm text-slate-800">{part.description || t('No description provided')}</p>
           </div>
         ))}
       </div>
@@ -293,37 +293,29 @@ function AdminDashboard({ onLogout }) {
           <div key={request.request_id} className="rounded-xl border border-slate-200 p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h3 className="font-semibold text-slate-900">Request #{request.request_id}</h3>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  Part: {request.spare_part.part_name}
+                <h3 className="font-semibold text-slate-900">{t("Request #")}{request.request_id}</h3>
+                <p className="mt-2 text-sm font-medium text-slate-900"> {t("Part:")} {request.spare_part.part_name}
                 </p>
-                <p className="text-sm text-slate-700">
-                  Part number: {request.spare_part.part_number || 'Not provided'}
-                  {' · '}Availability: {request.spare_part.availability_status}
+                <p className="text-sm text-slate-700"> {t("Part number:")} {request.spare_part.part_number || t('Not provided')}
+                  {' · '}{t("Availability:")} {t(request.spare_part.availability_status)}
                 </p>
                 <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                  <p className="font-medium text-slate-900">Spare-part owner contact</p>
+                  <p className="font-medium text-slate-900">{t("Spare-part owner contact")}</p>
                   <p>{request.supplier_technician.full_name}</p>
                   <p>{request.supplier_technician.email}</p>
-                  <p>{request.supplier_technician.phone || 'No phone provided'}</p>
+                  <p>{request.supplier_technician.phone || t('No phone provided')}</p>
                 </div>
-                <p className="text-sm text-slate-700">
-                  Manufacturer: {request.spare_part.manufacturer || 'Not provided'}
+                <p className="text-sm text-slate-700"> {t("Manufacturer:")} {request.spare_part.manufacturer || t('Not provided')}
                 </p>
-                <p className="text-sm text-slate-700">
-                  Compatible equipment: {request.spare_part.compatibility || 'Not provided'}
+                <p className="text-sm text-slate-700"> {t("Compatible equipment:")} {request.spare_part.compatibility || t('Not provided')}
                 </p>
-                <p className="text-sm text-slate-700">
-                  Specifications: {request.spare_part.specifications || 'Not provided'}
+                <p className="text-sm text-slate-700"> {t("Specifications:")} {request.spare_part.specifications || t('Not provided')}
                 </p>
-                <p className="text-sm text-slate-700">
-                  Description: {request.spare_part.description || 'Not provided'}
+                <p className="text-sm text-slate-700"> {t("Description:")} {request.spare_part.description || t('Not provided')}
                 </p>
-                <p className="mt-2 text-sm text-slate-700">
-                  Requester: {request.requester.full_name} · {request.requester.email}
+                <p className="mt-2 text-sm text-slate-700"> {t("Requester:")} {request.requester.full_name} · {request.requester.email}
                 </p>
-                <p className="text-sm text-slate-600">
-                  Contact: {request.requester.phone || request.requester_contact || 'Not provided'}
+                <p className="text-sm text-slate-600"> {t("Contact:")} {request.requester.phone || request.requester_contact || t('Not provided')}
                 </p>
               </div>
               <select
@@ -343,10 +335,10 @@ function AdminDashboard({ onLogout }) {
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
               >
                 {['new', 'contacted', 'negotiating', 'confirmed', 'ordered', 'delivered', 'completed', 'cancelled']
-                  .map((status) => <option key={status} value={status}>{status}</option>)}
+                  .map((status) => <option key={status} value={status}>{t(status)}</option>)}
               </select>
             </div>
-            {request.notes && <p className="mt-3 text-sm text-slate-600">Notes: {request.notes}</p>}
+            {request.notes && <p className="mt-3 text-sm text-slate-600">{t("Notes:")} {request.notes}</p>}
           </div>
         ))}
       </div>
@@ -364,32 +356,29 @@ function AdminDashboard({ onLogout }) {
   return (
     <div className="min-h-screen bg-slate-100">
       <header className="bg-slate-900 text-white shadow-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div>
-            <h1 className="text-2xl font-bold">Simeon Admin</h1>
-            <p className="text-sm text-slate-300">Governance and technical knowledge control</p>
+            <h1 className="text-2xl font-bold">{t("Simeon Admin")}</h1>
+            <p className="text-sm text-slate-300">{t("Governance and technical knowledge control")}</p>
           </div>
+          <LanguageSwitcher />
           <button
             onClick={onLogout}
             className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            Logout
-          </button>
+          > {t("Logout")} </button>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">Admin Dashboard</h2>
-            <p className="mt-2 text-slate-600">Review technicians, maintenance records, knowledge, parts, and requests.</p>
+            <h2 className="text-3xl font-bold text-slate-900">{t("Admin Dashboard")}</h2>
+            <p className="mt-2 text-slate-600">{t("Review technicians, maintenance records, knowledge, parts, and requests.")}</p>
           </div>
           <button
             onClick={loadDashboard}
             className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Refresh all
-          </button>
+          > {t("Refresh all")} </button>
         </div>
 
         <nav className="mb-6 grid gap-2 sm:grid-cols-5">
@@ -399,19 +388,20 @@ function AdminDashboard({ onLogout }) {
               onClick={() => setActiveSection(key)}
               className={`rounded-xl px-4 py-3 text-left text-sm font-medium ${activeSection === key ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
             >
-              {label} <span className="ml-1 opacity-70">{count}</span>
+              {t(label)} <span className="ml-1 opacity-70">{count}</span>
             </button>
           ))}
         </nav>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-        {loading ? <p className="text-sm text-slate-500">Loading admin data...</p> : content}
+        {error && <p className="mb-4 text-sm text-red-600">{t(error)}</p>}
+        {loading ? <p className="text-sm text-slate-500">{t("Loading admin data...")}</p> : content}
       </main>
     </div>
   )
 }
 
 function App() {
+  const { t } = useLanguage()
 
  const [loggedIn, setLoggedIn] = useState(
   () => Boolean(localStorage.getItem('access_token'))
@@ -569,76 +559,67 @@ if (!loggedIn) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-6 flex justify-end"><LanguageSwitcher /></div>
 
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">
             Simeon
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
-            Intelligence Recovery program
-          </p>
+          <p className="mt-2 text-sm text-slate-500"> {t("Intelligence Recovery program")} </p>
         </div>
 
         <h2 className="text-xl font-semibold text-slate-900">
-          {isRegistering ? 'Create Technician Account' : 'Technician Login'}
+          {isRegistering ? t('Create Technician Account') : t('Technician Login')}
         </h2>
 
         {isRegistering && (
           <div className="mt-6">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Full name
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Full name")} </label>
 
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter your full name"
+              placeholder={t("Enter your full name")}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
             />
           </div>
         )}
 
         <div className="mt-6">
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            Email
-          </label>
+          <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Email")} </label>
 
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
+            placeholder={t("Enter your email")}
             className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
           />
         </div>
 
         <div className="mt-4">
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            Password
-          </label>
+          <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Password")} </label>
 
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
+            placeholder={t("Enter your password")}
             className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
           />
         </div>
 
         {isRegistering && (
           <div className="mt-4">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Phone (optional)
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Phone (optional)")} </label>
 
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="Enter your phone number"
+              placeholder={t("Enter your phone number")}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
             />
           </div>
@@ -646,7 +627,7 @@ if (!loggedIn) {
 
         {loginError && (
           <p className="mt-4 text-sm text-red-600">
-            {loginError}
+            {t(loginError)}
           </p>
         )}
 
@@ -691,12 +672,12 @@ if (!loggedIn) {
           }}
           className="mt-6 w-full rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
         >
-          {isRegistering ? 'Create account' : 'Login'}
+          {isRegistering ? t('Create account') : t('Login')}
         </button>
 
         {authMessage && (
           <p className="mt-4 text-sm text-green-700">
-            {authMessage}
+            {t(authMessage)}
           </p>
         )}
 
@@ -709,8 +690,8 @@ if (!loggedIn) {
           className="mt-4 w-full text-sm font-medium text-slate-600 hover:text-slate-900"
         >
           {isRegistering
-            ? 'Already have an account? Log in'
-            : 'Need an account? Create one'}
+            ? t('Already have an account? Log in')
+            : t('Need an account? Create one')}
         </button>
 
       </div>
@@ -726,25 +707,20 @@ if (loggedIn && userRole === 'admin') {
     <div className="min-h-screen bg-slate-100">
       {/* Header */}
       <header className="bg-slate-900 text-white shadow-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div>
             <h1 className="text-2xl font-bold">Simeon</h1>
-            <p className="text-sm text-slate-300">
-              Intelligent Technician Friend
-            </p>
+            <p className="text-sm text-slate-300"> {t("Intelligent Technician Friend")} </p>
           </div>
 
-          <div className="flex items-center gap-3">
-  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-    Technician
-  </span>
+          <div className="flex flex-wrap items-center gap-3">
+  <LanguageSwitcher />
+  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700"> {t("Technician")} </span>
 
   <button
     onClick={handleLogout}
     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-  >
-    Logout
-  </button>
+  > {t("Logout")} </button>
 </div>
         </div>
       </header>
@@ -753,13 +729,9 @@ if (loggedIn && userRole === 'admin') {
       <main className="mx-auto max-w-6xl px-6 py-10">
 
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900">
-            Welcome to Simeon
-          </h2>
+          <h2 className="text-3xl font-bold text-slate-900"> {t("Welcome to Simeon")} </h2>
 
-          <p className="mt-2 text-slate-600">
-            What would you like to do today?
-          </p>
+          <p className="mt-2 text-slate-600"> {t("What would you like to do today?")} </p>
         </div>
 
         {/* Main options */}
@@ -773,14 +745,9 @@ if (loggedIn && userRole === 'admin') {
             >
               <div className="mb-4 text-4xl">🛠️</div>
 
-              <h3 className="text-xl font-semibold text-slate-900">
-                Store a Job Card or Spare Part
-              </h3>
+              <h3 className="text-xl font-semibold text-slate-900"> {t("Store a Job Card or Spare Part")} </h3>
 
-              <p className="mt-2 text-slate-600">
-                Save your maintenance experience, job cards, or spare-part
-                information to help other technicians.
-              </p>
+              <p className="mt-2 text-slate-600"> {t("Save your maintenance experience, job cards, or spare-part information to help other technicians.")} </p>
             </button>
 
             {/* Store menu */}
@@ -792,13 +759,9 @@ if (loggedIn && userRole === 'admin') {
                   onClick={() => setShowJobCardForm(true)}
                   className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
                 >
-                  <h4 className="font-semibold text-slate-900">
-                    📋 Digital Job Card
-                  </h4>
+                  <h4 className="font-semibold text-slate-900"> {t("📋 Digital Job Card")} </h4>
 
-                  <p className="mt-1 text-sm text-slate-600">
-                    Record a maintenance activity, diagnosis, and solution.
-                  </p>
+                  <p className="mt-1 text-sm text-slate-600"> {t("Record a maintenance activity, diagnosis, and solution.")} </p>
                 </button>
 
                 {/* Spare part button */}
@@ -806,13 +769,9 @@ if (loggedIn && userRole === 'admin') {
   onClick={() => setShowSparePartForm(true)}
   className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
 >
-                  <h4 className="font-semibold text-slate-900">
-                    🔩 Spare Part
-                  </h4>
+                  <h4 className="font-semibold text-slate-900"> {t("🔩 Spare Part")} </h4>
 
-                  <p className="mt-1 text-sm text-slate-600">
-                    Store information about an available spare part.
-                  </p>
+                  <p className="mt-1 text-sm text-slate-600"> {t("Store information about an available spare part.")} </p>
                 </button>
 
               </div>
@@ -829,14 +788,9 @@ if (loggedIn && userRole === 'admin') {
   >
     <div className="mb-4 text-4xl">🤖</div>
 
-    <h3 className="text-xl font-semibold text-slate-900">
-      Get Maintenance or Spare-Part Help
-    </h3>
+    <h3 className="text-xl font-semibold text-slate-900"> {t("Get Maintenance or Spare-Part Help")} </h3>
 
-    <p className="mt-2 text-slate-600">
-      Ask Simeon about equipment problems, maintenance procedures,
-      or spare parts.
-    </p>
+    <p className="mt-2 text-slate-600"> {t("Ask Simeon about equipment problems, maintenance procedures, or spare parts.")} </p>
   </button>
 
   {helpMode === 'menu' && (
@@ -845,26 +799,18 @@ if (loggedIn && userRole === 'admin') {
         onClick={() => setHelpMode('maintenance')}
         className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
       >
-        <h4 className="font-semibold text-slate-900">
-          🔧 Maintenance Help
-        </h4>
+        <h4 className="font-semibold text-slate-900"> {t("🔧 Maintenance Help")} </h4>
 
-        <p className="mt-1 text-sm text-slate-600">
-          Find reliable maintenance knowledge from successful job cards.
-        </p>
+        <p className="mt-1 text-sm text-slate-600"> {t("Find reliable maintenance knowledge from successful job cards.")} </p>
       </button>
 
       <button
         onClick={() => setHelpMode('spare_part')}
         className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
       >
-        <h4 className="font-semibold text-slate-900">
-          🔩 Spare-Part Help
-        </h4>
+        <h4 className="font-semibold text-slate-900"> {t("🔩 Spare-Part Help")} </h4>
 
-        <p className="mt-1 text-sm text-slate-600">
-          Search for spare parts stored by other technicians.
-        </p>
+        <p className="mt-1 text-sm text-slate-600"> {t("Search for spare parts stored by other technicians.")} </p>
       </button>
     </div>
   )}
@@ -874,12 +820,8 @@ if (loggedIn && userRole === 'admin') {
         <section className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">
-                My Job Cards
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Review your maintenance records and confirm completed work.
-              </p>
+              <h3 className="text-2xl font-bold text-slate-900"> {t("My Job Cards")} </h3>
+              <p className="mt-1 text-sm text-slate-500"> {t("Review your maintenance records and confirm completed work.")} </p>
             </div>
 
             <button
@@ -895,23 +837,19 @@ if (loggedIn && userRole === 'admin') {
                 }
               }}
               className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Refresh
-            </button>
+            > {t("Refresh")} </button>
           </div>
 
           {jobCardsLoading && (
-            <p className="text-sm text-slate-500">Loading your job cards...</p>
+            <p className="text-sm text-slate-500">{t("Loading your job cards...")}</p>
           )}
 
           {jobCardsError && (
-            <p className="text-sm text-red-600">{jobCardsError}</p>
+            <p className="text-sm text-red-600">{t(jobCardsError)}</p>
           )}
 
           {!jobCardsLoading && !jobCardsError && myJobCards.length === 0 && (
-            <p className="text-sm text-slate-500">
-              You have not saved any job cards yet.
-            </p>
+            <p className="text-sm text-slate-500"> {t("You have not saved any job cards yet.")} </p>
           )}
 
           <div className="grid gap-4">
@@ -922,15 +860,13 @@ if (loggedIn && userRole === 'admin') {
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <h4 className="font-semibold text-slate-900">
-                      Job Card #{card.job_card_id}
+                    <h4 className="font-semibold text-slate-900"> {t("Job Card #")}{card.job_card_id}
                     </h4>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Equipment ID: {card.equipment_id} · {card.maintenance_type}
+                    <p className="mt-1 text-sm text-slate-600"> {t("Equipment ID:")} {card.equipment_id} · {t(card.maintenance_type)}
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    {card.status}
+                    {t(card.status)}
                   </span>
                 </div>
 
@@ -938,14 +874,13 @@ if (loggedIn && userRole === 'admin') {
                   {card.fault_description}
                 </p>
 
-                <p className="mt-2 text-sm text-slate-600">
-                  Outcome: {card.successful ? 'Maintenance successful' : 'Pending confirmation'}
+                <p className="mt-2 text-sm text-slate-600"> {t("Outcome:")} {card.successful ? t('Maintenance successful') : t('Pending confirmation')}
                 </p>
 
                 {card.photo_data && (
                   <img
                     src={card.photo_data}
-                    alt="Job card"
+                    alt={t("Job card")}
                     className="mt-4 max-h-48 rounded-lg border border-slate-200 object-contain"
                   />
                 )}
@@ -954,9 +889,7 @@ if (loggedIn && userRole === 'admin') {
                   <button
                     onClick={() => downloadJobCardPdf(card)}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Download PDF
-                  </button>
+                  > {t("Download PDF")} </button>
 
                   <button
                       onClick={async () => {
@@ -964,7 +897,7 @@ if (loggedIn && userRole === 'admin') {
                           ? 'Delete this validated job card and remove its trusted Simeon knowledge?'
                           : 'Delete this job card?'
 
-                        if (!window.confirm(warning)) {
+                        if (!window.confirm(t(warning))) {
                           return
                         }
 
@@ -985,8 +918,8 @@ if (loggedIn && userRole === 'admin') {
                       className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                     >
                       {deletingJobCardId === card.job_card_id
-                        ? 'Deleting...'
-                        : 'Delete'}
+                        ? t('Deleting...')
+                        : t('Delete')}
                   </button>
                 </div>
 
@@ -1020,8 +953,8 @@ if (loggedIn && userRole === 'admin') {
                     className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
                   >
                     {confirmingJobCardId === card.job_card_id
-                      ? 'Confirming...'
-                      : 'Confirm Maintenance Successful'}
+                      ? t('Confirming...')
+                      : t('Confirm Maintenance Successful')}
                   </button>
                 )}
               </article>
@@ -1032,12 +965,8 @@ if (loggedIn && userRole === 'admin') {
         <section className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">
-                My Spare Parts
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                View the spare parts you have stored.
-              </p>
+              <h3 className="text-2xl font-bold text-slate-900"> {t("My Spare Parts")} </h3>
+              <p className="mt-1 text-sm text-slate-500"> {t("View the spare parts you have stored.")} </p>
             </div>
 
             <button
@@ -1055,23 +984,19 @@ if (loggedIn && userRole === 'admin') {
                 }
               }}
               className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Refresh
-            </button>
+            > {t("Refresh")} </button>
           </div>
 
           {mySparePartsLoading && (
-            <p className="text-sm text-slate-500">Loading your spare parts...</p>
+            <p className="text-sm text-slate-500">{t("Loading your spare parts...")}</p>
           )}
 
           {mySparePartsError && (
-            <p className="text-sm text-red-600">{mySparePartsError}</p>
+            <p className="text-sm text-red-600">{t(mySparePartsError)}</p>
           )}
 
           {!mySparePartsLoading && !mySparePartsError && mySpareParts.length === 0 && (
-            <p className="text-sm text-slate-500">
-              You have not stored any spare parts yet.
-            </p>
+            <p className="text-sm text-slate-500"> {t("You have not stored any spare parts yet.")} </p>
           )}
 
           <div className="grid gap-4">
@@ -1085,30 +1010,28 @@ if (loggedIn && userRole === 'admin') {
                     <h4 className="font-semibold text-slate-900">
                       {part.part_name}
                     </h4>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Part number: {part.part_number || 'Not provided'}
+                    <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    {part.availability_status}
+                    {t(part.availability_status)}
                   </span>
                 </div>
 
-                <p className="mt-3 text-sm font-medium text-slate-700">
-                  Notifications: {part.notification_count || 0}
+                <p className="mt-3 text-sm font-medium text-slate-700"> {t("Notifications:")} {part.notification_count || 0}
                 </p>
 
                 {part.photo_data && (
                   <img
                     src={part.photo_data}
-                    alt="Spare part"
+                    alt={t("Spare part")}
                     className="mt-4 max-h-48 rounded-lg border border-slate-200 object-contain"
                   />
                 )}
 
                 <button
                   onClick={async () => {
-                    if (!window.confirm('Delete this spare part? Existing requests for it will also be removed.')) {
+                    if (!window.confirm(t('Delete this spare part? Existing requests for it will also be removed.'))) {
                       return
                     }
 
@@ -1129,26 +1052,26 @@ if (loggedIn && userRole === 'admin') {
                   className="mt-4 rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
                   {deletingSparePartId === part.spare_part_id
-                    ? 'Deleting...'
-                    : 'Delete'}
+                    ? t('Deleting...')
+                    : t('Delete')}
                 </button>
 
                 <dl className="mt-4 grid gap-2 text-sm text-slate-700">
                   <div>
-                    <dt className="font-medium">Manufacturer</dt>
-                    <dd>{part.manufacturer || 'Not provided'}</dd>
+                    <dt className="font-medium">{t("Manufacturer")}</dt>
+                    <dd>{part.manufacturer || t('Not provided')}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium">Compatible equipment</dt>
-                    <dd>{part.compatibility || 'Not provided'}</dd>
+                    <dt className="font-medium">{t("Compatible equipment")}</dt>
+                    <dd>{part.compatibility || t('Not provided')}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium">Specifications</dt>
-                    <dd>{part.specifications || 'Not provided'}</dd>
+                    <dt className="font-medium">{t("Specifications")}</dt>
+                    <dd>{part.specifications || t('Not provided')}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium">Description</dt>
-                    <dd>{part.description || 'Not provided'}</dd>
+                    <dt className="font-medium">{t("Description")}</dt>
+                    <dd>{part.description || t('Not provided')}</dd>
                   </div>
                 </dl>
               </article>
@@ -1162,14 +1085,9 @@ if (loggedIn && userRole === 'admin') {
 
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">
-                  Digital Job Card
-                </h3>
+                <h3 className="text-2xl font-bold text-slate-900"> {t("Digital Job Card")} </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Record what happened, what you found, and how the problem
-                  was resolved.
-                </p>
+                <p className="mt-1 text-sm text-slate-500"> {t("Record what happened, what you found, and how the problem was resolved.")} </p>
               </div>
 
               <button
@@ -1184,13 +1102,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Equipment */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Equipment
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Equipment")} </label>
 
                 <input
                   type="text"
-                  placeholder="Example: Humacount 30TS"
+                  placeholder={t("Example: Humacount 30TS")}
                   value={jobCard.equipment}
                   onChange={(e) =>
                      setJobCard({ ...jobCard, equipment: e.target.value })
@@ -1201,13 +1117,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Manufacturer */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Manufacturer
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Manufacturer")} </label>
 
                 <input
                   type="text"
-                  placeholder="Example: HUMAN"
+                  placeholder={t("Example: HUMAN")}
                   value={jobCard.manufacturer}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, manufacturer: e.target.value })
@@ -1218,13 +1132,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Model */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Model
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Model")} </label>
 
                 <input
                   type="text"
-                  placeholder="Equipment model"
+                  placeholder={t("Equipment model")}
                   value={jobCard.model}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, model: e.target.value })
@@ -1235,13 +1147,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Problem */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Problem Description
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Problem Description")} </label>
 
                 <input
                   type="text"
-                  placeholder="Describe the reported problem"
+                  placeholder={t("Describe the reported problem")}
                   value={jobCard.problem_description}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, problem_description: e.target.value })
@@ -1252,13 +1162,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Symptoms */}
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Symptoms / Error
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Symptoms / Error")} </label>
 
                 <textarea
                   rows="3"
-                  placeholder="What symptoms or error messages were observed?"
+                  placeholder={t("What symptoms or error messages were observed?")}
                   value={jobCard.symptoms}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, symptoms: e.target.value })
@@ -1269,13 +1177,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Diagnosis */}
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Diagnosis
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Diagnosis")} </label>
 
                 <textarea
                   rows="3"
-                  placeholder="What was found to be causing the problem?"
+                  placeholder={t("What was found to be causing the problem?")}
                   value={jobCard.diagnosis}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, diagnosis: e.target.value })
@@ -1286,13 +1192,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Solution */}
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Solution / Repair Performed
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Solution / Repair Performed")} </label>
 
                 <textarea
                   rows="3"
-                  placeholder="Describe the repair or maintenance performed"
+                  placeholder={t("Describe the repair or maintenance performed")}
                   value={jobCard.solution}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, solution: e.target.value })
@@ -1303,13 +1207,11 @@ if (loggedIn && userRole === 'admin') {
 
               {/* Parts */}
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Parts Used
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Parts Used")} </label>
 
                 <input
                   type="text"
-                  placeholder="Example: Sample probe tubing"
+                  placeholder={t("Example: Sample probe tubing")}
                   value={jobCard.parts_used}
                   onChange={(e) =>
                     setJobCard({ ...jobCard, parts_used: e.target.value })
@@ -1319,9 +1221,7 @@ if (loggedIn && userRole === 'admin') {
               </div>
 
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Job card photo (optional)
-                </label>
+                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Job card photo (optional)")} </label>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -1341,7 +1241,7 @@ if (loggedIn && userRole === 'admin') {
                 {jobCard.photo_data && (
                   <img
                     src={jobCard.photo_data}
-                    alt="Job card preview"
+                    alt={t("Job card preview")}
                     className="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain"
                   />
                 )}
@@ -1358,11 +1258,7 @@ if (loggedIn && userRole === 'admin') {
                   onChange={(e) => setJobCardSuccessful(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-slate-300"
                 />
-                <span>
-                  I confirm the maintenance was completed successfully. This
-                  will validate the job card and add it to Simeon's trusted
-                  technical knowledge.
-                </span>
+                <span> {t("I confirm the maintenance was completed successfully. This will validate the job card and add it to Simeon's trusted technical knowledge.")} </span>
               </label>
             </div>
 
@@ -1371,9 +1267,7 @@ if (loggedIn && userRole === 'admin') {
               <button
                 onClick={() => setShowJobCardForm(false)}
                 className="rounded-xl border border-slate-300 px-6 py-3 font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
+              > {t("Cancel")} </button>
 
               <button
   onClick={async () => {
@@ -1433,12 +1327,12 @@ if (loggedIn && userRole === 'admin') {
   disabled={savingJobCard}
   className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
 >
-  {savingJobCard ? 'Saving...' : 'Save Job Card'}
+  {savingJobCard ? t('Saving...') : t('Save Job Card')}
 </button>
 
 {saveMessage && (
   <p className="mt-4 text-sm text-slate-600">
-    {saveMessage}
+    {t(saveMessage)}
   </p>
 )}
 
@@ -1453,13 +1347,9 @@ if (loggedIn && userRole === 'admin') {
 
     <div className="mb-6 flex items-center justify-between">
       <div>
-        <h3 className="text-2xl font-bold text-slate-900">
-          Spare Part
-        </h3>
+        <h3 className="text-2xl font-bold text-slate-900"> {t("Spare Part")} </h3>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Store technical information about an available spare part.
-        </p>
+        <p className="mt-1 text-sm text-slate-500"> {t("Store technical information about an available spare part.")} </p>
       </div>
 
       <button
@@ -1474,13 +1364,11 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Part name */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Part Name
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Part Name")} </label>
 
         <input
           type="text"
-          placeholder="Example: Sample probe"
+          placeholder={t("Example: Sample probe")}
           value={sparePart.part_name}
           onChange={(e) =>
             setSparePart({
@@ -1494,13 +1382,11 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Part number */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Part Number
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Part Number")} </label>
 
         <input
           type="text"
-          placeholder="Example: PN-12345"
+          placeholder={t("Example: PN-12345")}
           value={sparePart.part_number}
           onChange={(e) =>
             setSparePart({
@@ -1514,13 +1400,11 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Manufacturer */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Manufacturer
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Manufacturer")} </label>
 
         <input
           type="text"
-          placeholder="Example: HUMAN"
+          placeholder={t("Example: HUMAN")}
           value={sparePart.manufacturer}
           onChange={(e) =>
             setSparePart({
@@ -1534,13 +1418,11 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Compatible equipment */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Compatible Equipment
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Compatible Equipment")} </label>
 
         <input
           type="text"
-          placeholder="Example: Humacount 30TS"
+          placeholder={t("Example: Humacount 30TS")}
           value={sparePart.compatible_equipment}
           onChange={(e) =>
             setSparePart({
@@ -1554,9 +1436,7 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Specifications */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Availability
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Availability")} </label>
 
         <select
           value={sparePart.availability_status}
@@ -1568,22 +1448,20 @@ if (loggedIn && userRole === 'admin') {
           }
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-500"
         >
-          <option value="available">Available</option>
-          <option value="limited">Limited</option>
-          <option value="unavailable">Unavailable</option>
-          <option value="unknown">Unknown</option>
+          <option value="available">{t("Available")}</option>
+          <option value="limited">{t("Limited")}</option>
+          <option value="unavailable">{t("Unavailable")}</option>
+          <option value="unknown">{t("Unknown")}</option>
         </select>
       </div>
 
       {/* Specifications */}
       <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Specifications
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Specifications")} </label>
 
         <textarea
           rows="3"
-          placeholder="Enter technical specifications"
+          placeholder={t("Enter technical specifications")}
           value={sparePart.specifications}
           onChange={(e) =>
             setSparePart({
@@ -1597,13 +1475,11 @@ if (loggedIn && userRole === 'admin') {
 
       {/* Description */}
       <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Description
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Description")} </label>
 
         <textarea
           rows="3"
-          placeholder="Describe the spare part and any compatibility information"
+          placeholder={t("Describe the spare part and any compatibility information")}
           value={sparePart.description}
           onChange={(e) =>
             setSparePart({
@@ -1616,9 +1492,7 @@ if (loggedIn && userRole === 'admin') {
       </div>
 
       <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Spare-part photo (optional)
-        </label>
+        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Spare-part photo (optional)")} </label>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -1638,7 +1512,7 @@ if (loggedIn && userRole === 'admin') {
         {sparePart.photo_data && (
           <img
             src={sparePart.photo_data}
-            alt="Spare-part preview"
+            alt={t("Spare-part preview")}
             className="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain"
           />
         )}
@@ -1651,9 +1525,7 @@ if (loggedIn && userRole === 'admin') {
       <button
         onClick={() => setShowSparePartForm(false)}
         className="rounded-xl border border-slate-300 px-6 py-3 font-medium text-slate-700 hover:bg-slate-50"
-      >
-        Cancel
-      </button>
+      > {t("Cancel")} </button>
 
       <button
   onClick={async () => {
@@ -1685,12 +1557,12 @@ if (loggedIn && userRole === 'admin') {
   disabled={savingSparePart}
   className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
 >
-  {savingSparePart ? 'Saving...' : 'Save Spare Part'}
+  {savingSparePart ? t('Saving...') : t('Save Spare Part')}
 </button>
 
 {sparePartMessage && (
   <p className="mt-4 text-sm text-slate-600">
-    {sparePartMessage}
+    {t(sparePartMessage)}
   </p>
 )}
 
@@ -1705,20 +1577,16 @@ if (loggedIn && userRole === 'admin') {
 {helpMode === 'maintenance' && (
   <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
     <div className="mb-6">
-      <h3 className="text-2xl font-bold text-slate-900">
-        🔧 Maintenance Help
-      </h3>
+      <h3 className="text-2xl font-bold text-slate-900"> {t("🔧 Maintenance Help")} </h3>
 
-      <p className="mt-1 text-sm text-slate-500">
-        Ask Simeon about a equipment problem.
-      </p>
+      <p className="mt-1 text-sm text-slate-500"> {t("Ask Simeon about a equipment problem.")} </p>
     </div>
 
     <textarea
   rows="4"
   value={chatQuestion}
   onChange={(e) => setChatQuestion(e.target.value)}
-  placeholder="Example: Humacount 30TS is giving a high blank error. What should I check?"
+  placeholder={t("Example: Humacount 30TS is giving a high blank error. What should I check?")}
   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
 />
 
@@ -1759,7 +1627,7 @@ if (loggedIn && userRole === 'admin') {
   disabled={chatLoading}
   className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
 >
-  {chatLoading ? 'Thinking...' : 'Ask Simeon'}
+  {chatLoading ? t('Thinking...') : t('Ask Simeon')}
 </button>
 
 {chatAnswer && (
@@ -1781,13 +1649,9 @@ if (loggedIn && userRole === 'admin') {
 {helpMode === 'spare_part' && (
   <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
     <div className="mb-6">
-      <h3 className="text-2xl font-bold text-slate-900">
-        🔩 Spare-Part Help
-      </h3>
+      <h3 className="text-2xl font-bold text-slate-900"> {t("🔩 Spare-Part Help")} </h3>
 
-      <p className="mt-1 text-sm text-slate-500">
-        Search for a spare part stored by another technician.
-      </p>
+      <p className="mt-1 text-sm text-slate-500"> {t("Search for a spare part stored by another technician.")} </p>
     </div>
 
     <div className="flex gap-3">
@@ -1795,7 +1659,7 @@ if (loggedIn && userRole === 'admin') {
         type="text"
         value={sparePartSearch}
         onChange={(e) => setSparePartSearch(e.target.value)}
-        placeholder="Example: Humacount 30TS sample probe"
+        placeholder={t("Example: Humacount 30TS sample probe")}
         className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
       />
 
@@ -1816,12 +1680,12 @@ if (loggedIn && userRole === 'admin') {
         disabled={sparePartSearchLoading}
         className="shrink-0 rounded-xl bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
       >
-        {sparePartSearchLoading ? 'Searching...' : 'Search'}
+        {sparePartSearchLoading ? t('Searching...') : t('Search')}
       </button>
     </div>
 
     {sparePartSearchError && (
-      <p className="mt-4 text-sm text-red-600">{sparePartSearchError}</p>
+      <p className="mt-4 text-sm text-red-600">{t(sparePartSearchError)}</p>
     )}
 
     <div className="mt-6 grid gap-4">
@@ -1835,31 +1699,30 @@ if (loggedIn && userRole === 'admin') {
               <h4 className="font-semibold text-slate-900">
                 {part.part_name}
               </h4>
-              <p className="mt-1 text-sm text-slate-600">
-                Part number: {part.part_number || 'Not provided'}
+              <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
               </p>
             </div>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-              {part.availability_status}
+              {t(part.availability_status)}
             </span>
           </div>
 
           <dl className="mt-4 grid gap-2 text-sm text-slate-700">
             <div>
-              <dt className="font-medium">Manufacturer</dt>
-              <dd>{part.manufacturer || 'Not provided'}</dd>
+              <dt className="font-medium">{t("Manufacturer")}</dt>
+              <dd>{part.manufacturer || t('Not provided')}</dd>
             </div>
             <div>
-              <dt className="font-medium">Compatible equipment</dt>
-              <dd>{part.compatibility || 'Not provided'}</dd>
+              <dt className="font-medium">{t("Compatible equipment")}</dt>
+              <dd>{part.compatibility || t('Not provided')}</dd>
             </div>
             <div>
-              <dt className="font-medium">Specifications</dt>
-              <dd>{part.specifications || 'Not provided'}</dd>
+              <dt className="font-medium">{t("Specifications")}</dt>
+              <dd>{part.specifications || t('Not provided')}</dd>
             </div>
             <div>
-              <dt className="font-medium">Description</dt>
-              <dd>{part.description || 'Not provided'}</dd>
+              <dt className="font-medium">{t("Description")}</dt>
+              <dd>{part.description || t('Not provided')}</dd>
             </div>
           </dl>
 
@@ -1874,7 +1737,7 @@ if (loggedIn && userRole === 'admin') {
                     [part.spare_part_id]: e.target.value,
                   })
                 }
-                placeholder="Optional request note"
+                placeholder={t("Optional request note")}
                 className="w-full rounded-xl border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
               />
               <button
@@ -1899,8 +1762,8 @@ if (loggedIn && userRole === 'admin') {
                 className="shrink-0 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
               >
                 {requestingSparePartId === part.spare_part_id
-                  ? 'Requesting...'
-                  : 'Request part'}
+                  ? t('Requesting...')
+                  : t('Request part')}
               </button>
             </div>
           )}
@@ -1910,7 +1773,7 @@ if (loggedIn && userRole === 'admin') {
 
     <div className="mt-8 border-t border-slate-200 pt-6">
       <div className="flex items-center justify-between gap-4">
-        <h4 className="font-semibold text-slate-900">My requests</h4>
+        <h4 className="font-semibold text-slate-900">{t("My requests")}</h4>
         <button
           onClick={async () => {
             try {
@@ -1926,21 +1789,19 @@ if (loggedIn && userRole === 'admin') {
             }
           }}
           className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          Refresh
-        </button>
+        > {t("Refresh")} </button>
       </div>
 
       {sparePartRequestsError && (
-        <p className="mt-3 text-sm text-red-600">{sparePartRequestsError}</p>
+        <p className="mt-3 text-sm text-red-600">{t(sparePartRequestsError)}</p>
       )}
 
       {sparePartRequestsLoading && (
-        <p className="mt-3 text-sm text-slate-500">Loading requests...</p>
+        <p className="mt-3 text-sm text-slate-500">{t("Loading requests...")}</p>
       )}
 
       {!sparePartRequestsLoading && sparePartRequests.length === 0 && (
-        <p className="mt-3 text-sm text-slate-500">No spare-part requests yet.</p>
+        <p className="mt-3 text-sm text-slate-500">{t("No spare-part requests yet.")}</p>
       )}
 
       <div className="mt-3 grid gap-3">
@@ -1953,19 +1814,18 @@ if (loggedIn && userRole === 'admin') {
               <p className="font-medium text-slate-900">
                 {request.part_name} {request.part_number ? `(${request.part_number})` : ''}
               </p>
-              <p className="mt-1 text-slate-600">
-                Request #{request.request_id}
+              <p className="mt-1 text-slate-600"> {t("Request #")}{request.request_id}
               </p>
               <dl className="mt-3 grid gap-1 text-slate-600">
-                <div>Availability: {request.availability_status || 'Not provided'}</div>
-                <div>Manufacturer: {request.manufacturer || 'Not provided'}</div>
-                <div>Compatible equipment: {request.compatibility || 'Not provided'}</div>
-                <div>Specifications: {request.specifications || 'Not provided'}</div>
-                <div>Description: {request.description || 'Not provided'}</div>
+                <div>{t("Availability:")} {t(request.availability_status) || t('Not provided')}</div>
+                <div>{t("Manufacturer:")} {request.manufacturer || t('Not provided')}</div>
+                <div>{t("Compatible equipment:")} {request.compatibility || t('Not provided')}</div>
+                <div>{t("Specifications:")} {request.specifications || t('Not provided')}</div>
+                <div>{t("Description:")} {request.description || t('Not provided')}</div>
               </dl>
             </div>
             <span className="rounded-full bg-white px-3 py-1 font-medium text-slate-700">
-              {request.status}
+              {t(request.status)}
             </span>
           </div>
         ))}
