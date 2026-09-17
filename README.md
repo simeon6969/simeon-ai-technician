@@ -1,6 +1,15 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+Technicians store job cards and spare parts through a guided conversation with
+Simeon: choose a store action, answer one question at a time, skip optional items,
+upload an optional photo, and review or edit answers before saving. The flow works
+in all four languages without an AI connection. Answers stay in memory until saved;
+leaving an unfinished conversation asks for confirmation. Saved records appear on
+the dashboard. Maintenance is validated only when the technician explicitly confirms
+success. If validation fails after saving, the existing card can be confirmed from
+My Job Cards without creating it again.
+
 The interface supports English, Kinyarwanda, French, and Swahili. Use the language selector
 on the login screen or dashboard; your choice is remembered in this browser.
 Translations are maintained in `frontend/src/translations.js` and `frontend/src/swahili.js`, with English as

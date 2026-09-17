@@ -1,15 +1,13 @@
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 import AdminChat from './AdminChat'
+import StoreConversation from './StoreConversation'
 import { useEffect, useState } from 'react'
 import {
-  createJobCard,
   validateJobCard,
   getMyJobCards,
   updateJobCard,
   deleteJobCard,
-  createEquipment,
-  createSparePart,
   searchSpareParts,
   requestSparePart,
   getMySparePartRequests,
@@ -28,64 +26,6 @@ import {
   updateAdminSparePartRequest,
 } from './api'
 import { jsPDF } from 'jspdf'
-
-function readImageAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      resolve(null)
-      return
-    }
-
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      reject(new Error('Choose a JPEG, PNG, or WebP image.'))
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      reject(new Error('Photo must be 5 MB or smaller.'))
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = () => reject(new Error('Unable to read the photo.'))
-    reader.readAsDataURL(file)
-  })
-}
-
-function readAttachments(files) {
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'application/pdf',
-  ]
-
-  if (files.length > 5) {
-    return Promise.reject(new Error('Choose no more than 5 attachments.'))
-  }
-
-  if (files.some((file) => !allowedTypes.includes(file.type))) {
-    return Promise.reject(new Error('Attachments must be images or PDF files.'))
-  }
-
-  if (files.some((file) => file.size > 5 * 1024 * 1024)) {
-    return Promise.reject(new Error('Each attachment must be 5 MB or smaller.'))
-  }
-
-  return Promise.all(
-    files.map(
-      (file) =>
-        new Promise((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () =>
-            resolve({ name: file.name, type: file.type, data: reader.result })
-          reader.onerror = () => reject(new Error('Unable to read an attachment.'))
-          reader.readAsDataURL(file)
-        })
-    )
-  ).then((attachments) => JSON.stringify(attachments))
-}
 
 function downloadJobCardPdf(card) {
   const pdf = new jsPDF()
@@ -420,47 +360,15 @@ const [loginError, setLoginError] = useState('')
 const [authMessage, setAuthMessage] = useState('')
 
   const [showStoreMenu, setShowStoreMenu] = useState(false)
-  const [showJobCardForm, setShowJobCardForm] = useState(false)
+  const [storeConversation, setStoreConversation] = useState(null)
 const [helpMode, setHelpMode] = useState(null)
 
-  const [jobCard, setJobCard] = useState({
-  equipment: '',
-  manufacturer: '',
-  model: '',
-  problem_description: '',
-  symptoms: '',
-  diagnosis: '',
-  solution: '',
-  parts_used: '',
-  photo_data: null,
-  attachments_data: null,
-})
-
-const [savingJobCard, setSavingJobCard] = useState(false)
-const [saveMessage, setSaveMessage] = useState('')
-const [jobCardSuccessful, setJobCardSuccessful] = useState(false)
 const [myJobCards, setMyJobCards] = useState([])
 const [jobCardsLoading, setJobCardsLoading] = useState(false)
 const [jobCardsError, setJobCardsError] = useState('')
 const [confirmingJobCardId, setConfirmingJobCardId] = useState(null)
 const [deletingJobCardId, setDeletingJobCardId] = useState(null)
 
-const [showSparePartForm, setShowSparePartForm] = useState(false)
-
-const [sparePart, setSparePart] = useState({
-  part_name: '',
-  part_number: '',
-  manufacturer: '',
-  compatible_equipment: '',
-  availability_status: 'available',
-  specifications: '',
-  description: '',
-  photo_data: null,
-  attachments_data: null,
-})
-
-const [savingSparePart, setSavingSparePart] = useState(false)
-const [sparePartMessage, setSparePartMessage] = useState('')
 const [sparePartSearch, setSparePartSearch] = useState('')
 const [sparePartResults, setSparePartResults] = useState([])
 const [sparePartSearchLoading, setSparePartSearchLoading] = useState(false)
@@ -705,6 +613,23 @@ if (loggedIn && userRole === 'admin') {
   return <AdminDashboard onLogout={handleLogout} />
 }
 
+if (storeConversation) {
+  return <StoreConversation
+    kind={storeConversation}
+    onClose={() => setStoreConversation(null)}
+    onSaved={async (kind) => {
+      try {
+        if (kind === 'job') setMyJobCards(await getMyJobCards())
+        else setMySpareParts(await getMySpareParts())
+      } catch (error) {
+        if (kind === 'job') setJobCardsError(error.message)
+        else setMySparePartsError(error.message)
+      }
+    }}
+  />
+}
+
+
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Header */}
@@ -758,7 +683,7 @@ if (loggedIn && userRole === 'admin') {
 
                 {/* Job card button */}
                 <button
-                  onClick={() => setShowJobCardForm(true)}
+                  onClick={() => setStoreConversation('job')}
                   className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
                 >
                   <h4 className="font-semibold text-slate-900"> {t("📋 Digital Job Card")} </h4>
@@ -768,7 +693,7 @@ if (loggedIn && userRole === 'admin') {
 
                 {/* Spare part button */}
                 <button
-  onClick={() => setShowSparePartForm(true)}
+  onClick={() => setStoreConversation('part')}
   className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
 >
                   <h4 className="font-semibold text-slate-900"> {t("🔩 Spare Part")} </h4>
@@ -1082,498 +1007,6 @@ if (loggedIn && userRole === 'admin') {
         </section>
 
         {/* Digital Job Card form */}
-        {showJobCardForm && (
-          <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
-
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900"> {t("Digital Job Card")} </h3>
-
-                <p className="mt-1 text-sm text-slate-500"> {t("Record what happened, what you found, and how the problem was resolved.")} </p>
-              </div>
-
-              <button
-                onClick={() => setShowJobCardForm(false)}
-                className="rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-
-              {/* Equipment */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Equipment")} </label>
-
-                <input
-                  type="text"
-                  placeholder={t("Example: Humacount 30TS")}
-                  value={jobCard.equipment}
-                  onChange={(e) =>
-                     setJobCard({ ...jobCard, equipment: e.target.value })
-               }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Manufacturer */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Manufacturer")} </label>
-
-                <input
-                  type="text"
-                  placeholder={t("Example: HUMAN")}
-                  value={jobCard.manufacturer}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, manufacturer: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Model */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Model")} </label>
-
-                <input
-                  type="text"
-                  placeholder={t("Equipment model")}
-                  value={jobCard.model}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, model: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Problem */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Problem Description")} </label>
-
-                <input
-                  type="text"
-                  placeholder={t("Describe the reported problem")}
-                  value={jobCard.problem_description}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, problem_description: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Symptoms */}
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Symptoms / Error")} </label>
-
-                <textarea
-                  rows="3"
-                  placeholder={t("What symptoms or error messages were observed?")}
-                  value={jobCard.symptoms}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, symptoms: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Diagnosis */}
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Diagnosis")} </label>
-
-                <textarea
-                  rows="3"
-                  placeholder={t("What was found to be causing the problem?")}
-                  value={jobCard.diagnosis}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, diagnosis: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Solution */}
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Solution / Repair Performed")} </label>
-
-                <textarea
-                  rows="3"
-                  placeholder={t("Describe the repair or maintenance performed")}
-                  value={jobCard.solution}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, solution: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              {/* Parts */}
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Parts Used")} </label>
-
-                <input
-                  type="text"
-                  placeholder={t("Example: Sample probe tubing")}
-                  value={jobCard.parts_used}
-                  onChange={(e) =>
-                    setJobCard({ ...jobCard, parts_used: e.target.value })
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Job card photo (optional)")} </label>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={async (e) => {
-                    try {
-                      setJobCard({
-                        ...jobCard,
-                        photo_data: await readImageAsDataUrl(e.target.files[0]),
-                      })
-                      setSaveMessage('')
-                    } catch (error) {
-                      setSaveMessage(error.message)
-                    }
-                  }}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-500"
-                />
-                {jobCard.photo_data && (
-                  <img
-                    src={jobCard.photo_data}
-                    alt={t("Job card preview")}
-                    className="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain"
-                  />
-                )}
-              </div>
-
-            </div>
-
-            {/* Confirmation */}
-            <div className="mt-6 rounded-xl bg-slate-50 p-4">
-              <label className="flex items-start gap-3 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={jobCardSuccessful}
-                  onChange={(e) => setJobCardSuccessful(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-slate-300"
-                />
-                <span> {t("I confirm the maintenance was completed successfully. This will validate the job card and add it to Simeon's trusted technical knowledge.")} </span>
-              </label>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-
-              <button
-                onClick={() => setShowJobCardForm(false)}
-                className="rounded-xl border border-slate-300 px-6 py-3 font-medium text-slate-700 hover:bg-slate-50"
-              > {t("Cancel")} </button>
-
-              <button
-  onClick={async () => {
-    try {
-      setSavingJobCard(true)
-      setSaveMessage('')
-
-      if (!jobCard.equipment.trim() || !jobCard.manufacturer.trim() || !jobCard.model.trim()) {
-        throw new Error('Equipment, manufacturer, and model are required.')
-      }
-
-      const equipment = await createEquipment({
-        category: jobCard.equipment,
-        manufacturer: jobCard.manufacturer,
-        model: jobCard.model,
-        description: jobCard.problem_description,
-      })
-
-      const savedJobCard = await createJobCard({
-        equipment_id: equipment.equipment_id,
-        maintenance_type: 'corrective',
-        fault_description: jobCard.problem_description,
-        symptoms: jobCard.symptoms,
-        diagnosis: jobCard.diagnosis,
-        actions_taken: jobCard.solution,
-        parts_used: jobCard.parts_used,
-        result: jobCard.solution,
-        successful: jobCardSuccessful,
-      })
-
-      if (jobCardSuccessful) {
-        await validateJobCard(savedJobCard.job_card_id)
-        setSaveMessage('Job card validated and added to Simeon knowledge.')
-      } else {
-        setSaveMessage('Job card saved. Confirm success to add it to Simeon knowledge.')
-      }
-
-      setJobCard({
-        equipment: '',
-        manufacturer: '',
-        model: '',
-        problem_description: '',
-        symptoms: '',
-        diagnosis: '',
-        solution: '',
-        parts_used: '',
-        photo_data: null,
-      })
-      setJobCardSuccessful(false)
-    } catch (error) {
-      setSaveMessage(error.message || 'Unable to save the job card.')
-      console.error(error)
-    } finally {
-      setSavingJobCard(false)
-    }
-  }}
-  disabled={savingJobCard}
-  className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
->
-  {savingJobCard ? t('Saving...') : t('Save Job Card')}
-</button>
-
-{saveMessage && (
-  <p className="mt-4 text-sm text-slate-600">
-    {t(saveMessage)}
-  </p>
-)}
-
-            </div>
-          </div>
-        )}
-
-
-{/* Spare Part form */}
-{showSparePartForm && (
-  <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
-
-    <div className="mb-6 flex items-center justify-between">
-      <div>
-        <h3 className="text-2xl font-bold text-slate-900"> {t("Spare Part")} </h3>
-
-        <p className="mt-1 text-sm text-slate-500"> {t("Store technical information about an available spare part.")} </p>
-      </div>
-
-      <button
-        onClick={() => setShowSparePartForm(false)}
-        className="rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100"
-      >
-        ✕
-      </button>
-    </div>
-
-    <div className="grid gap-5 md:grid-cols-2">
-
-      {/* Part name */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Part Name")} </label>
-
-        <input
-          type="text"
-          placeholder={t("Example: Sample probe")}
-          value={sparePart.part_name}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              part_name: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {/* Part number */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Part Number")} </label>
-
-        <input
-          type="text"
-          placeholder={t("Example: PN-12345")}
-          value={sparePart.part_number}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              part_number: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {/* Manufacturer */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Manufacturer")} </label>
-
-        <input
-          type="text"
-          placeholder={t("Example: HUMAN")}
-          value={sparePart.manufacturer}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              manufacturer: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {/* Compatible equipment */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Compatible Equipment")} </label>
-
-        <input
-          type="text"
-          placeholder={t("Example: Humacount 30TS")}
-          value={sparePart.compatible_equipment}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              compatible_equipment: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {/* Specifications */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Availability")} </label>
-
-        <select
-          value={sparePart.availability_status}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              availability_status: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-500"
-        >
-          <option value="available">{t("Available")}</option>
-          <option value="limited">{t("Limited")}</option>
-          <option value="unavailable">{t("Unavailable")}</option>
-          <option value="unknown">{t("Unknown")}</option>
-        </select>
-      </div>
-
-      {/* Specifications */}
-      <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Specifications")} </label>
-
-        <textarea
-          rows="3"
-          placeholder={t("Enter technical specifications")}
-          value={sparePart.specifications}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              specifications: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {/* Description */}
-      <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Description")} </label>
-
-        <textarea
-          rows="3"
-          placeholder={t("Describe the spare part and any compatibility information")}
-          value={sparePart.description}
-          onChange={(e) =>
-            setSparePart({
-              ...sparePart,
-              description: e.target.value,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
-        />
-      </div>
-
-      <div className="md:col-span-2">
-        <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Spare-part photo (optional)")} </label>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={async (e) => {
-            try {
-              setSparePart({
-                ...sparePart,
-                photo_data: await readImageAsDataUrl(e.target.files[0]),
-              })
-              setSparePartMessage('')
-            } catch (error) {
-              setSparePartMessage(error.message)
-            }
-          }}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-500"
-        />
-        {sparePart.photo_data && (
-          <img
-            src={sparePart.photo_data}
-            alt={t("Spare-part preview")}
-            className="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain"
-          />
-        )}
-      </div>
-
-    </div>
-
-    <div className="mt-6 flex justify-end gap-3">
-
-      <button
-        onClick={() => setShowSparePartForm(false)}
-        className="rounded-xl border border-slate-300 px-6 py-3 font-medium text-slate-700 hover:bg-slate-50"
-      > {t("Cancel")} </button>
-
-      <button
-  onClick={async () => {
-    try {
-      setSavingSparePart(true)
-      setSparePartMessage('')
-
-      await createSparePart(sparePart)
-
-      setSparePartMessage('Spare part saved successfully.')
-
-      setSparePart({
-        part_name: '',
-        part_number: '',
-        manufacturer: '',
-        compatible_equipment: '',
-        availability_status: 'available',
-        specifications: '',
-        description: '',
-        photo_data: null,
-      })
-    } catch (error) {
-      setSparePartMessage(error.message || 'Unable to save the spare part.')
-      console.error(error)
-    } finally {
-      setSavingSparePart(false)
-    }
-  }}
-  disabled={savingSparePart}
-  className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
->
-  {savingSparePart ? t('Saving...') : t('Save Spare Part')}
-</button>
-
-{sparePartMessage && (
-  <p className="mt-4 text-sm text-slate-600">
-    {t(sparePartMessage)}
-  </p>
-)}
-
-    </div>
-
-  </div>
-)}
-
-
         {/* Chat area */}
     {/* Help area */}
 {helpMode === 'maintenance' && (
