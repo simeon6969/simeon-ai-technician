@@ -576,7 +576,7 @@ if (!loggedIn) {
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Intelligent Biomedical Technician Friend
+            Intelligence Recovery program
           </p>
         </div>
 
@@ -730,7 +730,7 @@ if (loggedIn && userRole === 'admin') {
           <div>
             <h1 className="text-2xl font-bold">Simeon</h1>
             <p className="text-sm text-slate-300">
-              Intelligent Biomedical Technician Friend
+              Intelligent Technician Friend
             </p>
           </div>
 
@@ -1710,7 +1710,7 @@ if (loggedIn && userRole === 'admin') {
       </h3>
 
       <p className="mt-1 text-sm text-slate-500">
-        Ask Simeon about a biomedical equipment problem.
+        Ask Simeon about a equipment problem.
       </p>
     </div>
 

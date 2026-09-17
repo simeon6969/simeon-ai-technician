@@ -383,3 +383,5 @@ export async function registerUser(fullName, email, phone, password) {
 
   return await response.json()
 }
+
+
