@@ -1,5 +1,6 @@
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
+import AdminChat from './AdminChat'
 import { useEffect, useState } from 'react'
 import {
   createJobCard,
@@ -381,6 +382,7 @@ function AdminDashboard({ onLogout }) {
           > {t("Refresh all")} </button>
         </div>
 
+        <AdminChat />
         <nav className="mb-6 grid gap-2 sm:grid-cols-5">
           {sections.map(([key, label, count]) => (
             <button

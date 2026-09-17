@@ -8,6 +8,8 @@ from backend.models.maintenance_knowledge import MaintenanceKnowledge
 from backend.models.spare_part_requests import SparePartRequest
 from backend.models.spare_parts import SparePart
 from backend.models.users import User
+from backend.schemas.chat import AdminChatRequest
+from backend.services.admin_chat_service import generate_admin_response
 
 
 router = APIRouter(
@@ -23,6 +25,24 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@router.post('/chat')
+def admin_chat(
+    request: AdminChatRequest,
+    admin_id: int = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if not request.message.strip():
+        raise HTTPException(status_code=422, detail='A question is required')
+    try:
+        return generate_admin_response(
+            db, request.message, [turn.model_dump() for turn in request.history],
+            request.language,
+        )
+    except Exception:
+        # Do not expose database errors, query details or service credentials.
+        raise HTTPException(status_code=503, detail='Admin chat is unavailable. Please try again.')
 
 
 @router.get("/job-cards")

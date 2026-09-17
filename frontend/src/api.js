@@ -327,6 +327,14 @@ export function getAdminUsers() {
   return adminRequest('/users')
 }
 
+export function sendAdminChatMessage(message, history, language) {
+  return adminRequest('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, history, language }),
+  })
+}
+
 export function updateAdminUserStatus(userId, isActive) {
   return adminRequest(
     `/users/${userId}/status?is_active=${isActive}`,
