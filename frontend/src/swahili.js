@@ -1,5 +1,9 @@
 const rows = `
 Language|Lugha
+Support email|Barua pepe ya msaada
+Phone|Simu
+All rights reserved.|Haki zote zimehifadhiwa.
+Opens in a new tab|Inafunguka kwenye kichupo kipya
 Post spare part|Chapisha kipuri
 Posted|Kimechapishwa
 Posting...|Inachapisha...

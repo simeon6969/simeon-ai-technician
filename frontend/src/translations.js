@@ -3,6 +3,10 @@ import { swahili } from './swahili.js'
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
 Language|Ururimi|Langue
+Support email|Imeyili y’ubufasha|E-mail d’assistance
+Phone|Telefoni|Téléphone
+All rights reserved.|Uburenganzira bwose burabitswe.|Tous droits réservés.
+Opens in a new tab|Bifungukira mu yindi tabu|S’ouvre dans un nouvel onglet
 Post spare part|Tangaza igice gisimbura|Publier la pièce
 Posted|Byatangajwe|Publiée
 Posting...|Birimo gutangazwa...|Publication...
