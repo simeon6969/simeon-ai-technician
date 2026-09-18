@@ -1,6 +1,37 @@
 # simeon-ai-technician
 Simeon - Intelligent Biomedical Technician Support Platform
 
+Simeon supports installation as a Progressive Web App (PWA) on Android and iOS.
+Production website: https://simeon-frontend.onrender.com
+Production API: https://simeon-api.onrender.com
+The committed `frontend/.env.production` selects this API for production builds;
+local development keeps using `http://127.0.0.1:8000`. Render environment variables
+override this file, so remove or correct any old `VITE_API_BASE_URL` in Render.
+Set backend `ALLOWED_ORIGINS=https://simeon-frontend.onrender.com`.
+In the Render static-site Headers settings, set `/sw.js` to
+`Cache-Control: no-cache` and `/manifest.webmanifest` to
+`Content-Type: application/manifest+json`. The included `_headers` file also
+supports hosts that read that file; do not assume Render applies it automatically.
+The homepage's **Install app** link opens instructions. Supported Android browsers
+also show an Install Simeon button when installation is available. On iPhone/iPad,
+open the site in Safari, choose Share → Add to Home Screen, keep Open as Web App
+enabled if offered, and tap Add. Launch the Simeon icon from the home screen.
+
+Deploy `frontend/dist` at the root of an HTTPS website after building with
+`VITE_API_BASE_URL` set to the public HTTPS backend URL. Include the website origin
+in backend `ALLOWED_ORIGINS`. A phone cannot use the default `127.0.0.1` API URL.
+The deployment must serve `/manifest.webmanifest`, `/sw.js`, `/offline.html`, and
+`/app-icons/*` as actual files, not SPA fallback HTML. Serve `sw.js` with JavaScript
+content type and revalidation (`Cache-Control: no-cache`). The worker registers
+only in production builds; test locally using `npm run build` and `npm run preview`.
+
+The installed app requires internet for account access, chat, listings and saving.
+The worker caches only the static offline page, never API responses or account data.
+App code is loaded from the network so new deployments appear on the next launch
+or reload. This provides website-based installation, not an APK/IPA or store listing.
+App Store/Google Play distribution requires a separate native packaging, signing
+and publishing workflow with developer accounts.
+
 Registration supports Technician (personal), Organization, Institution, Health
 facility, and Other business accounts. All five use the same workspace, displaying
 the account's registered name and type. For shared accounts, Simeon asks for the

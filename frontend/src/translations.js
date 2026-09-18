@@ -3,6 +3,7 @@ import { swahili } from './swahili.js'
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
 Language|Ururimi|Langue
+Install app|Shyiramo porogaramu|Installer l’application
 Price not provided|Igiciro nticyatanzwe|Prix non indiqué
 View on homepage|Reba ku rupapuro rw’ibanze|Voir sur la page d’accueil
 Account type|Ubwoko bwa konti|Type de compte

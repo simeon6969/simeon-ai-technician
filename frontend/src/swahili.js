@@ -1,5 +1,6 @@
 const rows = `
 Language|Lugha
+Install app|Sakinisha programu
 Price not provided|Bei haijawekwa
 View on homepage|Tazama kwenye ukurasa wa mwanzo
 Account type|Aina ya akaunti
