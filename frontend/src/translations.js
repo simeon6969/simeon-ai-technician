@@ -2,6 +2,13 @@ import { swahili } from './swahili.js'
 
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
+Items for sale|Ibintu bigurishwa|Articles à vendre
+Not posted|Ntibiratangazwa|Non publié
+No items for sale.|Nta bintu bigurishwa.|Aucun article à vendre.
+Delete this account and its job cards, knowledge, spare parts, sale items, requests and chats? This cannot be undone.|Gusiba iyi konti n’amafishi y’akazi, ubumenyi, ibikoresho, ibintu bigurishwa, ubusabe n’ibiganiro byayo? Ntibishobora gusubizwa.|Supprimer ce compte et ses fiches, connaissances, pièces, articles, demandes et conversations ? Cette action est irréversible.
+Delete this job card and its maintenance knowledge? This cannot be undone.|Gusiba iri fishi ry’akazi n’ubumenyi bujyanye na ryo? Ntibishobora gusubizwa.|Supprimer cette fiche et les connaissances associées ? Cette action est irréversible.
+Delete this spare part, its public post and related requests? This cannot be undone.|Gusiba iki gikoresho, itangazo ryacyo n’ubusabe bujyanye na cyo? Ntibishobora gusubizwa.|Supprimer cette pièce, son annonce et les demandes associées ? Cette action est irréversible.
+Delete this sale item and its public post? This cannot be undone.|Gusiba iki kintu kigurishwa n’itangazo ryacyo? Ntibishobora gusubizwa.|Supprimer cet article et son annonce ? Cette action est irréversible.
 Language|Ururimi|Langue
 Install app|Shyiramo porogaramu|Installer l’application
 Price not provided|Igiciro nticyatanzwe|Prix non indiqué

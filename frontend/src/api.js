@@ -334,6 +334,14 @@ export function getAdminUsers() {
   return adminRequest('/users')
 }
 
+export function getAdminSaleItems() {
+  return adminRequest('/sale-items')
+}
+
+export function deleteAdminRecord(collection, id) {
+  return adminRequest(`/${collection}/${id}`, { method: 'DELETE' })
+}
+
 export async function saleItemsRequest(path, method = 'GET', data) {
   const response = await fetch(`${API_BASE_URL}/sale-items${path}`, {
     method, headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },

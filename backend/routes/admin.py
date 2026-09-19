@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, aliased
+from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 
 from backend.auth import require_admin
 from backend.database import SessionLocal
@@ -8,6 +10,8 @@ from backend.models.maintenance_knowledge import MaintenanceKnowledge
 from backend.models.spare_part_requests import SparePartRequest
 from backend.models.spare_parts import SparePart
 from backend.models.users import User
+from backend.models.sale_items import SaleItem
+from backend.models.chat import ChatSession, ChatMessage
 from backend.schemas.chat import AdminChatRequest
 from backend.services.admin_chat_service import generate_admin_response
 
@@ -25,6 +29,87 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def commit_deletion(db):
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Related records changed. Refresh and try again.')
+
+
+@router.delete('/users/{user_id}')
+def delete_admin_user(user_id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.user_id == user_id).with_for_update().first()
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    if user.role == 'admin':
+        raise HTTPException(status_code=403, detail='Admin accounts cannot be deleted')
+    try:
+        cards = select(JobCard.job_card_id).where(JobCard.technician_id == user_id)
+        parts = select(SparePart.spare_part_id).where(SparePart.submitted_by == user_id)
+        sessions = select(ChatSession.session_id).where(ChatSession.user_id == user_id)
+        db.query(MaintenanceKnowledge).filter(MaintenanceKnowledge.source_job_card_id.in_(cards)).delete(synchronize_session=False)
+        db.query(JobCard).filter(JobCard.technician_id == user_id).delete(synchronize_session=False)
+        db.query(SparePartRequest).filter(or_(
+            SparePartRequest.requester_id == user_id,
+            SparePartRequest.supplier_technician_id == user_id,
+            SparePartRequest.spare_part_id.in_(parts),
+        )).delete(synchronize_session=False)
+        db.query(SparePart).filter(SparePart.submitted_by == user_id).delete(synchronize_session=False)
+        db.query(SaleItem).filter(SaleItem.seller_id == user_id).delete(synchronize_session=False)
+        db.query(ChatMessage).filter(ChatMessage.session_id.in_(sessions)).delete(synchronize_session=False)
+        db.query(ChatSession).filter(ChatSession.user_id == user_id).delete(synchronize_session=False)
+        db.delete(user)
+        commit_deletion(db)
+    except Exception:
+        db.rollback()
+        raise
+    return {'user_id': user_id}
+
+
+@router.delete('/job-cards/{job_card_id}')
+def delete_admin_job_card(job_card_id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+    card = db.get(JobCard, job_card_id)
+    if not card:
+        raise HTTPException(status_code=404, detail='Job card not found')
+    db.query(MaintenanceKnowledge).filter(MaintenanceKnowledge.source_job_card_id == job_card_id).delete(synchronize_session=False)
+    db.delete(card)
+    commit_deletion(db)
+    return {'job_card_id': job_card_id}
+
+
+@router.delete('/spare-parts/{spare_part_id}')
+def delete_admin_spare_part(spare_part_id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+    part = db.get(SparePart, spare_part_id)
+    if not part:
+        raise HTTPException(status_code=404, detail='Spare part not found')
+    db.query(SparePartRequest).filter(SparePartRequest.spare_part_id == spare_part_id).delete(synchronize_session=False)
+    db.delete(part)
+    commit_deletion(db)
+    return {'spare_part_id': spare_part_id}
+
+
+@router.get('/sale-items')
+def get_admin_sale_items(admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+    items = db.query(SaleItem, User.full_name).join(User, SaleItem.seller_id == User.user_id).order_by(SaleItem.created_at.desc()).all()
+    return [{
+        'item_id': item.item_id, 'seller_id': item.seller_id, 'seller_name': name,
+        'name': item.name, 'description': item.description, 'price': str(item.price),
+        'currency': item.currency, 'photo_data': item.photo_data,
+        'posted_at': item.posted_at, 'created_at': item.created_at,
+    } for item, name in items]
+
+
+@router.delete('/sale-items/{item_id}')
+def delete_admin_sale_item(item_id: int, admin_id: int = Depends(require_admin), db: Session = Depends(get_db)):
+    item = db.get(SaleItem, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail='Sale item not found')
+    db.delete(item)
+    commit_deletion(db)
+    return {'item_id': item_id}
 
 
 @router.post('/chat')

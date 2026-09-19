@@ -23,6 +23,8 @@ import {
   registerUser,
   getMyProfile,
   getAdminUsers,
+  getAdminSaleItems,
+  deleteAdminRecord,
   updateAdminUserStatus,
   getAdminJobCards,
   getAdminKnowledge,
@@ -86,6 +88,8 @@ function AdminDashboard({ onLogout, onHome }) {
   const [knowledge, setKnowledge] = useState([])
   const [spareParts, setSpareParts] = useState([])
   const [requests, setRequests] = useState([])
+  const [saleItems, setSaleItems] = useState([])
+  const [deleting, setDeleting] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatingUserId, setUpdatingUserId] = useState(null)
@@ -95,19 +99,21 @@ function AdminDashboard({ onLogout, onHome }) {
     try {
       setLoading(true)
       setError('')
-      const [loadedUsers, loadedCards, loadedKnowledge, loadedParts, loadedRequests] =
+      const [loadedUsers, loadedCards, loadedKnowledge, loadedParts, loadedRequests, loadedItems] =
         await Promise.all([
           getAdminUsers(),
           getAdminJobCards(),
           getAdminKnowledge(),
           getAdminSpareParts(),
           getAdminSparePartRequests(),
+          getAdminSaleItems(),
         ])
       setUsers(loadedUsers)
       setJobCards(loadedCards)
       setKnowledge(loadedKnowledge)
       setSpareParts(loadedParts)
       setRequests(loadedRequests)
+      setSaleItems(loadedItems)
     } catch (loadError) {
       setError(loadError.message || 'Unable to load the admin dashboard.')
     } finally {
@@ -128,8 +134,43 @@ function AdminDashboard({ onLogout, onHome }) {
     ['job-cards', 'Job Cards', jobCards.length],
     ['knowledge', 'Knowledge', knowledge.length],
     ['spare-parts', 'Spare Parts', spareParts.length],
+    ['sale-items', 'Items for sale', saleItems.length],
     ['requests', 'Requests', requests.length],
   ]
+
+  function deleteButton(collection, id, name, warning) {
+    const key = `${collection}/${id}`
+    return <button type="button" disabled={deleting !== null} onClick={async () => {
+      if (!window.confirm(`${name}\n\n${t(warning)}`)) return
+      setDeleting(key)
+      setError('')
+      try {
+        await deleteAdminRecord(collection, id)
+        await loadDashboard()
+      } catch (deleteError) {
+        setError(deleteError.message || 'Admin request failed')
+      } finally {
+        setDeleting(null)
+      }
+    }} className="mt-3 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50">
+      {t(deleting === key ? 'Deleting...' : 'Delete')}
+    </button>
+  }
+
+  function renderSaleItems() {
+    return <div className="grid gap-3">
+      {saleItems.length === 0 && <p className="text-sm text-slate-500">{t('No items for sale.')}</p>}
+      {saleItems.map(item => <div key={item.item_id} className="rounded-xl border border-slate-200 p-5">
+        <h3 className="font-semibold text-slate-900">{item.name}</h3>
+        <p className="mt-2 text-sm text-slate-600">{item.seller_name} · #{item.seller_id}</p>
+        <p className="mt-2 font-medium">{item.price} {item.currency}</p>
+        <p className="mt-2 text-sm text-slate-600">{t(item.posted_at ? 'Posted' : 'Not posted')}</p>
+        <p className="mt-2 text-sm text-slate-700">{item.description}</p>
+        {item.photo_data && <img src={item.photo_data} alt={item.name} className="mt-3 max-h-48 rounded-lg object-contain" />}
+        {deleteButton('sale-items', item.item_id, item.name, 'Delete this sale item and its public post? This cannot be undone.')}
+      </div>)}
+    </div>
+  }
 
   function renderUsers() {
     return (
@@ -167,6 +208,7 @@ function AdminDashboard({ onLogout, onHome }) {
             </div>
             <p className="mt-3 text-xs text-slate-500"> {t("Account status:")} {user.is_active ? t('Active') : t('Inactive')}
             </p>
+            {user.role !== 'admin' && deleteButton('users', user.user_id, `${user.full_name} (${user.email})`, 'Delete this account and its job cards, knowledge, spare parts, sale items, requests and chats? This cannot be undone.')}
           </div>
         ))}
       </div>
@@ -190,6 +232,7 @@ function AdminDashboard({ onLogout, onHome }) {
             <p className="mt-2 text-sm text-slate-600">{card.account_name} · {t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
             <p className="mt-2 text-sm text-slate-600"> {t("Outcome:")} {card.successful ? t('Successful') : t('Not confirmed')}
             </p>
+            {deleteButton('job-cards', card.job_card_id, `${t('Job Card #')}${card.job_card_id}`, 'Delete this job card and its maintenance knowledge? This cannot be undone.')}
           </div>
         ))}
       </div>
@@ -229,6 +272,7 @@ function AdminDashboard({ onLogout, onHome }) {
             <p className="mt-2 text-sm text-slate-600">{t("Part number:")} {part.part_number || t('Not provided')}</p>
             <p className="mt-1 text-sm text-slate-600">{t("Stored by technician #")}{part.submitted_by}</p>
             <p className="mt-3 text-sm text-slate-800">{part.description || t('No description provided')}</p>
+            {deleteButton('spare-parts', part.spare_part_id, part.part_name, 'Delete this spare part, its public post and related requests? This cannot be undone.')}
           </div>
         ))}
       </div>
@@ -299,6 +343,7 @@ function AdminDashboard({ onLogout, onHome }) {
     'job-cards': renderJobCards,
     knowledge: renderKnowledge,
     'spare-parts': renderSpareParts,
+    'sale-items': renderSaleItems,
     requests: renderRequests,
   }[activeSection]()
 
@@ -332,7 +377,7 @@ function AdminDashboard({ onLogout, onHome }) {
         </div>
 
         <AdminChat />
-        <nav className="mb-6 grid gap-2 sm:grid-cols-5">
+        <nav className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {sections.map(([key, label, count]) => (
             <button
               key={key}

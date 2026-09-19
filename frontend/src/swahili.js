@@ -1,4 +1,11 @@
 const rows = `
+Items for sale|Bidhaa za kuuza
+Not posted|Haijachapishwa
+No items for sale.|Hakuna bidhaa za kuuza.
+Delete this account and its job cards, knowledge, spare parts, sale items, requests and chats? This cannot be undone.|Ufute akaunti hii pamoja na kadi za kazi, maarifa, vipuri, bidhaa, maombi na mazungumzo yake? Huwezi kutengua hatua hii.
+Delete this job card and its maintenance knowledge? This cannot be undone.|Ufute kadi hii ya kazi na maarifa yake ya matengenezo? Huwezi kutengua hatua hii.
+Delete this spare part, its public post and related requests? This cannot be undone.|Ufute kipuri hiki, tangazo lake na maombi yanayohusiana? Huwezi kutengua hatua hii.
+Delete this sale item and its public post? This cannot be undone.|Ufute bidhaa hii na tangazo lake? Huwezi kutengua hatua hii.
 Language|Lugha
 Install app|Sakinisha programu
 Price not provided|Bei haijawekwa
