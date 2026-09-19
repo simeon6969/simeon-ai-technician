@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Private mobile signing material and local builds
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+keystore.properties
+*.apk
+*.aab
+*.ipa

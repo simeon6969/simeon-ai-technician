@@ -1,0 +1,13 @@
+{
+  "appId": "online.simeon.app",
+  "appName": "Simeon",
+  "webDir": "dist",
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  },
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  }
+}

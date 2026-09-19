@@ -31,8 +31,9 @@ import {
   updateAdminSparePartRequest,
 } from './api'
 import { jsPDF } from 'jspdf'
+import { exportPdf } from './exportPdf'
 
-function downloadJobCardPdf(card) {
+async function downloadJobCardPdf(card) {
   const pdf = new jsPDF()
   const lines = [
     `Job Card #${card.job_card_id}`,
@@ -75,7 +76,7 @@ function downloadJobCardPdf(card) {
     pdf.addImage(card.photo_data, 'PNG', 20, y, 100, 75)
   }
 
-  pdf.save(`simeon-job-card-${card.job_card_id}.pdf`)
+  await exportPdf(pdf, `simeon-job-card-${card.job_card_id}.pdf`)
 }
 
 function AdminDashboard({ onLogout, onHome }) {
@@ -877,7 +878,9 @@ if (storeConversation) {
                 <div className="mt-4 flex flex-col items-start gap-3">
                   <p className="text-sm text-slate-600">{t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
                   <button
-                    onClick={() => downloadJobCardPdf(card)}
+                    onClick={() => downloadJobCardPdf(card).catch((error) => {
+                      setJobCardsError(error.message || 'Unable to export PDF')
+                    })}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   > {t("Download PDF")} </button>
 

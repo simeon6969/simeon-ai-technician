@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getPublicSaleItems } from './api'
 import { useLanguage } from './language'
+import { Capacitor } from '@capacitor/core'
 import LanguageSwitcher from './LanguageSwitcher'
 import { homeCopy } from './homeCopy'
 
@@ -44,7 +45,7 @@ export default function HomePage({ loggedIn, onEnter, onRegister }) {
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5">
         <a href="#home" className="flex items-center gap-3 text-2xl font-bold tracking-tight"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-white">S</span>Simeon<span className="text-teal-700">.</span></a>
-        <nav aria-label={c.home} className="flex flex-wrap items-center gap-5 text-sm font-medium text-slate-600"><a href="#home" className="hover:text-teal-700">{c.home}</a><a href="#sales-board" className="hover:text-teal-700">{c.board}</a><a href="#how-it-works" className="hover:text-teal-700">{c.how}</a><a href="#install-app" className="hover:text-teal-700">{t('Install app')}</a></nav>
+        <nav aria-label={c.home} className="flex flex-wrap items-center gap-5 text-sm font-medium text-slate-600"><a href="#home" className="hover:text-teal-700">{c.home}</a><a href="#sales-board" className="hover:text-teal-700">{c.board}</a><a href="#how-it-works" className="hover:text-teal-700">{c.how}</a>{!Capacitor.isNativePlatform() && <a href="#install-app" className="hover:text-teal-700">{t('Install app')}</a>}</nav>
         <div className="flex flex-wrap items-center gap-3"><LanguageSwitcher /><button onClick={onEnter} className={primary}>{loggedIn ? c.enter : c.login} <span aria-hidden="true">↗</span></button></div>
       </div>
     </header>

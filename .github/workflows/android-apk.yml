@@ -1,0 +1,67 @@
+name: Android test APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, android-apk]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/android-apk.yml'
+permissions:
+  contents: read
+concurrency:
+  group: android-test-apk
+  cancel-in-progress: false
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: simeon-android-debug-key-v1
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build && npx cap sync android
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: https://simeon-api.onrender.com
+      - run: bash gradlew assembleDebug
+        working-directory: frontend/android
+      - name: Prepare download
+        run: |
+          cp frontend/android/app/build/outputs/apk/debug/app-debug.apk Simeon-test.apk
+          sha256sum Simeon-test.apk > Simeon-test.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simeon-android-test-apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish Android test download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="android-test-${GITHUB_RUN_NUMBER}"
+          cat > release-notes.md <<'NOTES'
+          Android test version of Simeon. Download Simeon-test.apk on your Android phone, open it and allow installation from that source when prompted.
+
+          This connects to the live Simeon API: use your existing account. Internet is required. Any records you create are real records.
+
+          This is a debug-signed test APK, not a Google Play production release. Device testing is still required. A later production version may require uninstalling this test app first.
+          NOTES
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "Simeon Android test ${GITHUB_RUN_NUMBER}" --notes-file release-notes.md
+          gh release upload "$TAG" Simeon-test.apk Simeon-test.apk.sha256 --clobber
