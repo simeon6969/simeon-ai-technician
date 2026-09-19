@@ -1,0 +1,13 @@
+const fs = require('node:fs')
+const path = require('node:path')
+const crypto = require('node:crypto')
+
+const installer = path.join(__dirname, 'release', 'Simeon-Setup.exe')
+const bytes = fs.readFileSync(installer)
+if (bytes.subarray(0, 2).toString() !== 'MZ') throw new Error('Installer is not a Windows executable')
+const checksum = crypto.createHash('sha256').update(bytes).digest('hex')
+fs.writeFileSync(`${installer}.sha256`, `${checksum}  Simeon-Setup.exe\n`)
+const downloads = path.join(__dirname, '..', 'frontend', 'public', 'downloads')
+fs.mkdirSync(downloads, { recursive: true })
+fs.copyFileSync(installer, path.join(downloads, 'Simeon-Setup.exe'))
+console.log(`Windows installer ready (${(bytes.length / 1000000).toFixed(1)} MB); SHA-256: ${checksum}`)
