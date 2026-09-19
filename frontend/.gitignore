@@ -32,3 +32,4 @@ keystore.properties
 *.apk
 *.aab
 *.ipa
+/public/downloads/*.exe
