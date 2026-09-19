@@ -38,10 +38,17 @@ jobs:
           key: simeon-android-debug-key-v1
       - run: npm ci
         working-directory: frontend
+      - run: node --test src/androidUpdates.test.js
+        working-directory: frontend
       - run: npm run build && npx cap sync android
         working-directory: frontend
         env:
           VITE_API_BASE_URL: https://simeon-api.onrender.com
+          VITE_ANDROID_BUILD_NUMBER: ${{ github.run_number }}
+      - name: Set increasing Android version
+        run: |
+          sed -i "s/versionCode [0-9]*/versionCode ${GITHUB_RUN_NUMBER}/" frontend/android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${GITHUB_RUN_NUMBER}\"/" frontend/android/app/build.gradle
       - run: bash gradlew assembleDebug
         working-directory: frontend/android
       - name: Prepare download
