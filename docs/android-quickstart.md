@@ -1,5 +1,11 @@
 # Install the Simeon Android test app
 
+[Download Simeon-test.apk (about 4.7 MB)](https://github.com/simeon6969/simeon-ai-technician/releases/download/android-test-2/Simeon-test.apk)
+
+Build 2 completed successfully on GitHub. This link downloads the APK directly;
+the [release page](https://github.com/simeon6969/simeon-ai-technician/releases/tag/android-test-2)
+also includes its checksum. Android 7 or newer is required.
+
 1. Open the repository's Android test release link on your Android phone.
 2. Download **Simeon-test.apk** and open the downloaded file.
 3. If Android asks, allow this browser/file manager to install the app, then tap Install.
