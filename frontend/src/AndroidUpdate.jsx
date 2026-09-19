@@ -9,7 +9,7 @@ const copy = {
   sw: ['Sasisha programu', 'Inatafuta sasisho...', 'Pakua sasisho', 'Una toleo jipya zaidi.', 'Imeshindwa kutafuta sasisho. Angalia intaneti na ujaribu tena.', 'Baada ya kupakua, fungua APK na uchague Install au Update. Akaunti yako haibadiliki.'],
 }
 
-export default function AndroidUpdate() {
+export default function AndroidUpdate({ website = false }) {
   const { language } = useLanguage()
   const words = copy[language] || copy.en
   const [status, setStatus] = useState('idle')
@@ -22,7 +22,9 @@ export default function AndroidUpdate() {
     try {
       const response = await fetch(releasesUrl, { signal: controller.signal, headers: { Accept: 'application/vnd.github+json' } })
       if (!response.ok) throw new Error('Update check failed')
-      const latest = newestAndroidUpdate(await response.json(), Number(import.meta.env.VITE_ANDROID_BUILD_NUMBER))
+      // Browsers cannot read the version installed on a phone; offer the latest APK.
+      const latest = newestAndroidUpdate(await response.json(), website ? 0 : Number(import.meta.env.VITE_ANDROID_BUILD_NUMBER))
+      if (website && !latest) throw new Error('No Android download available')
       setUpdate(latest)
       setStatus(latest ? 'available' : 'current')
     } catch {
@@ -32,7 +34,7 @@ export default function AndroidUpdate() {
     }
   }
   const style = 'rounded-xl bg-teal-700 px-5 py-3 font-semibold text-white disabled:opacity-60'
-  return <section className="border-t border-teal-100 bg-teal-50 px-6 py-6">
+  return <section className={website ? 'max-w-md' : 'border-t border-teal-100 bg-teal-50 px-6 py-6'}>
     <div className="mx-auto max-w-6xl">
       <button type="button" onClick={check} disabled={status === 'checking'} className={style}>{words[status === 'checking' ? 1 : 0]}</button>
       <div role="status" aria-live="polite" className="mt-3 text-sm text-slate-700">

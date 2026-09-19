@@ -11,6 +11,10 @@ test('selects newest uploaded Android APK, ignoring Windows, drafts and incomple
 test('never downgrades or offers the installed release', () => {
   assert.equal(newestAndroidUpdate([release(3), release(4)], 4), null)
 })
+test('website offers the latest APK without knowing the installed phone version', () => {
+  assert.equal(newestAndroidUpdate([release(3), release(5), release(4)], 0).build, 5)
+  assert.equal(newestAndroidUpdate([], 0), null)
+})
 test('rejects unexpected download destinations', () => {
   const item = release(5)
   item.assets[0].browser_download_url = 'https://example.com/app.apk'

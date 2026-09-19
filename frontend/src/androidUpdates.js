@@ -1,7 +1,7 @@
 export const releasesUrl = 'https://api.github.com/repos/simeon6969/simeon-ai-technician/releases?per_page=100'
 
 export function newestAndroidUpdate(releases, installedBuild) {
-  if (!Array.isArray(releases) || !Number.isSafeInteger(installedBuild) || installedBuild < 1) {
+  if (!Array.isArray(releases) || !Number.isSafeInteger(installedBuild) || installedBuild < 0) {
     throw new Error('Invalid update information')
   }
   return releases.flatMap(release => {
