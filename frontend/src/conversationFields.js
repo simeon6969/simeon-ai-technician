@@ -13,6 +13,8 @@ export const jobFields = [
 
 export const partFields = [
   ['part_name', 'Part Name', 'Example: Sample probe', true],
+  ['price', 'Asking price', 'How much would you like to be paid for this spare part?', true, 'price'],
+  ['currency', 'Currency', '', true, 'currency'],
   ['part_number', 'Part Number', 'Example: PN-12345'],
   ['manufacturer', 'Manufacturer', 'Example: HUMAN'],
   ['compatible_equipment', 'Compatible Equipment', 'Example: Humacount 30TS'],

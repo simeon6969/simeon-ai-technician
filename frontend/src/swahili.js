@@ -1,4 +1,8 @@
 const rows = `
+Asking price|Bei unayotaka
+Currency|Sarafu
+How much would you like to be paid for this spare part?|Ungependa kulipwa kiasi gani kwa kipuri hiki?
+Enter a price greater than zero with at most two decimal places.|Weka bei kubwa kuliko sifuri yenye nafasi zisizozidi mbili za desimali.
 Items for sale|Bidhaa za kuuza
 Not posted|Haijachapishwa
 No items for sale.|Hakuna bidhaa za kuuza.

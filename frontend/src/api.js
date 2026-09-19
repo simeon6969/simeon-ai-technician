@@ -144,6 +144,8 @@ export async function createSparePart(sparePart) {
       equipment_id: sparePart.equipment_id || null,
       part_number: sparePart.part_number || null,
       part_name: sparePart.part_name,
+      price: sparePart.price || null,
+      currency: sparePart.currency || 'RWF',
       manufacturer: sparePart.manufacturer || null,
       description: sparePart.description || null,
       specifications: sparePart.specifications || null,

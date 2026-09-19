@@ -1,4 +1,6 @@
 from datetime import datetime
+from decimal import Decimal
+from sqlalchemy import Numeric
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -10,6 +12,8 @@ class SparePart(Base):
     __tablename__ = "spare_parts"
 
     posted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    price: Mapped[Decimal | None] = mapped_column(Numeric(14, 2), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default='RWF', server_default='RWF')
 
     spare_part_id: Mapped[int] = mapped_column(
         Integer,

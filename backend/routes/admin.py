@@ -255,6 +255,8 @@ def get_all_spare_parts(
             "equipment_id": part.equipment_id,
             "part_number": part.part_number,
             "part_name": part.part_name,
+            "price": str(part.price) if part.price is not None else None,
+            "currency": part.currency,
             "manufacturer": part.manufacturer,
             "description": part.description,
             "specifications": part.specifications,
@@ -300,6 +302,8 @@ def get_spare_part_requests(
             "spare_part_id": request.spare_part_id,
             "spare_part": {
                 "part_name": part.part_name,
+            "price": str(part.price) if part.price is not None else None,
+            "currency": part.currency,
                 "part_number": part.part_number,
                 "manufacturer": part.manufacturer,
                 "description": part.description,

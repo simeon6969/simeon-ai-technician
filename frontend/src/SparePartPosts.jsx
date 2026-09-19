@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getSparePartPosts, postSparePart } from './api'
 import { useLanguage } from './language'
+import SparePartPrice from './SparePartPrice'
 
 export function PostSparePartButton({ part, onPosted }) {
   const { t } = useLanguage()
@@ -48,6 +49,7 @@ export default function SparePartPosts() {
       {!busy && !error && !posts.length && <p className="mt-3 text-slate-500">{t('No spare parts have been posted yet.')}</p>}
       <div className="mt-4 grid gap-4 md:grid-cols-2">{posts.map((post) => <article key={post.spare_part_id} className="rounded-xl border border-slate-200 p-5">
         <h4 className="font-semibold">{post.part_name}</h4>
+        <SparePartPrice part={post} />
         <p className="mt-1 text-sm text-slate-500">{t('Technician')}: {post.technician_name} · {new Date(post.posted_at + (/Z|[+-]\d\d:\d\d$/.test(post.posted_at) ? '' : 'Z')).toLocaleString(language)}</p>
         <p className="my-2 text-sm font-medium">{t(post.availability_status)}</p>
         {post.photo_data && <img src={post.photo_data} alt={post.part_name} className="mb-3 max-h-48 rounded-lg object-contain" />}

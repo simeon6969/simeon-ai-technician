@@ -1,5 +1,6 @@
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
+import SparePartPrice from './SparePartPrice'
 import AdminChat from './AdminChat'
 import StoreConversation from './StoreConversation'
 import SparePartPosts, { PostSparePartButton } from './SparePartPosts'
@@ -265,6 +266,7 @@ function AdminDashboard({ onLogout, onHome }) {
           <div key={part.spare_part_id} className="rounded-xl border border-slate-200 p-5">
             <div className="flex flex-wrap justify-between gap-3">
               <h3 className="font-semibold text-slate-900">{part.part_name}</h3>
+              <SparePartPrice part={part} />
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                 {t(part.availability_status)}
               </span>
@@ -1047,6 +1049,7 @@ if (storeConversation) {
                     <h4 className="font-semibold text-slate-900">
                       {part.part_name}
                     </h4>
+              <SparePartPrice part={part} />
                     <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
                     </p>
                   </div>
@@ -1245,6 +1248,7 @@ if (storeConversation) {
               <h4 className="font-semibold text-slate-900">
                 {part.part_name}
               </h4>
+              <SparePartPrice part={part} />
               <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
               </p>
             </div>
@@ -1362,6 +1366,7 @@ if (storeConversation) {
               </p>
               <p className="mt-1 text-slate-600"> {t("Request #")}{request.request_id}
               </p>
+              <SparePartPrice part={request} />
               <dl className="mt-3 grid gap-1 text-slate-600">
                 <div>{t("Availability:")} {t(request.availability_status) || t('Not provided')}</div>
                 <div>{t("Manufacturer:")} {request.manufacturer || t('Not provided')}</div>

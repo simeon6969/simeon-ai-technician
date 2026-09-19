@@ -16,6 +16,35 @@ class SaleItemTests(unittest.TestCase):
     def tearDown(self):
         test_spare_part_posts.PostTests.tearDown(self)
 
+    def test_spare_part_price_survives_storage_and_public_post(self):
+        from decimal import Decimal
+        from backend.routes.admin import get_all_spare_parts
+        response = self.client.post('/spare-parts/', json={'part_name': 'Priced pump', 'price': '12345.67', 'currency': 'USD'})
+        self.assertEqual(response.status_code, 200)
+        part_id = response.json()['spare_part_id']
+        for path in ['/spare-parts/my', '/spare-parts/?search=Priced']:
+            part = next(row for row in self.client.get(path).json() if row['spare_part_id'] == part_id)
+            self.assertEqual(Decimal(part['price']), Decimal('12345.67'))
+            self.assertEqual(part['currency'], 'USD')
+        self.assertEqual(self.client.get('/sale-items/public').json()['total'], 0)
+        self.client.post(f'/spare-parts/{part_id}/post')
+        for path, key in [('/spare-parts/posts', 'posts'), ('/sale-items/public', 'items')]:
+            part = self.client.get(path).json()[key][0]
+            self.assertEqual(Decimal(str(part['price'])), Decimal('12345.67'))
+            self.assertEqual(part['currency'], 'USD')
+        part = next(row for row in get_all_spare_parts(admin_id=1, db=self.db) if row['spare_part_id'] == part_id)
+        self.assertEqual(part['price'], '12345.67')
+        self.assertIsNone(self.client.get('/spare-parts/1').json()['price'])
+
+    def test_spare_part_price_validation_and_older_clients(self):
+        for price in ['0', '-1', '12.345', 'NaN', 'Infinity', '1000000000000']:
+            response = self.client.post('/spare-parts/', json={'part_name': 'Pump', 'price': price})
+            self.assertEqual(response.status_code, 422, price)
+        self.assertEqual(self.client.post('/spare-parts/', json={'part_name': 'Pump', 'price': '10', 'currency': 'BAD'}).status_code, 422)
+        response = self.client.post('/spare-parts/', json={'part_name': 'Older app'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()['price'])
+
     def test_sale_lifecycle_and_ownership(self):
         response = self.client.post('/sale-items/', json=self.payload)
         self.assertEqual(response.status_code, 200)
