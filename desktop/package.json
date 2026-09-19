@@ -1,0 +1,48 @@
+{
+  "name": "simeon-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simeon technician workspace for Windows",
+  "author": "Simeon",
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win nsis --x64 --publish never && node prepare-download.cjs",
+    "build:signed": "electron-builder --win nsis --x64 --publish never --config.forceCodeSigning=true && node prepare-download.cjs",
+    "smoke": "node smoke.cjs",
+    "test": "node --test"
+  },
+  "build": {
+    "appId": "online.simeon.desktop",
+    "productName": "Simeon",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "navigation.cjs",
+      "offline.html",
+      "icon.png"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.png",
+      "artifactName": "Simeon-Setup.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Simeon",
+      "runAfterFinish": false
+    }
+  },
+  "devDependencies": {
+    "electron": "44.4.3",
+    "electron-builder": "26.15.3",
+    "playwright-core": "1.63.0"
+  }
+}
