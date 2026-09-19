@@ -2,6 +2,10 @@ import { swahili } from './swahili.js'
 
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
+Asking price|Igiciro wifuza|Prix demandé
+Currency|Ifaranga|Devise
+How much would you like to be paid for this spare part?|Ni angahe wifuza guhabwa kuri iki gikoresho?|Quel prix souhaitez-vous recevoir pour cette pièce ?
+Enter a price greater than zero with at most two decimal places.|Andika igiciro kirenze zeru gifite imibare itarenze ibiri nyuma y’akadomo.|Saisissez un prix supérieur à zéro avec deux décimales au maximum.
 Items for sale|Ibintu bigurishwa|Articles à vendre
 Not posted|Ntibiratangazwa|Non publié
 No items for sale.|Nta bintu bigurishwa.|Aucun article à vendre.

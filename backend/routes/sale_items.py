@@ -4,7 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, literal, String, Numeric, cast
+from sqlalchemy import or_, literal, String, cast
 from backend.models.spare_parts import SparePart
 from backend.auth import get_current_user_id
 from backend.routes.spare_parts import get_db
@@ -59,7 +59,7 @@ def public_posts(
     ).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
     parts = db.query(
         SparePart.spare_part_id, SparePart.part_name, SparePart.description,
-        cast(literal(None), Numeric(14, 2)), cast(literal(None), String),
+        SparePart.price, SparePart.currency,
         SparePart.photo_data, SparePart.posted_at, User.full_name,
         literal('spare_part'), SparePart.availability_status,
     ).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))

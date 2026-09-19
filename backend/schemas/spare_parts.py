@@ -1,4 +1,7 @@
 import json
+from decimal import Decimal
+from typing import Literal
+from pydantic import Field
 
 from pydantic import BaseModel, field_validator
 
@@ -56,6 +59,8 @@ def validate_attachments_data(value: str | None) -> str | None:
 
 
 class SparePartCreate(BaseModel):
+    price: Decimal | None = Field(default=None, gt=0, max_digits=14, decimal_places=2)
+    currency: Literal['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'] = 'RWF'
     equipment_id: int | None = None
     part_number: str | None = None
     part_name: str

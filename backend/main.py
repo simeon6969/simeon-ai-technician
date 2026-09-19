@@ -53,6 +53,8 @@ def create_missing_tables():
 
     with engine.begin() as connection:
         migrate_account_roles(connection)
+        connection.exec_driver_sql("ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS price NUMERIC(14,2)")
+        connection.exec_driver_sql("ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS currency VARCHAR(3) NOT NULL DEFAULT 'RWF'")
         connection.exec_driver_sql("ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS account_name VARCHAR(150)")
         connection.exec_driver_sql("ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS submitter_name VARCHAR(150)")
         connection.exec_driver_sql("UPDATE job_cards SET account_name = users.full_name FROM users WHERE job_cards.technician_id = users.user_id AND job_cards.account_name IS NULL")
