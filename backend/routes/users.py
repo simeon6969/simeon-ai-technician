@@ -1,3 +1,4 @@
+from backend.routes.subscriptions import selected_subscription
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -41,6 +42,7 @@ def register_user(
             detail="Email already registered"
         )
 
+    subscription = selected_subscription(user_data.subscription, db)
     new_user = User(
         full_name=user_data.full_name,
         email=user_data.email,
@@ -52,6 +54,10 @@ def register_user(
 
     db.add(new_user)
     try:
+        db.flush()
+        if subscription is not None:
+            subscription.user_id = new_user.user_id
+            db.add(subscription)
         db.commit()
     except IntegrityError as error:
         db.rollback()
@@ -103,6 +109,8 @@ def login_user(
             detail="Invalid email or password"
         )
 
+    from backend.subscription_access import check_subscription
+    check_subscription(user, db)
     access_token = create_access_token(user.user_id)
 
     return {

@@ -1,3 +1,4 @@
+from backend.routes.subscriptions import Selection
 from typing import Literal
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -15,6 +16,7 @@ class UserCreate(AccountSetup):
     full_name: str = Field(min_length=1, max_length=150)
     email: EmailStr
     phone: str | None = None
+    subscription: Selection | None = None
     password: str
 
     @field_validator('full_name')

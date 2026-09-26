@@ -57,6 +57,9 @@ app.include_router(admin_manage_router)
 @app.on_event("startup")
 def create_missing_tables():
     Base.metadata.create_all(bind=engine)
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as connection:
+            connection.exec_driver_sql("ALTER TABLE account_subscriptions ADD COLUMN IF NOT EXISTS payment_required BOOLEAN NOT NULL DEFAULT FALSE")
 
     with engine.begin() as connection:
         migrate_account_roles(connection)
@@ -113,3 +116,6 @@ app.include_router(delivery_router)
 
 from backend.routes.recovery import router as recovery_router
 app.include_router(recovery_router)
+
+from backend.routes.subscriptions import router as subscriptions_router
+app.include_router(subscriptions_router)

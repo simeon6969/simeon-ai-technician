@@ -426,7 +426,7 @@ export async function getMyProfile() {
   } finally { clearTimeout(timeout) }
 }
 
-export async function registerUser(fullName, email, phone, password, role, accountField) {
+export async function registerUser(fullName, email, phone, password, role, accountField, subscription) {
   const response = await trackedFetch(`${API_BASE_URL}/users/register`, {
     method: 'POST',
     headers: {
@@ -435,6 +435,7 @@ export async function registerUser(fullName, email, phone, password, role, accou
     body: JSON.stringify({
       full_name: fullName,
       account_field: accountField,
+      subscription,
       role,
       email,
       phone: phone || null,

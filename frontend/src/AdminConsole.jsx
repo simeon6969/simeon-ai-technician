@@ -1,3 +1,5 @@
+import UpgradeSubscription from './UpgradeSubscription'
+import { SubscriptionAdmin } from './Subscriptions'
 import { DeliverySettings } from './FastDelivery'
 import { Spinner } from './LoadingStatus'
 import { useCallback, useEffect, useState } from 'react'
@@ -7,7 +9,7 @@ import LanguageSwitcher from './LanguageSwitcher'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['delivery', 'Delivery contacts'], ['overview', 'Overview'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['overview', 'Overview'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
   ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'Simeon'],
 ]
@@ -108,6 +110,7 @@ export default function AdminConsole({ onHome, onLogout }) {
         </>}
         {section === 'assistant' && <AdminChat />}
         {section === 'delivery' && <DeliverySettings />}
+        {section === 'subscriptions' && <SubscriptionAdmin />}
         {ids[section] && <>
           <div className="mb-5 flex flex-wrap gap-3"><input aria-label={t('Search records')} placeholder={t('Search records')} value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1 rounded-xl border p-3" /><select aria-label={t('Account field')} value={field} onChange={event => setField(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All fields')}</option>{['medical', 'it', 'electrical', 'mechanical', 'unset'].map(value => <option key={value} value={value}>{t(value === 'unset' ? 'Not provided' : value)}</option>)}</select><select aria-label={t('Account role')} value={role} onChange={event => setRole(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All roles')}</option>{['technician', 'store', 'client', 'admin'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select></div>
           {editing && <Editor key={`${editing.section}-${editing.row[ids[editing.section]]}`} editing={editing} busy={busy} onCancel={() => setEditing(null)} onSave={async payload => { await mutate(`/admin/${editing.section}/${editing.row[ids[editing.section]]}`, 'PATCH', payload); setEditing(null) }} />}
@@ -125,6 +128,7 @@ export default function AdminConsole({ onHome, onLogout }) {
               {['spare-parts', 'sale-items'].includes(section) && <p className="mt-2 text-sm">{t(row.posted_at ? 'Posted' : 'Not posted')}</p>}
               {row.photo_data && <img src={row.photo_data} alt={title} loading="lazy" className="my-3 h-40 w-full object-contain" />}
               <details className="my-4"><summary className="cursor-pointer text-sm font-medium text-teal-700">{t('View details')}</summary><dl className="mt-3 space-y-2 text-sm">{Object.entries(row).filter(([key]) => !['photo_data', 'attachments_data', 'can_manage'].includes(key)).map(([key, value]) => <div key={key}><dt className="font-medium">{t(key.replaceAll('_', ' '))}</dt><dd className="whitespace-pre-wrap break-words text-slate-600">{value == null ? t('Not provided') : typeof value === 'object' ? Object.entries(value).map(([k, v]) => `${k}: ${v ?? ''}`).join('\n') : String(value)}</dd></div>)}</dl></details>
+              {section === 'users' && !protectedAccount && <UpgradeSubscription user={row} />}
               {!protectedAccount && <div className="flex flex-wrap gap-2">
                 {fields[section] && <button disabled={busy} onClick={() => { setEditing({ section, row }); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className={button}>{t('Edit')}</button>}
                 {section === 'users' && <button disabled={busy} onClick={() => action(`/admin/users/${id}/status?is_active=${!row.is_active}`, 'PUT')} className={button}>{t(row.is_active ? 'Deactivate' : 'Activate')}</button>}
