@@ -12,6 +12,7 @@ from backend.models.spare_parts import SparePart
 from backend.models.users import User
 from backend.models.sale_items import SaleItem
 from backend.models.chat import ChatSession, ChatMessage
+from backend.models.offline_submission import OfflineSubmission
 from backend.schemas.chat import AdminChatRequest
 from backend.services.admin_chat_service import generate_admin_response
 
@@ -61,6 +62,7 @@ def delete_admin_user(user_id: int, admin_id: int = Depends(require_admin), db: 
         db.query(SaleItem).filter(SaleItem.seller_id == user_id).delete(synchronize_session=False)
         db.query(ChatMessage).filter(ChatMessage.session_id.in_(sessions)).delete(synchronize_session=False)
         db.query(ChatSession).filter(ChatSession.user_id == user_id).delete(synchronize_session=False)
+        db.query(OfflineSubmission).filter(OfflineSubmission.user_id == user_id).delete(synchronize_session=False)
         db.delete(user)
         commit_deletion(db)
     except Exception:

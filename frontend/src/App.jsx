@@ -1,3 +1,6 @@
+import { cacheProfile, cachedProfile } from './offlineStore'
+import { syncQueue } from './offlineSync'
+import OfflineStatus from './OfflineStatus'
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 import SparePartPrice from './SparePartPrice'
@@ -426,7 +429,7 @@ const [fullName, setFullName] = useState('')
 const [phone, setPhone] = useState('')
 const [isRegistering, setIsRegistering] = useState(false)
 const [accountType, setAccountType] = useState('technician')
-const [profile, setProfile] = useState(null)
+const [profile, setProfile] = useState(cachedProfile)
 const [profileError, setProfileError] = useState('')
 const [loginError, setLoginError] = useState('')
 const [authMessage, setAuthMessage] = useState('')
@@ -465,11 +468,17 @@ useEffect(() => {
   let active = true
   getMyProfile().then((account) => {
     if (!active) return
+    cacheProfile(account)
     setProfile(account)
     setUserRole(account.role)
     localStorage.setItem('user_role', account.role)
     setProfileError('')
-  }).catch(() => { if (active) setProfileError('Unable to load account. Please log in again.') })
+  }).catch((error) => {
+    if (!active) return
+    const savedAccount = cachedProfile()
+    if (![401, 403].includes(error.status) && savedAccount) { setProfile(savedAccount); setProfileError('') }
+    else { setProfile(null); setProfileError('Unable to load account. Please log in again.') }
+  })
   return () => { active = false }
 }, [loggedIn])
 
@@ -535,11 +544,29 @@ useEffect(() => {
   loadSparePartRequests()
 }, [loggedIn, userRole])
 
+useEffect(() => {
+  if (!loggedIn || !profile || profileError || profile.role === 'admin') return
+  const id = profile.user_id
+  const sync = () => { syncQueue(id).catch(() => {}) }
+  const refresh = event => {
+    if (event.detail.userId !== String(id) || localStorage.getItem('user_id') !== String(id)) return
+    getMyJobCards().then(rows => { setMyJobCards(rows); setJobCardsError('') }).catch(() => {})
+    getMySpareParts().then(rows => { setMySpareParts(rows); setMySparePartsError('') }).catch(() => {})
+  }
+  sync()
+  const timer = setInterval(sync, 30000)
+  window.addEventListener('online', sync)
+  window.addEventListener('focus', sync)
+  window.addEventListener('simeon-synced', refresh)
+  return () => { clearInterval(timer); window.removeEventListener('online', sync); window.removeEventListener('focus', sync); window.removeEventListener('simeon-synced', refresh) }
+}, [loggedIn, profile, profileError])
+
 function handleLogout() {
   localStorage.removeItem('access_token')
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_role')
   setLoggedIn(false)
+  setStoreConversation(null)
   setProfile(null)
   setProfileError('')
   navigate('home')
@@ -673,6 +700,7 @@ if (!loggedIn) {
 
               localStorage.setItem('user_role', result.role)
               setUserRole(result.role)
+              cacheProfile(result)
               setProfile(result)
               setProfileError('')
 
@@ -721,7 +749,8 @@ if (loggedIn && userRole === 'admin') {
 }
 
 if (storeConversation) {
-  return <StoreConversation
+  return <><OfflineStatus account={profile} /><StoreConversation
+    key={`${profile.user_id}:${storeConversation}`}
     kind={storeConversation}
     account={profile}
     onClose={() => setStoreConversation(null)}
@@ -734,7 +763,7 @@ if (storeConversation) {
         else setMySparePartsError(error.message)
       }
     }}
-  />
+  /></>
 }
 
 
@@ -763,6 +792,7 @@ if (storeConversation) {
 
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-6 py-10">
+        <OfflineStatus account={profile} />
 
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900"> {t("Welcome to Simeon")} </h2>

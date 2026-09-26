@@ -6,3 +6,4 @@ from backend.models.spare_part_requests import SparePartRequest
 from backend.models.maintenance_knowledge import MaintenanceKnowledge
 from backend.models.chat import ChatSession, ChatMessage
 from backend.models.sale_items import SaleItem
+from backend.models.offline_submission import OfflineSubmission

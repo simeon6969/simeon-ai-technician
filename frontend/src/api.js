@@ -411,9 +411,17 @@ export function updateAdminSparePartRequest(requestId, status, notes = '') {
 }
 
 export async function getMyProfile() {
-  const response = await fetch(`${API_BASE_URL}/users/me`, { headers: getAuthHeaders() })
-  if (!response.ok) throw new Error('Unable to load account. Please log in again.')
-  return response.json()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/me`, { headers: getAuthHeaders(), signal: controller.signal })
+    if (!response.ok) {
+      const error = new Error('Unable to load account. Please log in again.')
+      error.status = response.status
+      throw error
+    }
+    return await response.json()
+  } finally { clearTimeout(timeout) }
 }
 
 export async function registerUser(fullName, email, phone, password, role = 'technician') {

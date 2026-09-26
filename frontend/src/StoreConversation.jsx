@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { createEquipment, createJobCard, createSparePart, validateJobCard } from './api'
-import { jobFieldsForAccount, partFields, jobPayload } from './conversationFields'
+import { readDraft, saveDraft, queueDraft } from './offlineStore'
+import { submissionPayload, syncQueue } from './offlineSync'
+import { offlineCopy } from './offlineCopy'
+import { jobFieldsForAccount, partFields } from './conversationFields'
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 
@@ -11,18 +13,36 @@ const words = {
   sw: ['Rudi kwenye dashibodi', 'Turekodi pamoja. Nitakuuliza swali moja baada ya jingine.', 'Ungependa kurekodi nini kuhusu', 'Tuma jibu', 'Ruka kwa sasa', 'Kagua majibu yako kabla ya kuhifadhi.', 'Badilisha jibu', 'Haijaongezwa', 'Ndiyo, yamekamilika kwa mafanikio', 'Bado haijathibitishwa', 'Imehifadhiwa. Asante kwa kushiriki uzoefu wako.', 'Tafadhali jibu swali hili kabla ya kuendelea.', 'Uondoke kwenye mazungumzo? Majibu ambayo hayajahifadhiwa yatapotea.', 'Kadi imehifadhiwa lakini uthibitisho umeshindikana. Ithibitishe kutoka kwenye kadi zako za kazi.', 'Picha imeongezwa'],
 }
 
-export default function StoreConversation({ kind, account, onClose, onSaved }) {
+export default function StoreConversation(props) {
+  const { language } = useLanguage()
+  const w = offlineCopy[language] || offlineCopy.en
+  const [loaded, setLoaded] = useState(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    let active = true
+    readDraft(props.account.user_id, props.kind).then(value => { if (active) setLoaded({ value }) }).catch(() => { if (active) setFailed(true) })
+    return () => { active = false }
+  }, [props.account.user_id, props.kind])
+  if (!loaded) return <div className="p-6"><p role="status">{w[failed ? 6 : 9]}</p><button onClick={props.onClose}>← {props.account.full_name}</button></div>
+  return <Conversation {...props} initial={loaded.value} />
+}
+
+function Conversation({ kind, account, onClose, onSaved, initial }) {
   const { t, language } = useLanguage()
   const w = words[language] || words.en
+  const offlineWords = offlineCopy[language] || offlineCopy.en
   const fields = kind === 'job' ? jobFieldsForAccount(account.role) : partFields
-  const [answers, setAnswers] = useState(() => account.role === 'technician' ? { submitter_name: account.full_name } : {})
-  const [step, setStep] = useState(0)
-  const [draft, setDraft] = useState('')
+  const [answers, setAnswers] = useState(() => initial?.answers || (account.role === 'technician' ? { submitter_name: account.full_name } : {}))
+  const [step, setStep] = useState(initial?.step || 0)
+  const [draft, setDraft] = useState(initial?.draft || '')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(null)
-  const [validationFailed, setValidationFailed] = useState(false)
-  const equipmentRef = useRef(null)
+  const [storageError, setStorageError] = useState(false)
+  const [draftStored, setDraftStored] = useState(false)
+  const submissionId = useRef(initial?.submissionId || crypto.randomUUID())
+  const committing = useRef(false)
+  const latestWrite = useRef(Promise.resolve())
   const bottom = useRef(null)
   const input = useRef(null)
   const review = step === fields.length
@@ -34,11 +54,18 @@ export default function StoreConversation({ kind, account, onClose, onSaved }) {
   }, [step])
 
   useEffect(() => {
-    if (saved || (!Object.keys(answers).length && !draft)) return
-    const warn = (event) => { event.preventDefault(); event.returnValue = '' }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [answers, draft, saved])
+    if (saved || committing.current) return
+    let active = true
+    const write = saveDraft(account.user_id, kind, { answers, step, draft, submissionId: submissionId.current })
+    latestWrite.current = write
+    write.then(() => { if (active) { setStorageError(false); setDraftStored(true) } }).catch(() => { if (active) { setStorageError(true); setDraftStored(false) } })
+    return () => { active = false }
+  }, [account.user_id, kind, answers, step, draft, saved])
+
+  async function close() {
+    try { await latestWrite.current; onClose() }
+    catch { setStorageError(true) }
+  }
 
   function reply(value) {
     if (busy) return
@@ -82,27 +109,15 @@ export default function StoreConversation({ kind, account, onClose, onSaved }) {
     if (missing >= 0) { edit(missing); setError(w[11]); return }
     setBusy(true)
     setError('')
+    committing.current = true
     try {
-      let record
-      if (kind === 'job') {
-        const equipment = { category: answers.equipment, manufacturer: answers.manufacturer, model: answers.model, description: answers.problem_description }
-        const signature = JSON.stringify(equipment)
-        if (equipmentRef.current?.signature !== signature) {
-          equipmentRef.current = { signature, record: await createEquipment(equipment) }
-        }
-        record = await createJobCard(jobPayload(answers, equipmentRef.current.record.equipment_id))
-        // Once created, never repeat creation because validation or refresh failed.
-        setSaved(record.job_card_id)
-        if (answers.successful) {
-          try { await validateJobCard(record.job_card_id) }
-          catch { setValidationFailed(true) }
-        }
-      } else {
-        record = await createSparePart(answers)
-        setSaved(record.spare_part_id)
-      }
+      await latestWrite.current
+      await queueDraft(account.user_id, kind, submissionPayload(kind, answers, submissionId.current))
+      setSaved(true)
+      syncQueue(account.user_id).catch(() => {})
       onSaved(kind)
-    } catch (failure) { setError(t(failure.message || (kind === 'job' ? 'Unable to save the job card.' : 'Unable to save the spare part.'))) }
+    } catch { setStorageError(true); committing.current = false }
+
     finally { setBusy(false) }
   }
 
@@ -117,7 +132,9 @@ export default function StoreConversation({ kind, account, onClose, onSaved }) {
     <main className="mx-auto max-w-3xl px-4 py-6">
       <p className="mb-4 font-semibold text-slate-700">{account.full_name} · {t(account.role)}</p>
       {kind === 'job' && account.role === 'technician' && <p className="mb-4 text-sm text-slate-600">{t('Submitter name')}: {account.full_name}</p>}
-      <button disabled={busy} onClick={() => { if (saved || (!Object.keys(answers).length && !draft) || window.confirm(w[12])) onClose() }} className="mb-5 text-sm font-medium text-slate-600 disabled:opacity-50">← {w[0]}</button>
+      <button disabled={busy} onClick={close} className="mb-5 text-sm font-medium text-slate-600 disabled:opacity-50">← {w[0]}</button>
+      {storageError && <p role="alert" className="mb-4 text-red-700">{offlineWords[6]}</p>}
+      {!storageError && draftStored && !saved && <p className="mb-4 text-sm text-teal-800">{offlineWords[7]}</p>}
       <p className="mb-6 rounded-2xl bg-white p-5 text-slate-700">{w[1]}</p>
       <div className="space-y-4">
         {fields.slice(0, step).map(([key, label, , , type], index) => <div key={key}>
@@ -126,7 +143,7 @@ export default function StoreConversation({ kind, account, onClose, onSaved }) {
         </div>)}
       </div>
       <div ref={bottom} className="mt-6 rounded-2xl bg-white p-5 shadow-sm" aria-live="polite">
-        {saved ? <><p className="font-semibold text-green-700">{w[10]} #{saved}</p>{validationFailed && <p className="mt-3 text-amber-800">{w[13]}</p>}</> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
+        {saved ? <><p className="font-semibold text-green-700">{offlineWords[8]}</p></> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
           <p className="text-xs text-slate-500">Simeon · {step + 1}/{fields.length}</p>
           <h2 className="mt-2 text-lg font-semibold">{w[2]} {t(field[1])}?</h2>
           {field[2] && <p className="my-3 text-sm text-slate-600">{t(field[2])}</p>}
@@ -134,7 +151,7 @@ export default function StoreConversation({ kind, account, onClose, onSaved }) {
           {field[4] === 'currency' ? null : field[4] === 'boolean' ? <div className="mt-4 flex flex-wrap gap-3">{[true, false].map((value) => <button key={String(value)} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value ? w[8] : w[9]}</button>)}</div> : field[4] === 'availability' ? <div className="mt-4 flex flex-wrap gap-3">{['available', 'limited', 'unavailable', 'unknown'].map((value) => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{t(value)}</button>)}</div> : field[4] === 'photo' ? <input aria-label={t(field[1])} disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => photo(event.target.files[0])} className="my-4 block w-full" /> : <form onSubmit={(event) => { event.preventDefault(); reply(draft.trim()) }}>{field[4] === 'price' ? <input ref={input} aria-label={t(field[1])} inputMode="decimal" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={15} className="mt-4 w-full rounded-xl border border-slate-300 p-3" /> : <textarea ref={input} aria-label={t(field[1])} value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} maxLength={12000} className="mt-4 w-full rounded-xl border border-slate-300 p-3" />}<button className="mt-3 rounded-xl bg-slate-900 px-5 py-3 text-white">{w[3]}</button></form>}
           {!field[3] && <button disabled={busy} onClick={() => reply(null)} className="mt-3 block text-sm text-slate-500">{w[4]}</button>}
         </>}
-        {saved && <button disabled={busy} onClick={onClose} className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{w[0]}</button>}
+        {saved && <button disabled={busy} onClick={close} className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{w[0]}</button>}
         {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
     </main>
