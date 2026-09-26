@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import { useEffect, useState } from 'react'
 import { getSparePartPosts, postSparePart } from './api'
 import { useLanguage } from './language'
@@ -14,7 +15,7 @@ export function PostSparePartButton({ part, onPosted }) {
       try { onPosted(await postSparePart(part.spare_part_id)) }
       catch { setError(true) }
       finally { setBusy(false) }
-    }} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{t(part.posted_at ? 'Posted' : busy ? 'Posting...' : 'Post spare part')}</button>
+    }} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy && <Spinner />}{t(part.posted_at ? 'Posted' : busy ? 'Posting...' : 'Post spare part')}</button>
     {error && <p role="alert" className="mt-2 text-sm text-red-600">{t('Unable to post spare part.')}</p>}
   </div>
 }
@@ -45,7 +46,7 @@ export default function SparePartPosts() {
     {open && <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between gap-3"><h3 className="text-xl font-semibold">{t('Spare-part board')}</h3><button disabled={busy} onClick={() => load()}>{t('Refresh')}</button></div>
       {error && <p role="alert" className="mt-3 text-red-600">{t('Unable to load posts.')}</p>}
-      {busy && <p role="status" className="mt-3">{t('Loading posts...')}</p>}
+      {busy && <p role="status" className="mt-3"><Spinner />{t('Loading posts...')}</p>}
       {!busy && !error && !posts.length && <p className="mt-3 text-slate-500">{t('No spare parts have been posted yet.')}</p>}
       <div className="mt-4 grid gap-4 md:grid-cols-2">{posts.map((post) => <article key={post.spare_part_id} className="rounded-xl border border-slate-200 p-5">
         <h4 className="font-semibold">{post.part_name}</h4>

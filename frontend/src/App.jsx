@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import AccountChoices from './AccountChoices'
 import AccountSetup from './AccountSetup'
 import RoleWorkspace from './RoleWorkspace'
@@ -141,6 +142,7 @@ const [chatSessionId, setChatSessionId] = useState(null)
 const [chatQuestion, setChatQuestion] = useState('')
 const [chatAnswer, setChatAnswer] = useState('')
 const [chatLoading, setChatLoading] = useState(false)
+const [authBusy, setAuthBusy] = useState(false)
 
 useEffect(() => {
   if (!loggedIn) return
@@ -279,7 +281,7 @@ if (!loggedIn) {
         </div>
 
         <h2 className="text-xl font-semibold text-slate-900">
-          {isRegistering ? t('Create account') : t('Login')}
+          {authBusy && <Spinner />}{isRegistering ? t('Create account') : t('Login')}
         </h2>
 
         {isRegistering && (
@@ -345,6 +347,8 @@ if (!loggedIn) {
 
         <button
           onClick={async () => {
+            if (authBusy) return
+            setAuthBusy(true)
             try {
               setLoginError('')
               setAuthMessage('')
@@ -385,11 +389,13 @@ if (!loggedIn) {
 
             } catch (error) {
               setLoginError(error.message)
-            }
+            } finally { setAuthBusy(false) }
           }}
+          disabled={authBusy}
+          aria-busy={authBusy}
           className="mt-6 w-full rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
         >
-          {isRegistering ? t('Create account') : t('Login')}
+          {authBusy && <Spinner />}{isRegistering ? t('Create account') : t('Login')}
         </button>
 
         {authMessage && (
@@ -417,7 +423,7 @@ if (!loggedIn) {
 }
 
 if (!profile || profileError) {
-  return <div className="min-h-screen bg-slate-100 p-8"><p role="status">{t(profileError || 'Loading account...')}</p><button onClick={handleLogout} className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-white">{t('Logout')}</button></div>
+  return <div className="min-h-screen bg-slate-100 p-8"><p role="status">{!profileError && <Spinner />}{t(profileError || 'Loading account...')}</p><button onClick={handleLogout} className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-white">{t('Logout')}</button></div>
 }
 
 if (loggedIn && userRole === 'admin') {
@@ -595,7 +601,7 @@ if (storeConversation) {
           </div>
 
           {jobCardsLoading && (
-            <p className="text-sm text-slate-500">{t("Loading your job cards...")}</p>
+            <p className="text-sm text-slate-500"><Spinner />{t("Loading your job cards...")}</p>
           )}
 
           {jobCardsError && (
@@ -673,7 +679,7 @@ if (storeConversation) {
                       className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                     >
                       {deletingJobCardId === card.job_card_id
-                        ? t('Deleting...')
+                        ? <><Spinner />{t('Deleting...')}</>
                         : t('Delete')}
                   </button>
                 </div>
@@ -708,7 +714,7 @@ if (storeConversation) {
                     className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
                   >
                     {confirmingJobCardId === card.job_card_id
-                      ? t('Confirming...')
+                      ? <><Spinner />{t('Confirming...')}</>
                       : t('Confirm Maintenance Successful')}
                   </button>
                 )}
@@ -744,7 +750,7 @@ if (storeConversation) {
 
           <div className="mb-6"><SparePartPosts /></div>
           {mySparePartsLoading && (
-            <p className="text-sm text-slate-500">{t("Loading your spare parts...")}</p>
+            <p className="text-sm text-slate-500"><Spinner />{t("Loading your spare parts...")}</p>
           )}
 
           {mySparePartsError && (
@@ -810,7 +816,7 @@ if (storeConversation) {
                   className="mt-4 rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
                   {deletingSparePartId === part.spare_part_id
-                    ? t('Deleting...')
+                    ? <><Spinner />{t('Deleting...')}</>
                     : t('Delete')}
                 </button>
 
@@ -895,7 +901,7 @@ if (storeConversation) {
   disabled={chatLoading}
   className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
 >
-  {chatLoading ? t('Thinking...') : t('Ask Simeon')}
+  {chatLoading && <Spinner />}{chatLoading ? t('Thinking...') : t('Ask Simeon')}
 </button>
 
 {chatAnswer && (
@@ -948,7 +954,7 @@ if (storeConversation) {
         disabled={sparePartSearchLoading}
         className="shrink-0 rounded-xl bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
       >
-        {sparePartSearchLoading ? t('Searching...') : t('Search')}
+        {sparePartSearchLoading && <Spinner />}{sparePartSearchLoading ? t('Searching...') : t('Search')}
       </button>
     </div>
 
@@ -1031,7 +1037,7 @@ if (storeConversation) {
                 className="shrink-0 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
               >
                 {requestingSparePartId === part.spare_part_id
-                  ? t('Requesting...')
+                  ? <><Spinner />{t('Requesting...')}</>
                   : t('Request part')}
               </button>
             </div>
@@ -1066,7 +1072,7 @@ if (storeConversation) {
       )}
 
       {sparePartRequestsLoading && (
-        <p className="mt-3 text-sm text-slate-500">{t("Loading requests...")}</p>
+        <p className="mt-3 text-sm text-slate-500"><Spinner />{t("Loading requests...")}</p>
       )}
 
       {!sparePartRequestsLoading && sparePartRequests.length === 0 && (

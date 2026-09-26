@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LanguageContext } from './language'
+import LoadingStatus from './LoadingStatus'
 import { translate } from './translations'
 
 const languages = ['en', 'rw', 'fr', 'sw']
@@ -26,6 +27,7 @@ export default function LanguageProvider({ children }) {
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t: (key) => translate(language, key) }}>
       {children}
+      <LoadingStatus />
     </LanguageContext.Provider>
   )
 }
