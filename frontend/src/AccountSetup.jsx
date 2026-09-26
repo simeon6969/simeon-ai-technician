@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import { useState } from 'react'
 import AccountChoices from './AccountChoices'
 import { accountRequest } from './api'
@@ -21,7 +22,7 @@ export default function AccountSetup({ account, onDone, onLogout }) {
       finally { setBusy(false) }
     }}>
       <AccountChoices field={field} role={role} onField={setField} onRole={setRole} />
-      <button disabled={busy} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t(busy ? 'Saving...' : 'Continue')}</button>
+      <button disabled={busy} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{busy && <Spinner />}{t(busy ? 'Saving...' : 'Continue')}</button>
       {error && <p role="alert" className="mt-3 text-red-700">{t(error)}</p>}
     </form>
     <button onClick={onLogout} className="mt-5 underline">{t('Logout')}</button>

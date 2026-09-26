@@ -1,3 +1,6 @@
+import PhotoSizeOption from './PhotoSizeOption'
+import { preparePhoto } from './preparePhoto'
+import { Spinner } from './LoadingStatus'
 import { useEffect, useRef, useState } from 'react'
 import { readDraft, saveDraft, queueDraft } from './offlineStore'
 import { submissionPayload, syncQueue } from './offlineSync'
@@ -37,6 +40,7 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
   const [draft, setDraft] = useState(initial?.draft || '')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [compressPhoto, setCompressPhoto] = useState(false)
   const [saved, setSaved] = useState(null)
   const [storageError, setStorageError] = useState(false)
   const [draftStored, setDraftStored] = useState(false)
@@ -92,12 +96,7 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
     if (file.size > 5 * 1024 * 1024) { setError(t('Photo must be 5 MB or smaller.')); return }
     setBusy(true)
     try {
-      const data = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsDataURL(file)
-      })
+      const data = await preparePhoto(file, compressPhoto)
       reply(data)
     } catch { setError(t('Unable to read the photo.')) }
     finally { setBusy(false) }
@@ -143,15 +142,16 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
         </div>)}
       </div>
       <div ref={bottom} className="mt-6 rounded-2xl bg-white p-5 shadow-sm" aria-live="polite">
-        {saved ? <><p className="font-semibold text-green-700">{offlineWords[8]}</p></> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
+        {saved ? <><p className="font-semibold text-green-700">{offlineWords[8]}</p></> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{busy && <Spinner />}{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
           <p className="text-xs text-slate-500">Simeon · {step + 1}/{fields.length}</p>
           <h2 className="mt-2 text-lg font-semibold">{w[2]} {t(field[1])}?</h2>
           {field[2] && <p className="my-3 text-sm text-slate-600">{t(field[2])}</p>}
           {field[4] === 'currency' && <div className="mt-4 flex flex-wrap gap-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map(value => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value}</button>)}</div>}
-          {field[4] === 'currency' ? null : field[4] === 'boolean' ? <div className="mt-4 flex flex-wrap gap-3">{[true, false].map((value) => <button key={String(value)} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value ? w[8] : w[9]}</button>)}</div> : field[4] === 'availability' ? <div className="mt-4 flex flex-wrap gap-3">{['available', 'limited', 'unavailable', 'unknown'].map((value) => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{t(value)}</button>)}</div> : field[4] === 'photo' ? <input aria-label={t(field[1])} disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => photo(event.target.files[0])} className="my-4 block w-full" /> : <form onSubmit={(event) => { event.preventDefault(); reply(draft.trim()) }}>{field[4] === 'price' ? <input ref={input} aria-label={t(field[1])} inputMode="decimal" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={15} className="mt-4 w-full rounded-xl border border-slate-300 p-3" /> : <textarea ref={input} aria-label={t(field[1])} value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} maxLength={12000} className="mt-4 w-full rounded-xl border border-slate-300 p-3" />}<button className="mt-3 rounded-xl bg-slate-900 px-5 py-3 text-white">{w[3]}</button></form>}
+          {field[4] === 'currency' ? null : field[4] === 'boolean' ? <div className="mt-4 flex flex-wrap gap-3">{[true, false].map((value) => <button key={String(value)} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value ? w[8] : w[9]}</button>)}</div> : field[4] === 'availability' ? <div className="mt-4 flex flex-wrap gap-3">{['available', 'limited', 'unavailable', 'unknown'].map((value) => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{t(value)}</button>)}</div> : field[4] === 'photo' ? <><PhotoSizeOption checked={compressPhoto} onChange={setCompressPhoto} disabled={busy} /><input aria-label={t(field[1])} disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => photo(event.target.files[0])} className="my-4 block w-full" /></> : <form onSubmit={(event) => { event.preventDefault(); reply(draft.trim()) }}>{field[4] === 'price' ? <input ref={input} aria-label={t(field[1])} inputMode="decimal" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={15} className="mt-4 w-full rounded-xl border border-slate-300 p-3" /> : <textarea ref={input} aria-label={t(field[1])} value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} maxLength={12000} className="mt-4 w-full rounded-xl border border-slate-300 p-3" />}<button className="mt-3 rounded-xl bg-slate-900 px-5 py-3 text-white">{w[3]}</button></form>}
           {!field[3] && <button disabled={busy} onClick={() => reply(null)} className="mt-3 block text-sm text-slate-500">{w[4]}</button>}
         </>}
         {saved && <button disabled={busy} onClick={close} className="mt-4 rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{w[0]}</button>}
+        {busy && <p role="status" className="mt-3 flex items-center gap-2"><Spinner />{t('Saving...')}</p>}
         {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
     </main>

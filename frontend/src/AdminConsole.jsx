@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import { useCallback, useEffect, useState } from 'react'
 import { accountRequest } from './api'
 import { useLanguage } from './language'
@@ -45,7 +46,7 @@ function Editor({ editing, onCancel, onSave, busy }) {
         const reader = new FileReader(); reader.onload = () => setPhoto(reader.result); reader.onerror = () => setError(t('Unable to read the photo.')); reader.readAsDataURL(file)
       }} className="mt-2 block" />{photo && <img src={photo} alt={t('Photo')} className="mt-2 h-24 object-contain" />}</label>}
       {error && <p role="alert" className="my-3 text-red-700">{t(error)}</p>}
-      <div className="mt-5 flex gap-3"><button disabled={busy} className="rounded-lg bg-teal-700 px-5 py-3 text-white">{t(busy ? 'Saving...' : 'Save changes')}</button><button type="button" disabled={busy} onClick={onCancel} className="rounded-lg border px-5 py-3">{t('Cancel')}</button></div>
+      <div className="mt-5 flex gap-3"><button disabled={busy} className="rounded-lg bg-teal-700 px-5 py-3 text-white">{busy && <Spinner />}{t(busy ? 'Saving...' : 'Save changes')}</button><button type="button" disabled={busy} onClick={onCancel} className="rounded-lg border px-5 py-3">{t('Cancel')}</button></div>
     </form>
   </section>
 }
@@ -108,7 +109,7 @@ export default function AdminConsole({ onHome, onLogout }) {
         {ids[section] && <>
           <div className="mb-5 flex flex-wrap gap-3"><input aria-label={t('Search records')} placeholder={t('Search records')} value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1 rounded-xl border p-3" /><select aria-label={t('Account field')} value={field} onChange={event => setField(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All fields')}</option>{['medical', 'it', 'electrical', 'mechanical', 'unset'].map(value => <option key={value} value={value}>{t(value === 'unset' ? 'Not provided' : value)}</option>)}</select><select aria-label={t('Account role')} value={role} onChange={event => setRole(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All roles')}</option>{['technician', 'store', 'client', 'admin'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select></div>
           {editing && <Editor key={`${editing.section}-${editing.row[ids[editing.section]]}`} editing={editing} busy={busy} onCancel={() => setEditing(null)} onSave={async payload => { await mutate(`/admin/${editing.section}/${editing.row[ids[editing.section]]}`, 'PATCH', payload); setEditing(null) }} />}
-          {loading && <p role="status" className="mb-3">{t('Loading admin data...')}</p>}
+          {loading && <p role="status" className="mb-3"><Spinner />{t('Loading admin data...')}</p>}
           {!loading && rows.length === 0 && <p className="rounded-xl bg-white p-8">{t('No matching records')}</p>}
           <div className="grid gap-4 xl:grid-cols-2">{rows.map(row => {
             const id = row[ids[section]], account = owner(row), protectedAccount = section === 'users' && row.role === 'admin'

@@ -1,10 +1,11 @@
+import { trackedFetch } from './requestActivity'
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 export async function getPublicSaleItems(search = '', offset = 0, signal, field = '') {
   const params = new URLSearchParams({ search, offset, limit: 12 })
   if (field) params.set('account_field', field)
-  const response = await fetch(`${API_BASE_URL}/sale-items/public?${params}`, { signal })
+  const response = await trackedFetch(`${API_BASE_URL}/sale-items/public?${params}`, { signal })
   if (!response.ok) throw new Error('Unable to load listings')
   return response.json()
 }
@@ -22,7 +23,7 @@ function getAuthHeaders() {
 }
 
 export async function createJobCard(jobCard) {
-  const response = await fetch(`${API_BASE_URL}/job-cards/`, {
+  const response = await trackedFetch(`${API_BASE_URL}/job-cards/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +41,7 @@ export async function createJobCard(jobCard) {
 }
 
 export async function validateJobCard(jobCardId) {
-  const response = await fetch(
+  const response = await trackedFetch(
     `${API_BASE_URL}/job-cards/${jobCardId}/validate`,
     {
       method: 'POST',
@@ -59,7 +60,7 @@ export async function validateJobCard(jobCardId) {
 }
 
 export async function getMyJobCards() {
-  const response = await fetch(`${API_BASE_URL}/job-cards/`, {
+  const response = await trackedFetch(`${API_BASE_URL}/job-cards/`, {
     headers: {
       ...getAuthHeaders(),
     },
@@ -74,7 +75,7 @@ export async function getMyJobCards() {
 }
 
 export async function updateJobCard(jobCardId, jobCard) {
-  const response = await fetch(`${API_BASE_URL}/job-cards/${jobCardId}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/job-cards/${jobCardId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ export async function updateJobCard(jobCardId, jobCard) {
 }
 
 export async function deleteJobCard(jobCardId) {
-  const response = await fetch(`${API_BASE_URL}/job-cards/${jobCardId}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/job-cards/${jobCardId}`, {
     method: 'DELETE',
     headers: {
       ...getAuthHeaders(),
@@ -118,7 +119,7 @@ export async function createEquipment(equipment) {
     params.set('description', equipment.description)
   }
 
-  const response = await fetch(`${API_BASE_URL}/equipment/?${params}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/equipment/?${params}`, {
     method: 'POST',
     headers: {
       ...getAuthHeaders(),
@@ -135,7 +136,7 @@ export async function createEquipment(equipment) {
 
 
 export async function createSparePart(sparePart) {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/`, {
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -172,7 +173,7 @@ export async function searchSpareParts(search = '') {
     params.set('search', search.trim())
   }
 
-  const response = await fetch(
+  const response = await trackedFetch(
     `${API_BASE_URL}/spare-parts/?${params.toString()}`,
     {
       headers: {
@@ -196,7 +197,7 @@ export async function requestSparePart(sparePartId, notes = '') {
     params.set('notes', notes.trim())
   }
 
-  const response = await fetch(
+  const response = await trackedFetch(
     `${API_BASE_URL}/spare-parts/${sparePartId}/request?${params.toString()}`,
     {
       method: 'POST',
@@ -215,7 +216,7 @@ export async function requestSparePart(sparePartId, notes = '') {
 }
 
 export async function getMySparePartRequests() {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/requests/my`, {
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/requests/my`, {
     headers: {
       ...getAuthHeaders(),
     },
@@ -230,7 +231,7 @@ export async function getMySparePartRequests() {
 }
 
 export async function getMySpareParts() {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/my`, {
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/my`, {
     headers: {
       ...getAuthHeaders(),
     },
@@ -245,7 +246,7 @@ export async function getMySpareParts() {
 }
 
 export async function deleteSparePart(sparePartId) {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/${sparePartId}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/${sparePartId}`, {
     method: 'DELETE',
     headers: {
       ...getAuthHeaders(),
@@ -261,7 +262,7 @@ export async function deleteSparePart(sparePartId) {
 }
 
 export async function createChatSession() {
-  const response = await fetch(`${API_BASE_URL}/chat/sessions`, {
+  const response = await trackedFetch(`${API_BASE_URL}/chat/sessions`, {
     method: 'POST',
     headers: {
       ...getAuthHeaders(),
@@ -276,7 +277,7 @@ export async function createChatSession() {
 }
 
 export async function sendChatMessage(sessionId, message) {
-  const response = await fetch(
+  const response = await trackedFetch(
     `${API_BASE_URL}/chat/sessions/${sessionId}/message`,
     {
       method: 'POST',
@@ -298,7 +299,7 @@ export async function sendChatMessage(sessionId, message) {
 }
 
 export async function loginUser(email, password) {
-  const response = await fetch(`${API_BASE_URL}/users/login`, {
+  const response = await trackedFetch(`${API_BASE_URL}/users/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -317,7 +318,7 @@ export async function loginUser(email, password) {
 }
 
 async function adminRequest(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}/admin${path}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/admin${path}`, {
     ...options,
     headers: {
       ...getAuthHeaders(),
@@ -346,7 +347,7 @@ export function deleteAdminRecord(collection, id) {
 }
 
 export async function saleItemsRequest(path, method = 'GET', data) {
-  const response = await fetch(`${API_BASE_URL}/sale-items${path}`, {
+  const response = await trackedFetch(`${API_BASE_URL}/sale-items${path}`, {
     method, headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     ...(data ? { body: JSON.stringify(data) } : {}),
   })
@@ -355,7 +356,7 @@ export async function saleItemsRequest(path, method = 'GET', data) {
 }
 
 export async function postSparePart(id) {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/${id}/post`, {
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/${id}/post`, {
     method: 'POST', headers: getAuthHeaders(),
   })
   if (!response.ok) throw new Error('Unable to post spare part.')
@@ -363,7 +364,7 @@ export async function postSparePart(id) {
 }
 
 export async function getSparePartPosts(offset = 0) {
-  const response = await fetch(`${API_BASE_URL}/spare-parts/posts?offset=${offset}&limit=20`, { headers: getAuthHeaders() })
+  const response = await trackedFetch(`${API_BASE_URL}/spare-parts/posts?offset=${offset}&limit=20`, { headers: getAuthHeaders() })
   if (!response.ok) throw new Error('Unable to load posts.')
   return response.json()
 }
@@ -415,7 +416,7 @@ export async function getMyProfile() {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15000)
   try {
-    const response = await fetch(`${API_BASE_URL}/users/me`, { headers: getAuthHeaders(), signal: controller.signal })
+    const response = await trackedFetch(`${API_BASE_URL}/users/me`, { headers: getAuthHeaders(), signal: controller.signal })
     if (!response.ok) {
       const error = new Error('Unable to load account. Please log in again.')
       error.status = response.status
@@ -426,7 +427,7 @@ export async function getMyProfile() {
 }
 
 export async function registerUser(fullName, email, phone, password, role, accountField) {
-  const response = await fetch(`${API_BASE_URL}/users/register`, {
+  const response = await trackedFetch(`${API_BASE_URL}/users/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -452,7 +453,7 @@ export async function registerUser(fullName, email, phone, password, role, accou
 
 
 export async function accountRequest(path, method = 'GET', data) {
-  const response = await fetch(`${API_BASE_URL}${path}`, { method,
+  const response = await trackedFetch(`${API_BASE_URL}${path}`, { method,
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   })

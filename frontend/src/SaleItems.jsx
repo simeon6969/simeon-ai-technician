@@ -1,3 +1,6 @@
+import PhotoSizeOption from './PhotoSizeOption'
+import { preparePhoto } from './preparePhoto'
+import { Spinner } from './LoadingStatus'
 import { useEffect, useState } from 'react'
 import { saleItemsRequest } from './api'
 import { useLanguage } from './language'
@@ -20,6 +23,7 @@ export default function SaleItems() {
   const [draft, setDraft] = useState(null)
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
+  const [compressPhoto, setCompressPhoto] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState(false)
   const [reload, setReload] = useState(0)
@@ -43,9 +47,7 @@ export default function SaleItems() {
     if (file.size > 5 * 1024 * 1024) { setError('Photo must be 5 MB or smaller.'); return }
     setBusy(true); setError('')
     try {
-      const data = await new Promise((resolve, reject) => {
-        const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file)
-      })
+      const data = await preparePhoto(file, compressPhoto)
       setDraft((value) => ({ ...value, photo_data: data }))
     } catch { setError('Unable to read the photo.') }
     finally { setBusy(false) }
@@ -55,8 +57,9 @@ export default function SaleItems() {
     if (busy) return
     setBusy(true); setError('')
     try {
-      await saleItemsRequest('/', 'POST', draft)
-      setDraft(null); setNotice(true); setBoard(false); setReload((value) => value + 1)
+      const created = await saleItemsRequest('/', 'POST', draft)
+      setItems(previous => [created, ...previous]); setTotal(value => value + 1)
+      setDraft(null); setNotice(true); setBoard(false)
     } catch { setError('load') }
     finally { setBusy(false) }
   }
@@ -88,13 +91,13 @@ export default function SaleItems() {
         setError(''); setStep(step + 1)
       }}>
         <label htmlFor="sale-answer" className="mb-3 block">{w[step + 4]}</label>
-        {step === 4 ? <><input id="sale-answer" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => upload(event.target.files[0])} />{draft.photo_data && <img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" />}</> : step === 3 ? <select id="sale-answer" value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value })} className="rounded-lg border p-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map((currency) => <option key={currency}>{currency}</option>)}</select> : <textarea id="sale-answer" key={step} autoFocus rows={step === 1 ? 4 : 2} maxLength={step === 0 ? 200 : step === 2 ? 15 : 12000} inputMode={step === 2 ? 'decimal' : 'text'} value={draft[fields[step]]} onChange={(event) => setDraft({ ...draft, [fields[step]]: event.target.value })} className="w-full rounded-xl border border-slate-300 p-3" />}
+        {step === 4 ? <><PhotoSizeOption checked={compressPhoto} onChange={setCompressPhoto} disabled={busy} /><input id="sale-answer" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => upload(event.target.files[0])} />{draft.photo_data && <img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" />}</> : step === 3 ? <select id="sale-answer" value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value })} className="rounded-lg border p-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map((currency) => <option key={currency}>{currency}</option>)}</select> : <textarea id="sale-answer" key={step} autoFocus rows={step === 1 ? 4 : 2} maxLength={step === 0 ? 200 : step === 2 ? 15 : 12000} inputMode={step === 2 ? 'decimal' : 'text'} value={draft[fields[step]]} onChange={(event) => setDraft({ ...draft, [fields[step]]: event.target.value })} className="w-full rounded-xl border border-slate-300 p-3" />}
         <button disabled={busy} className="mt-4 block rounded-xl bg-slate-900 px-4 py-2 text-white">{w[9]}</button>
-      </form> : <><h4 className="font-semibold">{draft.name}</h4><p className="whitespace-pre-wrap break-words">{draft.description}</p><p>{draft.price} {draft.currency}</p><img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" /><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-4 py-2 text-white">{t(busy ? 'Saving...' : '') || w[12]}</button></>}
+      </form> : <><h4 className="font-semibold">{draft.name}</h4><p className="whitespace-pre-wrap break-words">{draft.description}</p><p>{draft.price} {draft.currency}</p><img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" /><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-4 py-2 text-white">{busy && <Spinner />}{t(busy ? 'Saving...' : '') || w[12]}</button></>}
       <div className="mt-4 flex gap-4">{step > 0 && <button disabled={busy} onClick={() => { setError(''); setStep(step - 1) }}>{w[10]}</button>}<button disabled={busy} onClick={() => { setDraft(null); setError('') }}>{t('Cancel')}</button></div>
     </div>}
     {error && <p role="alert" className="my-3 text-red-600">{error === 'load' ? w[17] : error === 'answer' ? w[16] : t(error)}</p>}
-    {busy && <p role="status">{t('Updating...')}</p>}
+    {busy && <p role="status" className="flex items-center gap-2"><Spinner />{t('Updating...')}</p>}
     {!busy && !error && !items.length && <p className="text-slate-500">{w[14]}</p>}
     <div className="mt-4 grid gap-4 md:grid-cols-2">{items.map((item) => <article key={item.item_id} className="rounded-xl border border-slate-200 p-4">
       {!board && item.posted_at && <a href="#sales-board" className="mb-2 block text-sm font-medium text-teal-700 underline">{t('View on homepage')}</a>}

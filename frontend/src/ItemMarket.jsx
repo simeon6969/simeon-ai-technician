@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import { useEffect, useState } from 'react'
 import { accountRequest, getPublicSaleItems } from './api'
 import { useLanguage } from './language'
@@ -48,13 +49,13 @@ export default function ItemMarket() {
       <button className="rounded-lg bg-teal-700 px-4 py-2 text-white">{t('Search')}</button>
     </form>
     {error && <p role="alert" className="my-3 text-red-700">{t(error)}</p>}{notice && <p role="status" className="my-3 text-teal-700">{notice}</p>}
-    {loading ? <p role="status">{t('Loading...')}</p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{items.map(item => <article key={item.listing_key} className="rounded-xl border p-4">
+    {loading ? <p role="status"><Spinner />{t('Loading...')}</p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{items.map(item => <article key={item.listing_key} className="rounded-xl border p-4">
       {item.photo_data && <img src={item.photo_data} alt={item.name} className="mb-3 h-40 w-full object-contain" />}
       <h3 className="font-semibold">{item.name}</h3><p className="text-sm text-slate-600">{item.seller_name} · {t(item.account_field || 'Not provided')}</p>
       <p className="my-2 font-semibold">{item.price == null ? t('Price not provided') : new Intl.NumberFormat(language, { style: 'currency', currency: item.currency || 'RWF' }).format(Number(item.price))}</p>
       <p className="mb-3 whitespace-pre-wrap text-sm">{item.description}</p>
       <textarea aria-label={`${t('Optional request note')} — ${item.name}`} maxLength={2000} value={notes[item.listing_key] || ''} onChange={event => setNotes({ ...notes, [item.listing_key]: event.target.value })} className="w-full rounded-lg border p-2" />
-      <button disabled={busy || item.availability_status === 'unavailable'} onClick={() => act(() => accountRequest('/item-requests/', 'POST', { item_type: item.item_type, item_id: item.item_id, notes: notes[item.listing_key] || null }))} className="mt-2 rounded-lg bg-teal-700 px-4 py-2 text-white disabled:opacity-50">{t('Request item')}</button>
+      <button disabled={busy || item.availability_status === 'unavailable'} onClick={() => act(() => accountRequest('/item-requests/', 'POST', { item_type: item.item_type, item_id: item.item_id, notes: notes[item.listing_key] || null }))} className="mt-2 rounded-lg bg-teal-700 px-4 py-2 text-white disabled:opacity-50">{busy && <Spinner />}{t('Request item')}</button>
     </article>)}</div>}
     {!loading && items.length === 0 && <p>{t('No items found')}</p>}
     <div className="mt-4 flex gap-3"><button disabled={offset === 0 || loading} onClick={() => { setLoading(true); setOffset(Math.max(0, offset - 12)) }}>{t('Previous')}</button><button disabled={offset + 12 >= total || loading} onClick={() => { setLoading(true); setOffset(offset + 12) }}>{t('Next')}</button></div>

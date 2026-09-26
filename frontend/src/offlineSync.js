@@ -1,3 +1,4 @@
+import { trackedFetch } from './requestActivity'
 import { jobPayload } from './conversationFields'
 import { listQueue, updateQueued } from './offlineStore'
 
@@ -31,7 +32,7 @@ export async function syncQueue(userId) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 30000)
       try {
-        const response = await fetch(`${baseUrl}/offline/submit`, {
+        const response = await trackedFetch(`${baseUrl}/offline/submit`, {
           method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(record.payload), signal: controller.signal,
         })

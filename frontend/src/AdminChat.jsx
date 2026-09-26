@@ -1,3 +1,4 @@
+import { Spinner } from './LoadingStatus'
 import { useState } from 'react'
 import { sendAdminChatMessage } from './api'
 import { useLanguage } from './language'
@@ -54,7 +55,7 @@ export default function AdminChat() {
         <label htmlFor="admin-question" className="sr-only">{t('Ask Simeon')}</label>
         <textarea id="admin-question" value={question} onChange={(event) => setQuestion(event.target.value)} disabled={loading} maxLength={4000} rows={3} placeholder={labels[1]} className="w-full rounded-xl border border-slate-300 p-3 text-slate-900" />
         {error && <p role="alert" className="mt-2 text-sm text-red-600">{labels[4]}</p>}
-        <button disabled={loading || !question.trim()} className="mt-3 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-50">{t(loading ? 'Thinking...' : 'Ask Simeon')}</button>
+        <button disabled={loading || !question.trim()} className="mt-3 rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-50">{loading && <Spinner />}{t(loading ? 'Thinking...' : 'Ask Simeon')}</button>
       </form>
     </section>
   )
