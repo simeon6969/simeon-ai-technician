@@ -5,11 +5,11 @@ import { Spinner } from './LoadingStatus'
 import { useCallback, useEffect, useState } from 'react'
 import { accountRequest } from './api'
 import { useLanguage } from './language'
-import LanguageSwitcher from './LanguageSwitcher'
+import DashboardLayout from './DashboardLayout'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['overview', 'Overview'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['overview', 'Overview'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
   ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'Simeon'],
 ]
@@ -54,7 +54,7 @@ function Editor({ editing, onCancel, onSave, busy }) {
   </section>
 }
 
-export default function AdminConsole({ onHome, onLogout }) {
+export default function AdminConsole({ account, onHome, onLogout }) {
   const { t } = useLanguage()
   const [section, setSection] = useState('overview')
   const [data, setData] = useState({})
@@ -97,11 +97,8 @@ export default function AdminConsole({ onHome, onLogout }) {
   })
   const button = 'rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium disabled:opacity-50'
   function go(key) { setSection(key); setEditing(null); setSearch(''); setField(''); setRole('') }
-  return <div className="min-h-screen bg-slate-100 text-slate-900">
-    <header className="flex flex-wrap items-center justify-between gap-4 bg-slate-950 px-6 py-5 text-white"><div><p className="text-xs uppercase tracking-widest text-teal-300">Simeon</p><h1 className="text-xl font-semibold">{t('Administration')}</h1></div><div className="flex items-center gap-4"><LanguageSwitcher /><button onClick={onHome}>{t('Home')}</button><button onClick={onLogout}>{t('Logout')}</button></div></header>
-    <div className="mx-auto grid max-w-screen-2xl gap-6 p-4 lg:grid-cols-[220px_1fr] lg:p-8">
-      <nav aria-label={t('Administration')} className="flex gap-2 overflow-x-auto rounded-2xl bg-white p-3 lg:sticky lg:top-4 lg:h-fit lg:flex-col">{sections.map(([key, label]) => <button key={key} aria-current={section === key ? 'page' : undefined} onClick={() => go(key)} className={`flex shrink-0 items-center justify-between gap-4 rounded-xl px-4 py-3 text-left text-sm font-medium ${section === key ? 'bg-teal-700 text-white' : 'hover:bg-slate-100'}`}>{t(label)}{data[key] && <span className="opacity-70">{data[key].length}</span>}</button>)}</nav>
-      <main className="min-w-0"><div className="mb-6 flex flex-wrap items-center justify-between gap-4"><div><h2 className="text-3xl font-bold">{t(sections.find(([key]) => key === section)[1])}</h2><p className="mt-2 text-slate-600">{t('Manage every field, role and record from one workspace.')}</p></div><button disabled={loading || busy} onClick={load} className={`${button} bg-white`}>{t('Refresh all')}</button></div>
+  return <DashboardLayout account={account} sections={sections} section={section} onNavigate={go} onHome={onHome} onLogout={onLogout}>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><p className="text-slate-600">{t('Manage every field, role and record from one workspace.')}</p><button disabled={loading || busy} onClick={load} className={`${button} bg-white`}>{loading && <Spinner />}{t('Refresh all')}</button></div>
         {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-red-700">{t(error)}</p>}{notice && <p role="status" className="mb-4 text-teal-800">{notice}</p>}
         {section === 'overview' && <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[['users', 'Accounts'], ['job-cards', 'Job Cards'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests']].map(([key, label]) => <button key={key} onClick={() => go(key)} className="rounded-2xl bg-white p-6 text-left shadow-sm"><p className="text-sm text-slate-500">{t(label)}</p><p className="mt-3 text-4xl font-semibold">{data[key]?.length ?? '—'}</p></button>)}</div>
@@ -143,7 +140,5 @@ export default function AdminConsole({ onHome, onLogout }) {
             </article>
           })}</div>
         </>}
-      </main>
-    </div>
-  </div>
+  </DashboardLayout>
 }

@@ -1,9 +1,9 @@
 import { medicalCategories } from './medicalCategories'
-const common = [['quantity', 'Stock quantity', 'number'], ['unit', 'Stock unit (box, pack, vial, unit)'], ['manufacturer', 'Manufacturer'], ['storage_location', 'Storage location']]
+const common = [['quantity', 'Stock quantity', 'number'], ['unit', 'Stock unit (box, pack, vial, unit)'], ['manufacturer', 'Manufacturer'], ['storage_location', 'Storage location'], ['supplier', 'Supplier'], ['received_date', 'Received date', 'date'], ['reorder_level', 'Reorder level', 'number']]
 const specific = {
-  consumables: [['batch_number', 'Batch / lot number'], ['expiry_date', 'Expiry date', 'date'], ['storage_conditions', 'Storage conditions']],
-  biomedical: [['model', 'Model'], ['serial_number', 'Serial number'], ['condition', 'Condition'], ['next_service_date', 'Next service date', 'date']],
-  pharmacy: [['generic_name', 'Generic medicine name'], ['strength', 'Strength'], ['dosage_form', 'Dosage form'], ['batch_number', 'Batch / lot number'], ['expiry_date', 'Expiry date', 'date'], ['storage_conditions', 'Storage conditions']],
+  consumables: [['product_code', 'Product code'], ['size_specification', 'Size / specification'], ['material', 'Material'], ['sterility', 'Sterility'], ['single_use', 'Use type'], ['pack_size', 'Pack size'], ['batch_number', 'Batch / lot number'], ['expiry_date', 'Expiry date', 'date'], ['storage_conditions', 'Storage conditions']],
+  biomedical: [['equipment_type', 'Equipment type'], ['asset_tag', 'Asset tag'], ['power_requirements', 'Power requirements'], ['accessories', 'Included accessories'], ['last_service_date', 'Last service', 'date'], ['calibration_due_date', 'Calibration due', 'date'], ['warranty_end', 'Warranty end', 'date'], ['model', 'Model'], ['serial_number', 'Serial number'], ['condition', 'Condition'], ['next_service_date', 'Next service date', 'date']],
+  pharmacy: [['route', 'Labelled route'], ['pack_size', 'Pack size'], ['prescription_status', 'Dispensing classification'], ['manufacture_date', 'Manufacture date', 'date'], ['generic_name', 'Generic medicine name'], ['strength', 'Strength'], ['dosage_form', 'Dosage form'], ['batch_number', 'Batch / lot number'], ['expiry_date', 'Expiry date', 'date'], ['storage_conditions', 'Storage conditions']],
 }
 
 export function MedicalStockFields({ category, value, onChange, disabled }) {

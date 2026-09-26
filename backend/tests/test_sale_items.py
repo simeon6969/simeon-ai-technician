@@ -86,6 +86,19 @@ class SaleItemTests(unittest.TestCase):
         for values in [{'price': '-1'}, {'price': 'NaN'}, {'price': '1.001'}, {'currency': 'BAD'}, {'photo_data': ''}, {'photo_data': 'javascript:bad'}, {'name': ' '}]:
             self.assertEqual(self.client.post('/sale-items/', json={**self.payload, **values}).status_code, 422)
 
+    def test_pharmacy_form_requires_batch_details(self):
+        user = self.db.get(User, 1)
+        user.role, user.account_field = 'store', 'medical'
+        self.db.commit()
+        details = {'record_version': 2, 'quantity': 2, 'unit': 'box', 'generic_name': 'Example ingredient', 'strength': 'Label strength', 'dosage_form': 'Tablet', 'pack_size': '10 tablets', 'manufacturer': 'Maker', 'batch_number': 'B-1', 'expiry_date': '2028-01-01', 'storage_conditions': 'As labelled'}
+        data = {**self.payload, 'medical_category': 'pharmacy', 'medical_details': details}
+        self.assertEqual(self.client.post('/sale-items/', json=data).status_code, 200)
+        for missing in ['generic_name', 'strength', 'batch_number', 'expiry_date']:
+            incomplete = dict(details)
+            del incomplete[missing]
+            self.assertEqual(self.client.post('/sale-items/', json={**data, 'medical_details': incomplete}).status_code, 422)
+        self.assertEqual(self.client.post('/sale-items/', json={**data, 'medical_details': {**details, 'manufacture_date': '2029-01-01'}}).status_code, 422)
+
     def test_authentication(self):
         del self.app.dependency_overrides[get_current_user_id]
         self.assertEqual(self.client.get('/sale-items/posts').status_code, 401)

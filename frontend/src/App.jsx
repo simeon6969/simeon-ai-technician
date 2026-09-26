@@ -1,3 +1,5 @@
+import DashboardLayout, { DashboardOverview } from './DashboardLayout'
+import MedicalStoreDashboard from './MedicalStoreDashboard'
 import InventorySimeon from './InventorySimeon'
 import MySubscription, { SubscriptionSetup } from './MySubscription'
 import { SubscriptionChoices } from './Subscriptions'
@@ -121,7 +123,7 @@ const [profileError, setProfileError] = useState('')
 const [loginError, setLoginError] = useState('')
 const [authMessage, setAuthMessage] = useState('')
 
-  const [showStoreMenu, setShowStoreMenu] = useState(false)
+  const [dashboardSection, setDashboardSection] = useState('overview')
   const [storeConversation, setStoreConversation] = useState(null)
 const [helpMode, setHelpMode] = useState(null)
 
@@ -250,6 +252,7 @@ useEffect(() => {
 }, [loggedIn, profile, profileError])
 
 function handleLogout() {
+  setDashboardSection('overview')
   localStorage.removeItem('access_token')
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_role')
@@ -436,7 +439,7 @@ if (!profile || profileError) {
 }
 
 if (loggedIn && userRole === 'admin') {
-  return <AdminConsole onLogout={handleLogout} onHome={() => navigate('home')} />
+  return <AdminConsole account={profile} onLogout={handleLogout} onHome={() => navigate('home')} />
 }
 
 if (!profile.account_field) {
@@ -451,6 +454,9 @@ if (!profile.subscription) {
     const updated = { ...profile, subscription }; cacheProfile(updated); setProfile(updated)
   }} />
 }
+if (profile.role === 'store' && profile.account_field === 'medical') {
+  return <MedicalStoreDashboard key={profile.user_id} account={profile} onHome={() => navigate('home')} onLogout={handleLogout} />
+}
 if (['store', 'client'].includes(profile.role)) {
   return <RoleWorkspace key={profile.user_id} account={profile} onHome={() => navigate('home')} onLogout={handleLogout} />
 }
@@ -460,7 +466,7 @@ if (storeConversation) {
     key={`${profile.user_id}:${storeConversation}`}
     kind={storeConversation}
     account={profile}
-    onClose={() => setStoreConversation(null)}
+    onClose={() => { setDashboardSection(storeConversation === 'job' ? 'jobs' : 'parts'); setStoreConversation(null) }}
     onSaved={async (kind) => {
       try {
         if (kind === 'job') setMyJobCards(await getMyJobCards())
@@ -475,122 +481,19 @@ if (storeConversation) {
 
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Header */}
-      <header className="bg-slate-900 text-white shadow-md">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <div>
-            <h1 className="text-2xl font-bold">Simeon</h1>
-            <p className="text-sm text-slate-300">{profile.full_name}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-  <LanguageSwitcher />
-  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">{t(profile.account_field)} · {t(profile.role)}</span>
-
-  <button onClick={() => navigate('home')} className="rounded-xl border border-slate-500 px-4 py-2 text-sm text-white">{homeText.home}</button>
-  <button
-    onClick={handleLogout}
-    className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-  > {t("Logout")} </button>
-</div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <MySubscription subscription={profile.subscription} /><InventorySimeon account={profile} /><OfflineStatus account={profile} />
-
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900"> {t("Welcome to Simeon")} </h2>
-          <p className="mt-3 text-xl font-semibold text-teal-800">{profile.full_name}</p>
-
-          <p className="mt-2 text-slate-600"> {t("What would you like to do today?")} </p>
-        </div>
-
-        {/* Main options */}
-        <div className="grid gap-6 md:grid-cols-2">
-
-          {/* Store option */}
-          <div>
-            <button
-              onClick={() => setShowStoreMenu(!showStoreMenu)}
-              className="w-full rounded-2xl bg-white p-8 text-left shadow-sm transition hover:shadow-lg"
-            >
-              <div className="mb-4 text-4xl">🛠️</div>
-
-              <h3 className="text-xl font-semibold text-slate-900"> {t("Store a Job Card or Spare Part")} </h3>
-
-              <p className="mt-2 text-slate-600"> {t("Save your maintenance experience, job cards, or spare-part information to help other technicians.")} </p>
-            </button>
-
-            {/* Store menu */}
-            {showStoreMenu && (
-              <div className="mt-3 grid gap-3">
-
-                {/* Job card button */}
-                <button
-                  onClick={() => setStoreConversation('job')}
-                  className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
-                >
-                  <h4 className="font-semibold text-slate-900"> {t("📋 Digital Job Card")} </h4>
-
-                  <p className="mt-1 text-sm text-slate-600"> {t("Record a maintenance activity, diagnosis, and solution.")} </p>
-                </button>
-
-                {/* Spare part button */}
-                <button
-  onClick={() => setStoreConversation('part')}
-  className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
->
-                  <h4 className="font-semibold text-slate-900"> {t("🔩 Spare Part")} </h4>
-
-                  <p className="mt-1 text-sm text-slate-600"> {t("Store information about an available spare part.")} </p>
-                </button>
-
-              </div>
-            )}
-          </div>
-
-          {/* Help option */}
-          <div>
-  <button
-    onClick={() =>
-      setHelpMode(helpMode === null ? 'menu' : null)
-    }
-    className="w-full rounded-2xl bg-white p-8 text-left shadow-sm transition hover:shadow-lg"
-  >
-    <div className="mb-4 text-4xl">🤖</div>
-
-    <h3 className="text-xl font-semibold text-slate-900"> {t("Get Maintenance or Spare-Part Help")} </h3>
-
-    <p className="mt-2 text-slate-600"> {t("Ask Simeon about equipment problems, maintenance procedures, or spare parts.")} </p>
-  </button>
-
-  {helpMode === 'menu' && (
-    <div className="mt-3 grid gap-3">
-      <button
-        onClick={() => setHelpMode('maintenance')}
-        className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
-      >
-        <h4 className="font-semibold text-slate-900"> {t("🔧 Maintenance Help")} </h4>
-
-        <p className="mt-1 text-sm text-slate-600"> {t("Find reliable maintenance knowledge from successful job cards.")} </p>
-      </button>
-
-      <button
-        onClick={() => setHelpMode('spare_part')}
-        className="rounded-xl bg-white p-5 text-left shadow-sm hover:bg-slate-50"
-      >
-        <h4 className="font-semibold text-slate-900"> {t("🔩 Spare-Part Help")} </h4>
-
-        <p className="mt-1 text-sm text-slate-600"> {t("Search for spare parts stored by other technicians.")} </p>
-      </button>
-    </div>
-  )}
-</div>
-        </div>
-
+    <DashboardLayout account={profile} sections={[
+      ['overview', 'Overview'], ['assistant', 'Ask Simeon'], ['jobs', 'My Job Cards'], ['parts', 'My Spare Parts'], ['items', 'Items for sale'], ['help', 'Maintenance & spare-part help'], ['requests', 'Requests & marketplace'], ['account', 'My account'],
+    ]} section={dashboardSection} onNavigate={setDashboardSection} onHome={() => navigate('home')} onLogout={handleLogout}>
+      {dashboardSection === 'overview' && <DashboardOverview actions={[
+        { label: 'Digital Job Card', description: 'Record maintenance work with Simeon.', onClick: () => setStoreConversation('job') },
+        { label: 'Store Spare Part', description: 'Save a spare part and its asking price.', onClick: () => setStoreConversation('part') },
+        { label: 'Ask Simeon', description: 'Find available products and inventory information.', onClick: () => setDashboardSection('assistant') },
+        { label: 'Maintenance Help', description: 'Find maintenance knowledge from successful job cards.', onClick: () => { setHelpMode('maintenance'); setDashboardSection('help') } },
+        { label: 'Items for sale', description: 'Manage equipment and posted items.', onClick: () => setDashboardSection('items') },
+        { label: 'Requests & marketplace', description: 'Browse products and follow requests.', onClick: () => setDashboardSection('requests') },
+      ]}><MySubscription subscription={profile.subscription} /><OfflineStatus account={profile} /></DashboardOverview>}
+      {dashboardSection === 'assistant' && <InventorySimeon account={profile} />}
+      {dashboardSection === 'jobs' && <><button className="rounded-xl bg-teal-700 px-5 py-3 text-white" onClick={() => setStoreConversation('job')}>{t('Digital Job Card')}</button>
         <section className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
@@ -739,6 +642,8 @@ if (storeConversation) {
           </div>
         </section>
 
+      </>}
+      {dashboardSection === 'parts' && <><button className="rounded-xl bg-teal-700 px-5 py-3 text-white" onClick={() => setStoreConversation('part')}>{t('Store Spare Part')}</button>
         <section className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
@@ -860,11 +765,14 @@ if (storeConversation) {
         </section>
 
         {/* Digital Job Card form */}
-        <AccountRecovery setup /><SaleItems />
-        <ItemMarket />
+      </>}
+      {dashboardSection === 'items' && <SaleItems />}
+      {dashboardSection === 'account' && <><MySubscription subscription={profile.subscription} /><AccountRecovery setup /><OfflineStatus account={profile} /></>}
+      {dashboardSection === 'requests' && <ItemMarket />}
+      {dashboardSection === 'help' && <div className="mb-5 flex flex-wrap gap-3"><button onClick={() => setHelpMode('maintenance')} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t('Maintenance Help')}</button><button onClick={() => setHelpMode('spare_part')} className="rounded-xl border bg-white px-5 py-3">{t('Spare-Part Help')}</button></div>}
         {/* Chat area */}
     {/* Help area */}
-{helpMode === 'maintenance' && (
+{dashboardSection === 'help' && helpMode === 'maintenance' && (
   <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
     <div className="mb-6">
       <h3 className="text-2xl font-bold text-slate-900"> {t("🔧 Maintenance Help")} </h3>
@@ -936,7 +844,7 @@ if (storeConversation) {
   </div>
 )}
 
-{helpMode === 'spare_part' && (
+{dashboardSection === 'help' && helpMode === 'spare_part' && (
   <div className="mt-10 rounded-2xl bg-white p-8 shadow-sm">
     <div className="mb-6">
       <h3 className="text-2xl font-bold text-slate-900"> {t("🔩 Spare-Part Help")} </h3>
@@ -1126,8 +1034,7 @@ if (storeConversation) {
   </div>
 )}
 
-      </main>
-    </div>
+    </DashboardLayout>
   )
 }
 

@@ -32,6 +32,40 @@ class MedicalDetails(BaseModel):
     generic_name: str = Field(default='', max_length=200)
     strength: str = Field(default='', max_length=100)
     dosage_form: str = Field(default='', max_length=100)
+    record_version: int = Field(default=1, ge=1, le=2)
+    route: str = Field(default='', max_length=100)
+    pack_size: str = Field(default='', max_length=100)
+    prescription_status: str = Field(default='', max_length=100)
+    manufacture_date: date | None = None
+    supplier: str = Field(default='', max_length=100)
+    received_date: date | None = None
+    reorder_level: int | None = Field(default=None, ge=0, le=1000000000)
+    product_code: str = Field(default='', max_length=100)
+    size_specification: str = Field(default='', max_length=100)
+    material: str = Field(default='', max_length=100)
+    sterility: str = Field(default='', max_length=100)
+    single_use: str = Field(default='', max_length=100)
+    equipment_type: str = Field(default='', max_length=100)
+    asset_tag: str = Field(default='', max_length=100)
+    power_requirements: str = Field(default='', max_length=100)
+    accessories: str = Field(default='', max_length=2000)
+    last_service_date: date | None = None
+    calibration_due_date: date | None = None
+    warranty_end: date | None = None
+
+
+def validate_medical_record(category, details):
+    if details.record_version < 2:
+        return
+    required = {
+        'pharmacy': ['generic_name', 'strength', 'dosage_form', 'pack_size', 'manufacturer', 'batch_number', 'expiry_date', 'storage_conditions'],
+        'consumables': ['size_specification', 'sterility', 'single_use', 'pack_size', 'manufacturer', 'batch_number'],
+        'biomedical': ['equipment_type', 'manufacturer', 'model', 'condition'],
+    }
+    if any(not getattr(details, key) for key in required[category]):
+        raise HTTPException(422, 'Complete the required details for this medical category')
+    if details.manufacture_date and details.expiry_date and details.expiry_date < details.manufacture_date:
+        raise HTTPException(422, 'Expiry date cannot be before manufacture date')
 
 
 class SaleItemCreate(BaseModel):
@@ -60,6 +94,7 @@ def create_item(data: SaleItemCreate, user_id: int = Depends(require_inventory),
             raise HTTPException(403, 'Medical inventory is available to Medical store accounts')
         if not data.medical_category or not data.medical_details:
             raise HTTPException(422, 'Choose a medical category and enter stock details')
+        validate_medical_record(data.medical_category, data.medical_details)
     values = data.model_dump()
     if data.medical_details:
         values['medical_details'] = data.medical_details.model_dump(mode='json')
@@ -141,6 +176,9 @@ def update_medical_stock(item_id: int, data: MedicalDetails, user_id: int = Depe
     item = owned_item(item_id, user_id, db)
     if not item.medical_category:
         raise HTTPException(422, 'This item has no medical stock category')
+    if (item.medical_details or {}).get('record_version', 1) >= 2:
+        data.record_version = 2
+    validate_medical_record(item.medical_category, data)
     item.medical_details = data.model_dump(mode='json')
     db.commit()
     return serialize(item)
