@@ -17,10 +17,10 @@ const labels = {
 const empty = { name: '', description: '', price: '', currency: 'RWF', photo_data: '' }
 const fields = ['name', 'description', 'price', 'currency', 'photo_data']
 
-export default function SaleItems({ medical = false }) {
+export default function SaleItems({ medical = false, onRecordMedical, initialCategory = 'consumables', hideCategoryNavigation = false }) {
   const { t, language } = useLanguage()
   const w = labels[language] || labels.en
-  const [category, setCategory] = useState('consumables')
+  const [category, setCategory] = useState(initialCategory)
   const [editingStock, setEditingStock] = useState(null)
   const [items, setItems] = useState([])
   const [board, setBoard] = useState(false)
@@ -82,9 +82,10 @@ export default function SaleItems({ medical = false }) {
   const visibleItems = items.filter(item => !medical || board || (category === 'general' ? !item.medical_category : item.medical_category === category))
   return <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm">
     <h3 className="text-2xl font-bold text-slate-900">{medical ? 'Medical store inventory' : w[0]}</h3>
-    {medical && <div className="my-4 flex flex-wrap gap-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <button key={key} disabled={busy || !!draft || !!editingStock} aria-pressed={category === key} onClick={() => setCategory(key)} className={`rounded-xl border px-4 py-3 ${category === key ? 'bg-teal-700 text-white' : ''}`}>{label}</button>)}</div>}
+    {medical && !hideCategoryNavigation && <div className="my-4 flex flex-wrap gap-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <button key={key} disabled={busy || !!draft || !!editingStock} aria-pressed={category === key} onClick={() => { setCategory(key); if (key !== 'general' && onRecordMedical) onRecordMedical(key) }} className={`rounded-xl border px-4 py-3 ${category === key ? 'bg-teal-700 text-white' : ''}`}>{label}</button>)}</div>}
+    {medical && !hideCategoryNavigation && <label className="my-3 block text-sm">View saved inventory<select value={category} disabled={busy || !!draft} onChange={event => setCategory(event.target.value)} className="ml-3 rounded-lg border p-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>}
     <div className="my-4 flex flex-wrap gap-3">
-      <button disabled={busy || !!draft} onClick={() => { setDraft({ ...empty, ...(medical && category !== 'general' ? { medical_category: category, medical_details: { quantity: 0, unit: '' } } : {}) }); setStep(0); setError(''); setNotice(false) }} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{w[1]}</button>
+      <button disabled={busy || !!draft} onClick={() => { if (medical && category !== 'general' && onRecordMedical) { onRecordMedical(category); return } setDraft({ ...empty, ...(medical && category !== 'general' ? { medical_category: category, medical_details: { quantity: 0, unit: '' } } : {}) }); setStep(0); setError(''); setNotice(false) }} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{w[1]}</button>
       <button disabled={busy || !!draft} onClick={() => { setBoard(!board); setNotice(false) }} className="rounded-xl border border-slate-300 px-4 py-2">{board ? w[3] : w[2]}</button>
       <button disabled={busy || !!draft} onClick={() => setReload((value) => value + 1)} className="rounded-xl border border-slate-300 px-4 py-2">{t('Refresh')}</button>
     </div>
