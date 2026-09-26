@@ -59,6 +59,9 @@ def create_missing_tables():
     Base.metadata.create_all(bind=engine)
     if engine.dialect.name == "postgresql":
         with engine.begin() as connection:
+            connection.exec_driver_sql("ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS medical_category VARCHAR(30)")
+            connection.exec_driver_sql("ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS medical_details JSON")
+            connection.exec_driver_sql("ALTER TABLE account_recovery ADD COLUMN IF NOT EXISTS sessions_revoked_at TIMESTAMP")
             connection.exec_driver_sql("ALTER TABLE account_subscriptions ADD COLUMN IF NOT EXISTS payment_required BOOLEAN NOT NULL DEFAULT FALSE")
 
     with engine.begin() as connection:
@@ -119,3 +122,6 @@ app.include_router(recovery_router)
 
 from backend.routes.subscriptions import router as subscriptions_router
 app.include_router(subscriptions_router)
+
+from backend.routes.inventory_chat import router as inventory_chat_router
+app.include_router(inventory_chat_router)

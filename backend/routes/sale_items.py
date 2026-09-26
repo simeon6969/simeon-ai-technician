@@ -1,5 +1,5 @@
 from backend.permissions import require_inventory
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from decimal import Decimal
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -16,6 +16,24 @@ from backend.schemas.spare_parts import validate_photo_data
 router = APIRouter(prefix='/sale-items', tags=['Items for sale'])
 
 
+class MedicalDetails(BaseModel):
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    quantity: int = Field(ge=0, le=1000000000)
+    unit: str = Field(min_length=1, max_length=60)
+    manufacturer: str = Field(default='', max_length=150)
+    batch_number: str = Field(default='', max_length=100)
+    expiry_date: date | None = None
+    storage_location: str = Field(default='', max_length=200)
+    storage_conditions: str = Field(default='', max_length=500)
+    model: str = Field(default='', max_length=150)
+    serial_number: str = Field(default='', max_length=150)
+    condition: str = Field(default='', max_length=100)
+    next_service_date: date | None = None
+    generic_name: str = Field(default='', max_length=200)
+    strength: str = Field(default='', max_length=100)
+    dosage_form: str = Field(default='', max_length=100)
+
+
 class SaleItemCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
     name: str = Field(min_length=1, max_length=200)
@@ -23,18 +41,29 @@ class SaleItemCreate(BaseModel):
     price: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
     currency: Literal['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'] = 'RWF'
     photo_data: str = Field(min_length=1, max_length=7000000)
+    medical_category: Literal['consumables', 'biomedical', 'pharmacy'] | None = None
+    medical_details: MedicalDetails | None = None
     _photo = field_validator('photo_data')(validate_photo_data)
 
 
 def serialize(item):
     return {field: getattr(item, field) for field in (
         'item_id', 'seller_id', 'name', 'description', 'price', 'currency',
-        'photo_data', 'posted_at', 'created_at')}
+        'photo_data', 'posted_at', 'created_at', 'medical_category', 'medical_details')}
 
 
 @router.post('/')
 def create_item(data: SaleItemCreate, user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
-    item = SaleItem(seller_id=user_id, **data.model_dump())
+    if data.medical_category or data.medical_details:
+        user = db.get(User, user_id)
+        if not user or user.role != 'store' or user.account_field != 'medical':
+            raise HTTPException(403, 'Medical inventory is available to Medical store accounts')
+        if not data.medical_category or not data.medical_details:
+            raise HTTPException(422, 'Choose a medical category and enter stock details')
+    values = data.model_dump()
+    if data.medical_details:
+        values['medical_details'] = data.medical_details.model_dump(mode='json')
+    item = SaleItem(seller_id=user_id, **values)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -105,3 +134,13 @@ def delete_item(item_id: int, user_id: int = Depends(require_inventory), db: Ses
     db.delete(owned_item(item_id, user_id, db))
     db.commit()
     return {'item_id': item_id}
+
+
+@router.patch('/{item_id}/medical-stock')
+def update_medical_stock(item_id: int, data: MedicalDetails, user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
+    item = owned_item(item_id, user_id, db)
+    if not item.medical_category:
+        raise HTTPException(422, 'This item has no medical stock category')
+    item.medical_details = data.model_dump(mode='json')
+    db.commit()
+    return serialize(item)
