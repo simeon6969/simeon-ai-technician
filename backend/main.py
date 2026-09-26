@@ -18,6 +18,7 @@ from backend.routes.spare_parts import router as spare_parts_router
 from backend.routes.admin import router as admin_router
 from backend.routes.chat import router as chat_router
 from backend.routes.sale_items import router as sale_items_router
+from backend.routes.offline import router as offline_router
 
 
 app = FastAPI(title="Simeon API")
@@ -45,6 +46,7 @@ app.include_router(spare_parts_router)
 app.include_router(admin_router)
 app.include_router(chat_router)
 app.include_router(sale_items_router)
+app.include_router(offline_router)
 
 
 @app.on_event("startup")
