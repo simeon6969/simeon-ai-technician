@@ -57,3 +57,15 @@
 .showcase-tabs button[aria-pressed=true] { background:#00cbb8; color:#031519; }
 .showcase-message, .orbit-node { background:#0f172a; }
 .simeon-home .hero-primary { border-radius:16px; }
+
+/* Alternating light sections keep the dark hero as the visual anchor. */
+.simeon-home header.home-header { --text:#f8fafc; --muted:#a5b4cb; --line:#334155; color:#f8fafc; }
+.simeon-home #how-it-works { background:#fff; color:#152638; }
+.simeon-home .role-card { background:#f3f7fa; border-color:#d5dfe8; color:#152638; }
+.simeon-home .role-card:hover { background:#e7f4f2; }
+.simeon-home .field-tile { background:#fff; border-color:#d5dfe8; color:#152638; }
+.simeon-home .board-search { background:#fff; border-color:#d5dfe8; }
+.simeon-home .listing-card { background:#fff; color:#152638; border-color:#d5dfe8; }
+.simeon-home .board-search :is(input, select) { color-scheme:light; background:#f7fafc; color:#152638; border-color:#ccd8e3; }
+.simeon-home .board-search option { background:#fff; color:#152638; }
+.simeon-home .board-search input::placeholder { color:#64748b; }
