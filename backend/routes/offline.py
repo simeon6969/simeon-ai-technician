@@ -18,6 +18,7 @@ from backend.models.maintenance_knowledge import MaintenanceKnowledge
 from backend.models.offline_submission import OfflineSubmission
 from backend.schemas.job_cards import JobCardCreate
 from backend.schemas.spare_parts import SparePartCreate
+from backend.permissions import check_role
 
 router = APIRouter(prefix='/offline', tags=['Offline sync'])
 
@@ -60,6 +61,7 @@ def submit(data: Annotated[JobInput | PartInput, Field(discriminator='kind')],
         account = db.get(User, user_id)
         if not account or not account.is_active:
             raise HTTPException(401, 'Please log in again')
+        check_role(account, {'technician'} if data.kind == 'job' else {'technician', 'store'})
         if data.kind == 'job':
             submitter = account.full_name if account.role == 'technician' else (data.job.submitter_name or '').strip()
             if not submitter:

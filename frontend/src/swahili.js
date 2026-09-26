@@ -1,4 +1,58 @@
 const rows = `
+Administration|Usimamizi
+Overview|Muhtasari
+Legacy requests|Maombi ya awali
+Manage every field, role and record from one workspace.|Simamia sekta, majukumu na rekodi zote mahali pamoja.
+Account setup|Usanidi wa akaunti
+Accounts awaiting field and role selection|Akaunti zinazosubiri uchaguzi wa sekta na jukumu
+Review accounts|Kagua akaunti
+Search records|Tafuta rekodi
+All roles|Majukumu yote
+No matching records|Hakuna rekodi zinazolingana
+Changes saved|Mabadiliko yamehifadhiwa
+Save changes|Hifadhi mabadiliko
+Edit record|Hariri rekodi
+Editing a job card removes its validation. Review and validate it again afterward.|Kuhariri kadi kunaondoa uthibitisho wake. Ikague na uithibitishe tena baadaye.
+Delete this record and its related data? This cannot be undone.|Ufute rekodi hii na data zinazohusiana? Huwezi kutengua hatua hii.
+Publish|Chapisha
+Unpublish|Ondoa tangazo
+Validate|Thibitisha
+Select|Chagua
+Unable to load|Imeshindwa kupakia
+Photo|Picha
+medical|Matibabu
+it|Teknolojia ya habari
+electrical|Umeme
+mechanical|Mitambo
+store|Duka
+client|Mteja
+Account field|Sekta ya kazi
+Account role|Jukumu la akaunti
+Choose your field|Chagua sekta yako
+Choose your role|Chagua jukumu lako
+Choose your field and role|Chagua sekta na jukumu lako
+Choose your field and role to continue. Your existing records will be kept.|Chagua sekta na jukumu ili kuendelea. Rekodi zako zitahifadhiwa.
+Sync pending job cards before choosing Store or Client. Only technicians can submit job cards.|Tuma kadi zinazosubiri kabla ya kuchagua Duka au Mteja. Mafundi pekee wanaweza kuwasilisha kadi za kazi.
+Maintenance, job cards, inventory and item requests.|Matengenezo, kadi za kazi, hifadhi na maombi ya bidhaa.
+Manage inventory, post items and handle item requests.|Simamia hifadhi, tangaza bidhaa na ushughulikie maombi.
+Browse posted items and send requests to sellers.|Tazama bidhaa zilizotangazwa na utume maombi kwa wauzaji.
+Store name|Jina la duka
+Enter store name|Andika jina la duka
+All fields|Sekta zote
+Browse and request items|Tazama na uombe bidhaa
+Request item|Omba bidhaa
+Request saved|Ombi limehifadhiwa
+Item requests|Maombi ya bidhaa
+Request status|Hali ya ombi
+Seller|Muuzaji
+No items found|Hakuna bidhaa zilizopatikana
+Store Spare Part|Hifadhi kipuri
+Continue|Endelea
+Previous|Iliyotangulia
+Next|Inayofuata
+accepted|Limekubaliwa
+declined|Limekataliwa
+fulfilled|Limetimizwa
 Asking price|Bei unayotaka
 Currency|Sarafu
 How much would you like to be paid for this spare part?|Ungependa kulipwa kiasi gani kwa kipuri hiki?

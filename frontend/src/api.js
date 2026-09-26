@@ -1,8 +1,9 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
-export async function getPublicSaleItems(search = '', offset = 0, signal) {
+export async function getPublicSaleItems(search = '', offset = 0, signal, field = '') {
   const params = new URLSearchParams({ search, offset, limit: 12 })
+  if (field) params.set('account_field', field)
   const response = await fetch(`${API_BASE_URL}/sale-items/public?${params}`, { signal })
   if (!response.ok) throw new Error('Unable to load listings')
   return response.json()
@@ -424,7 +425,7 @@ export async function getMyProfile() {
   } finally { clearTimeout(timeout) }
 }
 
-export async function registerUser(fullName, email, phone, password, role = 'technician') {
+export async function registerUser(fullName, email, phone, password, role, accountField) {
   const response = await fetch(`${API_BASE_URL}/users/register`, {
     method: 'POST',
     headers: {
@@ -432,6 +433,7 @@ export async function registerUser(fullName, email, phone, password, role = 'tec
     },
     body: JSON.stringify({
       full_name: fullName,
+      account_field: accountField,
       role,
       email,
       phone: phone || null,
@@ -448,3 +450,15 @@ export async function registerUser(fullName, email, phone, password, role = 'tec
 }
 
 
+
+export async function accountRequest(path, method = 'GET', data) {
+  const response = await fetch(`${API_BASE_URL}${path}`, { method,
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    ...(data === undefined ? {} : { body: JSON.stringify(data) }),
+  })
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new Error(typeof body.detail === 'string' ? body.detail : 'Unable to complete this request. Check your selections and connection.')
+  }
+  return response.json()
+}

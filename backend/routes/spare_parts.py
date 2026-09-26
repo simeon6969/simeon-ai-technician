@@ -1,3 +1,4 @@
+from backend.permissions import require_inventory
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -31,7 +32,7 @@ def get_db():
 @router.post("/")
 def create_spare_part(
     spare_part_data: SparePartCreate,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_inventory),
     db: Session = Depends(get_db)
 ):
     new_part = SparePart(
@@ -110,7 +111,7 @@ def search_spare_parts(
 
 @router.get("/my")
 def get_my_spare_parts(
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_inventory),
     db: Session = Depends(get_db)
 ):
     parts = (
@@ -176,7 +177,7 @@ def list_posts(
 @router.post('/{spare_part_id}/post')
 def post_spare_part(
     spare_part_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_inventory),
     db: Session = Depends(get_db),
 ):
     part = db.query(SparePart).filter(SparePart.spare_part_id == spare_part_id, SparePart.submitted_by == user_id).first()
@@ -230,7 +231,7 @@ def get_my_spare_part_requests(
 @router.delete("/{spare_part_id}")
 def delete_spare_part(
     spare_part_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_inventory),
     db: Session = Depends(get_db)
 ):
     part = (

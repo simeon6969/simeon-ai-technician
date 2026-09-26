@@ -2,6 +2,60 @@ import { swahili } from './swahili.js'
 
 // English keys also provide the fallback for messages returned by the server.
 const rows = `
+Administration|Ubuyobozi|Administration
+Overview|Incamake|Vue d’ensemble
+Legacy requests|Ubusabe bwa mbere|Anciennes demandes
+Manage every field, role and record from one workspace.|Cunga inzego, inshingano n’inyandiko ahantu hamwe.|Gérez tous les domaines, rôles et dossiers depuis un seul espace.
+Account setup|Gutegura konti|Configuration des comptes
+Accounts awaiting field and role selection|Konti zitarahitamo urwego n’uruhare|Comptes en attente du choix de domaine et de rôle
+Review accounts|Suzuma konti|Examiner les comptes
+Search records|Shakisha inyandiko|Rechercher des dossiers
+All roles|Inshingano zose|Tous les rôles
+No matching records|Nta nyandiko zihuye n’ibyashatswe|Aucun dossier correspondant
+Changes saved|Impinduka zabitswe|Modifications enregistrées
+Save changes|Bika impinduka|Enregistrer les modifications
+Edit record|Hindura inyandiko|Modifier le dossier
+Editing a job card removes its validation. Review and validate it again afterward.|Guhindura ifishi bikuraho icyemezo cyayo. Ongera uyisuzume uyemeze.|Modifier une fiche annule sa validation. Vérifiez-la et validez-la à nouveau ensuite.
+Delete this record and its related data? This cannot be undone.|Gusiba iyi nyandiko n’amakuru bijyanye? Ntibishobora gusubizwa.|Supprimer ce dossier et ses données liées ? Cette action est irréversible.
+Publish|Tangaza|Publier
+Unpublish|Kura ku rutonde rusange|Retirer de la publication
+Validate|Emeza|Valider
+Select|Hitamo|Sélectionner
+Unable to load|Ntibyashoboye gufungurwa|Chargement impossible
+Photo|Ifoto|Photo
+medical|Ubuvuzi|Médical
+it|Ikoranabuhanga|Informatique
+electrical|Amashanyarazi|Électricité
+mechanical|Ubukanishi|Mécanique
+store|Ububiko / iduka|Magasin
+client|Umukiriya|Client
+Account field|Urwego rw’akazi|Domaine d’activité
+Account role|Uruhare rwa konti|Rôle du compte
+Choose your field|Hitamo urwego rw’akazi|Choisissez votre domaine
+Choose your role|Hitamo uruhare rwawe|Choisissez votre rôle
+Choose your field and role|Hitamo urwego rw’akazi n’uruhare|Choisissez votre domaine et votre rôle
+Choose your field and role to continue. Your existing records will be kept.|Hitamo urwego n’uruhare kugira ngo ukomeze. Ibyanditswe byawe bizagumaho.|Choisissez votre domaine et votre rôle pour continuer. Vos données seront conservées.
+Sync pending job cards before choosing Store or Client. Only technicians can submit job cards.|Ohereza amafishi ategereje mbere yo guhitamo iduka cyangwa umukiriya. Abatekinisiye gusa ni bo bohereza amafishi y’akazi.|Synchronisez les fiches en attente avant de choisir Magasin ou Client. Seuls les techniciens peuvent soumettre des fiches.
+Maintenance, job cards, inventory and item requests.|Gusana, amafishi y’akazi, ububiko n’ubusabe bw’ibikoresho.|Maintenance, fiches d’intervention, stock et demandes d’articles.
+Manage inventory, post items and handle item requests.|Cunga ububiko, tangaza ibikoresho kandi ukire ubusabe.|Gérez le stock, publiez des articles et traitez les demandes.
+Browse posted items and send requests to sellers.|Reba ibikoresho byatangajwe wohereze ubusabe ku bagurisha.|Consultez les annonces et envoyez des demandes aux vendeurs.
+Store name|Izina ry’iduka|Nom du magasin
+Enter store name|Andika izina ry’iduka|Saisissez le nom du magasin
+All fields|Inzego zose|Tous les domaines
+Browse and request items|Reba kandi usabe ibikoresho|Consulter et demander des articles
+Request item|Saba igikoresho|Demander cet article
+Request saved|Ubusabe bwabitswe|Demande enregistrée
+Item requests|Ubusabe bw’ibikoresho|Demandes d’articles
+Request status|Uko ubusabe buhagaze|Statut de la demande
+Seller|Ugurisha|Vendeur
+No items found|Nta bikoresho byabonetse|Aucun article trouvé
+Store Spare Part|Bika igikoresho|Enregistrer une pièce
+Continue|Komeza|Continuer
+Previous|Ibanjirije|Précédent
+Next|Ikurikira|Suivant
+accepted|Bwemerewe|Acceptée
+declined|Bwanze|Refusée
+fulfilled|Bwarangiye|Honorée
 Asking price|Igiciro wifuza|Prix demandé
 Currency|Ifaranga|Devise
 How much would you like to be paid for this spare part?|Ni angahe wifuza guhabwa kuri iki gikoresho?|Quel prix souhaitez-vous recevoir pour cette pièce ?
@@ -277,5 +331,9 @@ export const translations = Object.fromEntries(rows.trim().split('\n').map((row)
 }))
 
 export function translate(language, key) {
+  if (language === 'en') {
+    const labels = { medical: 'Medical', it: 'IT', electrical: 'Electrical', mechanical: 'Mechanical', technician: 'Technician', store: 'Store', client: 'Client' }
+    if (labels[key]) return labels[key]
+  }
   return translations[key]?.[language] || key
 }

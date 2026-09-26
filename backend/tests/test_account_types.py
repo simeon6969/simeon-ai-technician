@@ -22,12 +22,12 @@ class AccountTests(unittest.TestCase):
 
     def test_registration_types_and_no_admin_escalation(self):
         with patch('backend.routes.users.hash_password', return_value='hashed'):
-            for role in ['technician', 'organization', 'institution', 'health_facility', 'other_business']:
-                result = self.client.post('/users/register', json={'full_name': ' Example Account ', 'email': f'{role}@example.com', 'password': 'test-pass', 'role': role})
+            for role in ['technician', 'store', 'client']:
+                result = self.client.post('/users/register', json={'full_name': ' Example Account ', 'email': f'{role}@example.com', 'password': 'test-pass', 'role': role, 'account_field': 'medical'})
                 self.assertEqual(result.status_code, 200)
                 self.assertEqual(result.json()['role'], role)
                 self.assertEqual(result.json()['full_name'], 'Example Account')
-            result = self.client.post('/users/register', json={'full_name': 'Admin', 'email': 'admin@example.com', 'password': 'test', 'role': 'admin'})
+            result = self.client.post('/users/register', json={'full_name': 'Admin', 'email': 'admin@example.com', 'password': 'test', 'role': 'admin', 'account_field': 'medical'})
             self.assertEqual(result.status_code, 422)
 
     def test_personal_name_comes_from_account_not_request(self):

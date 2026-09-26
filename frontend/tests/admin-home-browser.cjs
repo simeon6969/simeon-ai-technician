@@ -1,0 +1,57 @@
+const assert = require('node:assert/strict')
+const path = require('node:path')
+const os = require('node:os')
+const { chromium } = require('../../desktop/node_modules/playwright-core')
+
+async function run() {
+  const browser = await chromium.launch({ channel: 'msedge', headless: true })
+  try {
+    const context = await browser.newContext({ viewport: { width: 1360, height: 900 } })
+    const page = await context.newPage()
+    const failures = []
+    page.on('pageerror', error => failures.push(error.message))
+    const users = [{ user_id: 1, full_name: 'Admin', email: 'admin@example.test', role: 'admin', account_field: null, is_active: true }, { user_id: 2, full_name: 'Test technician', email: 'tech@example.test', role: 'technician', account_field: 'medical', is_active: true }]
+    await page.addInitScript(() => {
+      localStorage.setItem('access_token', 'mock-admin-token')
+      localStorage.setItem('user_id', '1')
+      localStorage.setItem('user_role', 'admin')
+    })
+    await page.route('**/*', route => {
+      const url = new URL(route.request().url())
+      if (url.port === '5199') return route.continue()
+      const json = value => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+      if (url.pathname === '/users/me') return json(users[0])
+      if (url.pathname === '/admin/users') return json(users)
+      if (url.pathname === '/admin/users/2' && route.request().method() === 'PATCH') { Object.assign(users[1], route.request().postDataJSON()); return json({ saved: true }) }
+      if (url.pathname === '/sale-items/public') return json({ total: 0, items: [] })
+      return json([])
+    })
+    await page.goto('http://localhost:5199/#app')
+    await page.getByRole('heading', { name: 'Overview', exact: true }).waitFor()
+    await page.getByRole('navigation', { name: 'Administration' }).getByRole('button', { name: /^Accounts/ }).click()
+    await page.getByRole('button', { name: 'Edit', exact: true }).click()
+    const editor = page.getByRole('region', { name: 'Edit record' })
+    await editor.getByLabel('Full name', { exact: true }).fill('New store name')
+    await editor.getByLabel('Account role', { exact: true }).selectOption('store')
+    await editor.getByLabel('Account field', { exact: true }).selectOption('mechanical')
+    await editor.getByRole('button', { name: 'Save changes' }).click()
+    await page.getByRole('heading', { name: 'New store name' }).waitFor()
+    assert.equal(users[1].role, 'store')
+    assert.equal(users[1].account_field, 'mechanical')
+    assert.equal(await page.locator('article').filter({ has: page.getByRole('heading', { name: 'Admin', exact: true }) }).getByRole('button', { name: 'Delete', exact: true }).count(), 0)
+    await page.screenshot({ path: path.join(os.tmpdir(), 'simeon-admin-desktop.png'), fullPage: true })
+    await page.getByRole('button', { name: 'Home', exact: true }).click()
+    await page.getByRole('heading', { name: /Keep work moving/ }).waitFor()
+    await page.screenshot({ path: path.join(os.tmpdir(), 'simeon-home-desktop.png'), fullPage: true })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.screenshot({ path: path.join(os.tmpdir(), 'simeon-home-mobile.png'), fullPage: true })
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Homepage overflows mobile viewport')
+    await page.goto('http://localhost:5199/#app')
+    await page.getByRole('heading', { name: 'Overview', exact: true }).waitFor()
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Admin overflows mobile viewport')
+    assert.deepEqual(failures, [])
+    console.log('PASS: admin account editing, admin protection, desktop/mobile homepage and admin layouts; screenshots saved in TEMP')
+    await context.close()
+  } finally { await browser.close() }
+}
+run().catch(error => { console.error(error); process.exitCode = 1 })

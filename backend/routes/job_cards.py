@@ -1,3 +1,4 @@
+from backend.permissions import require_technician
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,7 +30,7 @@ def get_db():
 @router.post("/")
 def create_job_card(
     job_card_data: JobCardCreate,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     account = db.query(User).filter(User.user_id == user_id).first()
@@ -74,7 +75,7 @@ def create_job_card(
 
 @router.get("/")
 def get_my_job_cards(
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     job_cards = (
@@ -110,7 +111,7 @@ def get_my_job_cards(
 @router.get("/{job_card_id}")
 def get_job_card(
     job_card_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     job_card = (
@@ -155,7 +156,7 @@ def get_job_card(
 def update_job_card(
     job_card_id: int,
     job_card_data: JobCardCreate,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     job_card = (
@@ -205,7 +206,7 @@ def update_job_card(
 @router.delete("/{job_card_id}")
 def delete_job_card(
     job_card_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     job_card = (
@@ -236,7 +237,7 @@ def delete_job_card(
 @router.post("/{job_card_id}/validate")
 def validate_job_card(
     job_card_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     job_card = (

@@ -181,6 +181,7 @@ def get_all_users(
             "email": user.email,
             "phone": user.phone,
             "role": user.role,
+            "account_field": user.account_field,
             "is_active": user.is_active,
             "created_at": user.created_at,
         }
@@ -200,10 +201,10 @@ def update_user_status(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if user.user_id == admin_id and not is_active:
+    if user.role == 'admin':
         raise HTTPException(
-            status_code=400,
-            detail="You cannot deactivate your own admin account"
+            status_code=403,
+            detail="Admin accounts are protected"
         )
 
     user.is_active = is_active
@@ -266,6 +267,7 @@ def get_all_spare_parts(
             "photo_data": part.photo_data,
             "attachments_data": part.attachments_data,
             "availability_status": part.availability_status,
+            "posted_at": part.posted_at,
             "created_at": part.created_at,
         }
         for part in parts
@@ -312,6 +314,7 @@ def get_spare_part_requests(
                 "specifications": part.specifications,
                 "compatibility": part.compatibility,
                 "availability_status": part.availability_status,
+            "posted_at": part.posted_at,
                 "photo_data": part.photo_data,
                 "equipment_id": part.equipment_id,
             },

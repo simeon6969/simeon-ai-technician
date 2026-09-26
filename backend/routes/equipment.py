@@ -1,3 +1,4 @@
+from backend.permissions import require_technician
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -28,7 +29,7 @@ def create_equipment(
     model: str,
     description: str | None = None,
     technical_specs: str | None = None,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     new_equipment = Equipment(
