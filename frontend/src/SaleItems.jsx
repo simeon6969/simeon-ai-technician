@@ -81,9 +81,9 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
 
   const visibleItems = items.filter(item => !medical || board || (category === 'general' ? !item.medical_category : item.medical_category === category))
   return <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm">
-    <h3 className="text-2xl font-bold text-slate-900">{medical ? 'Medical store inventory' : w[0]}</h3>
-    {medical && !hideCategoryNavigation && <div className="my-4 flex flex-wrap gap-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <button key={key} disabled={busy || !!draft || !!editingStock} aria-pressed={category === key} onClick={() => { setCategory(key); if (key !== 'general' && onRecordMedical) onRecordMedical(key) }} className={`rounded-xl border px-4 py-3 ${category === key ? 'bg-teal-700 text-white' : ''}`}>{label}</button>)}</div>}
-    {medical && !hideCategoryNavigation && <label className="my-3 block text-sm">View saved inventory<select value={category} disabled={busy || !!draft} onChange={event => setCategory(event.target.value)} className="ml-3 rounded-lg border p-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>}
+    <h3 className="text-2xl font-bold text-slate-900">{medical ? t('Medical store inventory') : w[0]}</h3>
+    {medical && !hideCategoryNavigation && <div className="my-4 flex flex-wrap gap-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <button key={key} disabled={busy || !!draft || !!editingStock} aria-pressed={category === key} onClick={() => { setCategory(key); if (key !== 'general' && onRecordMedical) onRecordMedical(key) }} className={`rounded-xl border px-4 py-3 ${category === key ? 'bg-teal-700 text-white' : ''}`}>{t(label)}</button>)}</div>}
+    {medical && !hideCategoryNavigation && <label className="my-3 block text-sm">{t("View saved inventory")}<select value={category} disabled={busy || !!draft} onChange={event => setCategory(event.target.value)} className="ml-3 rounded-lg border p-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <option key={key} value={key}>{t(label)}</option>)}</select></label>}
     <div className="my-4 flex flex-wrap gap-3">
       <button disabled={busy || !!draft} onClick={() => { if (medical && category !== 'general' && onRecordMedical) { onRecordMedical(category); return } setDraft({ ...empty, ...(medical && category !== 'general' ? { medical_category: category, medical_details: { quantity: 0, unit: '' } } : {}) }); setStep(0); setError(''); setNotice(false) }} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{w[1]}</button>
       <button disabled={busy || !!draft} onClick={() => { setBoard(!board); setNotice(false) }} className="rounded-xl border border-slate-300 px-4 py-2">{board ? w[3] : w[2]}</button>
@@ -92,10 +92,10 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
     {editingStock && <form className="my-4 rounded-xl border p-4" onSubmit={async event => {
       event.preventDefault(); setBusy(true); setError('')
       try { const updated = await saleItemsRequest(`/${editingStock.item_id}/medical-stock`, 'PATCH', editingStock.medical_details); setItems(previous => previous.map(item => item.item_id === updated.item_id ? updated : item)); setEditingStock(null) } catch { setError('load') } finally { setBusy(false) }
-    }}><h4>{editingStock.name}</h4><MedicalStockFields category={editingStock.medical_category} value={editingStock.medical_details} disabled={busy} onChange={medical_details => setEditingStock({ ...editingStock, medical_details })} /><button disabled={busy} className="rounded-lg bg-teal-700 px-4 py-2 text-white">{busy && <Spinner />}Save stock details</button><button type="button" disabled={busy} onClick={() => setEditingStock(null)} className="ml-3">Cancel</button></form>}
+    }}><h4>{editingStock.name}</h4><MedicalStockFields category={editingStock.medical_category} value={editingStock.medical_details} disabled={busy} onChange={medical_details => setEditingStock({ ...editingStock, medical_details })} /><button disabled={busy} className="rounded-lg bg-teal-700 px-4 py-2 text-white">{busy && <Spinner />}{t("Save stock details")}</button><button type="button" disabled={busy} onClick={() => setEditingStock(null)} className="ml-3">{t("Cancel")}</button></form>}
     {notice && <p role="status" className="my-3 text-green-700">{w[18]}</p>}
     {draft && <div className="my-6 rounded-xl bg-slate-50 p-5">
-      <p className="mb-3 font-semibold">Simeon · {step < 5 ? `${step + 1}/5` : w[11]}</p>
+      <p className="mb-3 font-semibold">{t("Simeon ·")} {step < 5 ? `${step + 1}/5` : w[11]}</p>
       {step < 5 ? <form onSubmit={(event) => {
         event.preventDefault()
         const value = draft[fields[step]]
@@ -118,7 +118,7 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
       <p className="whitespace-pre-wrap break-words text-sm text-slate-600">{item.description}</p>
       {board ? <p className="mt-3 text-sm">{t('Technician')}: {item.seller_name}</p> : <div className="mt-4 flex gap-3"><button disabled={busy || !!item.posted_at} onClick={() => action(item, false)} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{item.posted_at ? t('Posted') : w[13]}</button><button disabled={busy} onClick={() => action(item, true)} className="rounded-xl border border-red-300 px-4 py-2 text-red-700">{t('Delete')}</button></div>}
     <MedicalStockSummary item={item} />
-    {!board && item.medical_category && <button disabled={busy} onClick={() => setEditingStock({ ...item, medical_details: { ...item.medical_details } })} className="my-3 rounded-lg border px-3 py-2">Update stock details</button>}
+    {!board && item.medical_category && <button disabled={busy} onClick={() => setEditingStock({ ...item, medical_details: { ...item.medical_details } })} className="my-3 rounded-lg border px-3 py-2">{t("Update stock details")}</button>}
     <FastDelivery name={item.name} /></article>)}</div>
     {board && items.length < total && <button disabled={busy} onClick={async () => {
       setBusy(true); setError('')

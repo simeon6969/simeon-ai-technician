@@ -1,3 +1,4 @@
+import { workspaceTranslations } from './workspaceTranslations.js'
 import { swahili } from './swahili.js'
 
 // English keys also provide the fallback for messages returned by the server.
@@ -335,6 +336,7 @@ export function translate(language, key) {
     const labels = { medical: 'Medical', it: 'IT', electrical: 'Electrical', mechanical: 'Mechanical', technician: 'Engineer or technician', store: 'Store', client: 'Client' }
     if (labels[key]) return labels[key]
   }
-  const text = translations[key]?.[language] || key
+  const text = workspaceTranslations[key]?.[language] || translations[key]?.[language] || key
+  if (typeof text !== 'string') return text
   return text.replace(/\btechnicians?\b/gi, word => `${word[0] === 'T' ? 'Engineer' : 'engineer'}${word.toLowerCase().endsWith('s') ? 's' : ''} or ${word.toLowerCase()}`)
 }
