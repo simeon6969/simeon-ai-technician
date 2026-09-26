@@ -24,7 +24,7 @@ async function run() {
       localStorage.setItem('access_token', 'isolated-test-token')
       localStorage.setItem('user_id', '9001')
       localStorage.setItem('user_role', 'technician')
-      localStorage.setItem('offline-profile:9001', JSON.stringify({ user_id: 9001, full_name: 'Offline Tester', role: 'technician' }))
+      localStorage.setItem('offline-profile:9001', JSON.stringify({ user_id: 9001, full_name: 'Offline Tester', role: 'technician', account_field: 'medical' }))
       window.testOffline = true
       Object.defineProperty(navigator, 'onLine', { get: () => !window.testOffline })
     })
@@ -41,7 +41,7 @@ async function run() {
         if (failAfterSave) { failAfterSave = false; return route.abort() }
         return json(receipts.get(body.submission_id))
       }
-      if (url.pathname === '/users/me') return json({ user_id: 9001, full_name: 'Offline Tester', role: 'technician' })
+      if (url.pathname === '/users/me') return json({ user_id: 9001, full_name: 'Offline Tester', role: 'technician', account_field: 'medical' })
       return json([])
     })
     await page.goto('http://localhost:5199/#app')

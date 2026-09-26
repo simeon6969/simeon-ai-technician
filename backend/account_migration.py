@@ -3,6 +3,6 @@ def migrate_account_roles(connection):
     connection.exec_driver_sql('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check')
     connection.exec_driver_sql("""
         ALTER TABLE users ADD CONSTRAINT users_role_check
-        CHECK (role IN ('technician', 'admin', 'organization', 'institution',
+        CHECK (role IN ('technician', 'store', 'client', 'admin', 'organization', 'institution',
                         'health_facility', 'other_business'))
     """)

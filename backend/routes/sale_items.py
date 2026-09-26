@@ -1,3 +1,4 @@
+from backend.permissions import require_inventory
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Literal
@@ -32,7 +33,7 @@ def serialize(item):
 
 
 @router.post('/')
-def create_item(data: SaleItemCreate, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def create_item(data: SaleItemCreate, user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
     item = SaleItem(seller_id=user_id, **data.model_dump())
     db.add(item)
     db.commit()
@@ -41,30 +42,32 @@ def create_item(data: SaleItemCreate, user_id: int = Depends(get_current_user_id
 
 
 @router.get('/my')
-def my_items(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def my_items(user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
     return [serialize(item) for item in db.query(SaleItem).filter(SaleItem.seller_id == user_id).order_by(SaleItem.item_id.desc()).all()]
 
 
 @router.get('/public')
 def public_posts(
     offset: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=24),
-    search: str = Query('', max_length=200), db: Session = Depends(get_db),
+    search: str = Query('', max_length=200), account_field: str | None = Query(None, pattern='^(medical|it|electrical|mechanical)$'), db: Session = Depends(get_db),
 ):
     sales = db.query(
         SaleItem.item_id.label('item_id'), SaleItem.name.label('name'),
         SaleItem.description.label('description'), SaleItem.price.label('price'),
         SaleItem.currency.label('currency'), SaleItem.photo_data.label('photo_data'),
-        SaleItem.posted_at.label('posted_at'), User.full_name.label('seller_name'),
+        SaleItem.posted_at.label('posted_at'), User.full_name.label('seller_name'), User.account_field.label('account_field'),
         literal('sale').label('item_type'), cast(literal(None), String).label('availability_status'),
     ).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
     parts = db.query(
         SparePart.spare_part_id, SparePart.part_name, SparePart.description,
         SparePart.price, SparePart.currency,
-        SparePart.photo_data, SparePart.posted_at, User.full_name,
+        SparePart.photo_data, SparePart.posted_at, User.full_name, User.account_field,
         literal('spare_part'), SparePart.availability_status,
     ).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))
     listings = sales.union_all(parts).subquery()
     query = db.query(listings)
+    if account_field:
+        query = query.filter(listings.c.account_field == account_field)
     if search.strip():
         query = query.filter(or_(listings.c.name.icontains(search.strip(), autoescape=True), listings.c.description.icontains(search.strip(), autoescape=True)))
     return {'total': query.count(), 'items': [
@@ -89,7 +92,7 @@ def owned_item(item_id, user_id, db):
 
 
 @router.post('/{item_id}/post')
-def publish(item_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def publish(item_id: int, user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
     item = owned_item(item_id, user_id, db)
     db.query(SaleItem).filter(SaleItem.item_id == item_id, SaleItem.posted_at.is_(None)).update({'posted_at': datetime.now(timezone.utc).replace(tzinfo=None)}, synchronize_session=False)
     db.commit()
@@ -98,7 +101,7 @@ def publish(item_id: int, user_id: int = Depends(get_current_user_id), db: Sessi
 
 
 @router.delete('/{item_id}')
-def delete_item(item_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+def delete_item(item_id: int, user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
     db.delete(owned_item(item_id, user_id, db))
     db.commit()
     return {'item_id': item_id}

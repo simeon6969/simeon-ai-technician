@@ -19,6 +19,8 @@ from backend.routes.admin import router as admin_router
 from backend.routes.chat import router as chat_router
 from backend.routes.sale_items import router as sale_items_router
 from backend.routes.offline import router as offline_router
+from backend.routes.item_requests import router as item_requests_router
+from backend.routes.admin_manage import router as admin_manage_router
 
 
 app = FastAPI(title="Simeon API")
@@ -47,6 +49,8 @@ app.include_router(admin_router)
 app.include_router(chat_router)
 app.include_router(sale_items_router)
 app.include_router(offline_router)
+app.include_router(item_requests_router)
+app.include_router(admin_manage_router)
 
 
 @app.on_event("startup")
@@ -55,6 +59,7 @@ def create_missing_tables():
 
     with engine.begin() as connection:
         migrate_account_roles(connection)
+        connection.exec_driver_sql("ALTER TABLE users ADD COLUMN IF NOT EXISTS account_field VARCHAR(20)")
         connection.exec_driver_sql("ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS price NUMERIC(14,2)")
         connection.exec_driver_sql("ALTER TABLE spare_parts ADD COLUMN IF NOT EXISTS currency VARCHAR(3) NOT NULL DEFAULT 'RWF'")
         connection.exec_driver_sql("ALTER TABLE job_cards ADD COLUMN IF NOT EXISTS account_name VARCHAR(150)")

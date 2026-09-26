@@ -12,6 +12,7 @@ from backend.base import Base
 from backend.models import User, SparePart
 from backend.auth import get_current_user_id
 from backend.routes.spare_parts import router, get_db
+from backend.permissions import permission_db
 
 
 class PostTests(unittest.TestCase):
@@ -25,6 +26,7 @@ class PostTests(unittest.TestCase):
         self.app = FastAPI()
         self.app.include_router(router)
         self.app.dependency_overrides[get_db] = lambda: self.db
+        self.app.dependency_overrides[permission_db] = lambda: self.db
         self.app.dependency_overrides[get_current_user_id] = lambda: 1
         self.client = TestClient(self.app)
 

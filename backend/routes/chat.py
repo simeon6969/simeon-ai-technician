@@ -1,3 +1,4 @@
+from backend.permissions import require_technician
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -24,7 +25,7 @@ def get_db():
 
 @router.post("/sessions")
 def create_chat_session(
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     session = ChatSession(
@@ -43,7 +44,7 @@ def create_chat_session(
 
 @router.get("/sessions")
 def get_my_chat_sessions(
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     sessions = (
@@ -65,7 +66,7 @@ def get_my_chat_sessions(
 @router.get("/sessions/{session_id}")
 def get_chat_history(
     session_id: int,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     session = (
@@ -108,7 +109,7 @@ def get_chat_history(
 def send_message(
     session_id: int,
     message_data: ChatMessageRequest,
-    user_id: int = Depends(get_current_user_id),
+    user_id: int = Depends(require_technician),
     db: Session = Depends(get_db)
 ):
     # Make sure the session belongs to the logged-in technician.

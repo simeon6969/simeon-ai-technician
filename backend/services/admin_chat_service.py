@@ -5,15 +5,16 @@ from sqlalchemy import String, cast, func
 
 from backend.models import (
     User, Equipment, JobCard, MaintenanceKnowledge, SparePart,
-    SparePartRequest, ChatSession, ChatMessage, SaleItem,
+    SparePartRequest, ChatSession, ChatMessage, SaleItem, ItemRequest,
 )
 from backend.services.ai_service import get_openai_client, OPENAI_MODEL
 
 
 # Explicitly exclude credentials and binary attachment payloads from AI access.
 TABLES = {
+    'item_requests': (ItemRequest, 'request_id requester_id seller_id sale_item_id spare_part_id notes status created_at'),
     'sale_items': (SaleItem, 'item_id seller_id name description price currency posted_at created_at'),
-    'users': (User, 'user_id full_name email phone role is_active created_at'),
+    'users': (User, 'user_id full_name email phone role account_field is_active created_at'),
     'equipment': (Equipment, 'equipment_id category manufacturer model description technical_specs created_at'),
     'job_cards': (JobCard, 'job_card_id technician_id account_name submitter_name equipment_id maintenance_type fault_description symptoms diagnosis actions_taken parts_used result successful status confirmed_at created_at updated_at'),
     'maintenance_knowledge': (MaintenanceKnowledge, 'knowledge_id source_job_card_id equipment_id problem_description symptoms diagnosis solution parts_used successful confidence created_at'),

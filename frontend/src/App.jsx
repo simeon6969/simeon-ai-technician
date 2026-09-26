@@ -1,10 +1,14 @@
+import AccountChoices from './AccountChoices'
+import AccountSetup from './AccountSetup'
+import RoleWorkspace from './RoleWorkspace'
+import ItemMarket from './ItemMarket'
 import { cacheProfile, cachedProfile } from './offlineStore'
 import { syncQueue } from './offlineSync'
 import OfflineStatus from './OfflineStatus'
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
 import SparePartPrice from './SparePartPrice'
-import AdminChat from './AdminChat'
+import AdminConsole from './AdminConsole'
 import StoreConversation from './StoreConversation'
 import SparePartPosts, { PostSparePartButton } from './SparePartPosts'
 import SaleItems from './SaleItems'
@@ -26,15 +30,6 @@ import {
   loginUser,
   registerUser,
   getMyProfile,
-  getAdminUsers,
-  getAdminSaleItems,
-  deleteAdminRecord,
-  updateAdminUserStatus,
-  getAdminJobCards,
-  getAdminKnowledge,
-  getAdminSpareParts,
-  getAdminSparePartRequests,
-  updateAdminSparePartRequest,
 } from './api'
 import { jsPDF } from 'jspdf'
 
@@ -84,322 +79,6 @@ function downloadJobCardPdf(card) {
   pdf.save(`simeon-job-card-${card.job_card_id}.pdf`)
 }
 
-function AdminDashboard({ onLogout, onHome }) {
-  const { t, language } = useLanguage()
-  const [activeSection, setActiveSection] = useState('users')
-  const [users, setUsers] = useState([])
-  const [jobCards, setJobCards] = useState([])
-  const [knowledge, setKnowledge] = useState([])
-  const [spareParts, setSpareParts] = useState([])
-  const [requests, setRequests] = useState([])
-  const [saleItems, setSaleItems] = useState([])
-  const [deleting, setDeleting] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [updatingUserId, setUpdatingUserId] = useState(null)
-  const [updatingRequestId, setUpdatingRequestId] = useState(null)
-
-  async function loadDashboard() {
-    try {
-      setLoading(true)
-      setError('')
-      const [loadedUsers, loadedCards, loadedKnowledge, loadedParts, loadedRequests, loadedItems] =
-        await Promise.all([
-          getAdminUsers(),
-          getAdminJobCards(),
-          getAdminKnowledge(),
-          getAdminSpareParts(),
-          getAdminSparePartRequests(),
-          getAdminSaleItems(),
-        ])
-      setUsers(loadedUsers)
-      setJobCards(loadedCards)
-      setKnowledge(loadedKnowledge)
-      setSpareParts(loadedParts)
-      setRequests(loadedRequests)
-      setSaleItems(loadedItems)
-    } catch (loadError) {
-      setError(loadError.message || 'Unable to load the admin dashboard.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const loadTimer = setTimeout(() => {
-      loadDashboard()
-    }, 0)
-
-    return () => clearTimeout(loadTimer)
-  }, [])
-
-  const sections = [
-    ['users', 'Accounts', users.length],
-    ['job-cards', 'Job Cards', jobCards.length],
-    ['knowledge', 'Knowledge', knowledge.length],
-    ['spare-parts', 'Spare Parts', spareParts.length],
-    ['sale-items', 'Items for sale', saleItems.length],
-    ['requests', 'Requests', requests.length],
-  ]
-
-  function deleteButton(collection, id, name, warning) {
-    const key = `${collection}/${id}`
-    return <button type="button" disabled={deleting !== null} onClick={async () => {
-      if (!window.confirm(`${name}\n\n${t(warning)}`)) return
-      setDeleting(key)
-      setError('')
-      try {
-        await deleteAdminRecord(collection, id)
-        await loadDashboard()
-      } catch (deleteError) {
-        setError(deleteError.message || 'Admin request failed')
-      } finally {
-        setDeleting(null)
-      }
-    }} className="mt-3 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50">
-      {t(deleting === key ? 'Deleting...' : 'Delete')}
-    </button>
-  }
-
-  function renderSaleItems() {
-    return <div className="grid gap-3">
-      {saleItems.length === 0 && <p className="text-sm text-slate-500">{t('No items for sale.')}</p>}
-      {saleItems.map(item => <div key={item.item_id} className="rounded-xl border border-slate-200 p-5">
-        <h3 className="font-semibold text-slate-900">{item.name}</h3>
-        <p className="mt-2 text-sm text-slate-600">{item.seller_name} · #{item.seller_id}</p>
-        <p className="mt-2 font-medium">{item.price} {item.currency}</p>
-        <p className="mt-2 text-sm text-slate-600">{t(item.posted_at ? 'Posted' : 'Not posted')}</p>
-        <p className="mt-2 text-sm text-slate-700">{item.description}</p>
-        {item.photo_data && <img src={item.photo_data} alt={item.name} className="mt-3 max-h-48 rounded-lg object-contain" />}
-        {deleteButton('sale-items', item.item_id, item.name, 'Delete this sale item and its public post? This cannot be undone.')}
-      </div>)}
-    </div>
-  }
-
-  function renderUsers() {
-    return (
-      <div className="grid gap-3">
-        {users.map((user) => (
-          <div key={user.user_id} className="rounded-xl border border-slate-200 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-slate-900">{user.full_name}</h3>
-                <p className="mt-1 text-sm text-slate-600">{user.email}</p>
-                <p className="text-sm text-slate-600">{user.phone || t('No phone provided')}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-slate-700">{t(user.role)}</p>
-                <button
-                  onClick={async () => {
-                    try {
-                      setUpdatingUserId(user.user_id)
-                      await updateAdminUserStatus(user.user_id, !user.is_active)
-                      setUsers(await getAdminUsers())
-                    } catch (updateError) {
-                      setError(updateError.message)
-                    } finally {
-                      setUpdatingUserId(null)
-                    }
-                  }}
-                  disabled={updatingUserId === user.user_id}
-                  className="mt-2 rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                >
-                  {updatingUserId === user.user_id
-                    ? t('Updating...')
-                    : user.is_active ? t('Deactivate') : t('Activate')}
-                </button>
-              </div>
-            </div>
-            <p className="mt-3 text-xs text-slate-500"> {t("Account status:")} {user.is_active ? t('Active') : t('Inactive')}
-            </p>
-            {user.role !== 'admin' && deleteButton('users', user.user_id, `${user.full_name} (${user.email})`, 'Delete this account and its job cards, knowledge, spare parts, sale items, requests and chats? This cannot be undone.')}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  function renderJobCards() {
-    return (
-      <div className="grid gap-3">
-        {jobCards.map((card) => (
-          <div key={card.job_card_id} className="rounded-xl border border-slate-200 p-5">
-            <div className="flex flex-wrap justify-between gap-3">
-              <h3 className="font-semibold text-slate-900">{t("Job Card #")}{card.job_card_id}</h3>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {t(card.status)}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-slate-600"> {t("Technician #")}{card.technician_id} {t("· Equipment #")}{card.equipment_id}
-            </p>
-            <p className="mt-3 text-sm text-slate-800">{card.fault_description}</p>
-            <p className="mt-2 text-sm text-slate-600">{card.account_name} · {t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
-            <p className="mt-2 text-sm text-slate-600"> {t("Outcome:")} {card.successful ? t('Successful') : t('Not confirmed')}
-            </p>
-            {deleteButton('job-cards', card.job_card_id, `${t('Job Card #')}${card.job_card_id}`, 'Delete this job card and its maintenance knowledge? This cannot be undone.')}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  function renderKnowledge() {
-    return (
-      <div className="grid gap-3">
-        {knowledge.map((item) => (
-          <div key={item.knowledge_id} className="rounded-xl border border-slate-200 p-5">
-            <div className="flex flex-wrap justify-between gap-3">
-              <h3 className="font-semibold text-slate-900">{t("Knowledge #")}{item.knowledge_id}</h3>
-              <span className="text-sm text-slate-600">{t("Confidence")} {item.confidence}</span>
-            </div>
-            <p className="mt-2 text-sm text-slate-600">{t("Source Job Card #")}{item.source_job_card_id}</p>
-            <p className="mt-3 text-sm text-slate-800">{item.problem_description}</p>
-            <p className="mt-2 text-sm text-slate-600">{t("Diagnosis:")} {item.diagnosis || t('Not recorded')}</p>
-            <p className="mt-2 text-sm text-slate-600">{t("Solution:")} {item.solution || t('Not recorded')}</p>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  function renderSpareParts() {
-    return (
-      <div className="grid gap-3">
-        {spareParts.map((part) => (
-          <div key={part.spare_part_id} className="rounded-xl border border-slate-200 p-5">
-            <div className="flex flex-wrap justify-between gap-3">
-              <h3 className="font-semibold text-slate-900">{part.part_name}</h3>
-              <SparePartPrice part={part} />
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {t(part.availability_status)}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-slate-600">{t("Part number:")} {part.part_number || t('Not provided')}</p>
-            <p className="mt-1 text-sm text-slate-600">{t("Stored by technician #")}{part.submitted_by}</p>
-            <p className="mt-3 text-sm text-slate-800">{part.description || t('No description provided')}</p>
-            {deleteButton('spare-parts', part.spare_part_id, part.part_name, 'Delete this spare part, its public post and related requests? This cannot be undone.')}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  function renderRequests() {
-    return (
-      <div className="grid gap-3">
-        {requests.map((request) => (
-          <div key={request.request_id} className="rounded-xl border border-slate-200 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-slate-900">{t("Request #")}{request.request_id}</h3>
-                <p className="mt-2 text-sm font-medium text-slate-900"> {t("Part:")} {request.spare_part.part_name}
-                </p>
-                <p className="text-sm text-slate-700"> {t("Part number:")} {request.spare_part.part_number || t('Not provided')}
-                  {' · '}{t("Availability:")} {t(request.spare_part.availability_status)}
-                </p>
-                <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                  <p className="font-medium text-slate-900">{t("Spare-part owner contact")}</p>
-                  <p>{request.supplier_technician.full_name}</p>
-                  <p>{request.supplier_technician.email}</p>
-                  <p>{request.supplier_technician.phone || t('No phone provided')}</p>
-                </div>
-                <p className="text-sm text-slate-700"> {t("Manufacturer:")} {request.spare_part.manufacturer || t('Not provided')}
-                </p>
-                <p className="text-sm text-slate-700"> {t("Compatible equipment:")} {request.spare_part.compatibility || t('Not provided')}
-                </p>
-                <p className="text-sm text-slate-700"> {t("Specifications:")} {request.spare_part.specifications || t('Not provided')}
-                </p>
-                <p className="text-sm text-slate-700"> {t("Description:")} {request.spare_part.description || t('Not provided')}
-                </p>
-                <p className="mt-2 text-sm text-slate-700"> {t("Requester:")} {request.requester.full_name} · {request.requester.email}
-                </p>
-                <p className="text-sm text-slate-600"> {t("Contact:")} {request.requester.phone || request.requester_contact || t('Not provided')}
-                </p>
-              </div>
-              <select
-                value={request.status}
-                onChange={async (event) => {
-                  try {
-                    setUpdatingRequestId(request.request_id)
-                    await updateAdminSparePartRequest(request.request_id, event.target.value)
-                    setRequests(await getAdminSparePartRequests())
-                  } catch (updateError) {
-                    setError(updateError.message)
-                  } finally {
-                    setUpdatingRequestId(null)
-                  }
-                }}
-                disabled={updatingRequestId === request.request_id}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-              >
-                {['new', 'contacted', 'negotiating', 'confirmed', 'ordered', 'delivered', 'completed', 'cancelled']
-                  .map((status) => <option key={status} value={status}>{t(status)}</option>)}
-              </select>
-            </div>
-            {request.notes && <p className="mt-3 text-sm text-slate-600">{t("Notes:")} {request.notes}</p>}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  const content = {
-    users: renderUsers,
-    'job-cards': renderJobCards,
-    knowledge: renderKnowledge,
-    'spare-parts': renderSpareParts,
-    'sale-items': renderSaleItems,
-    requests: renderRequests,
-  }[activeSection]()
-
-  return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="bg-slate-900 text-white shadow-md">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <div>
-            <h1 className="text-2xl font-bold">{t("Simeon Admin")}</h1>
-            <p className="text-sm text-slate-300">{t("Governance and technical knowledge control")}</p>
-          </div>
-          <button onClick={onHome} className="rounded-lg border border-slate-500 px-3 py-2">← {(homeCopy[language] || homeCopy.en).home}</button>
-          <LanguageSwitcher />
-          <button
-            onClick={onLogout}
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          > {t("Logout")} </button>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900">{t("Admin Dashboard")}</h2>
-            <p className="mt-2 text-slate-600">{t("Review technicians, maintenance records, knowledge, parts, and requests.")}</p>
-          </div>
-          <button
-            onClick={loadDashboard}
-            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          > {t("Refresh all")} </button>
-        </div>
-
-        <AdminChat />
-        <nav className="mb-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          {sections.map(([key, label, count]) => (
-            <button
-              key={key}
-              onClick={() => setActiveSection(key)}
-              className={`rounded-xl px-4 py-3 text-left text-sm font-medium ${activeSection === key ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
-            >
-              {t(label)} <span className="ml-1 opacity-70">{count}</span>
-            </button>
-          ))}
-        </nav>
-
-        {error && <p className="mb-4 text-sm text-red-600">{t(error)}</p>}
-        {loading ? <p className="text-sm text-slate-500">{t("Loading admin data...")}</p> : content}
-      </main>
-    </div>
-  )
-}
 
 function App() {
   const { t, language } = useLanguage()
@@ -427,7 +106,8 @@ const [password, setPassword] = useState('')
 const [fullName, setFullName] = useState('')
 const [phone, setPhone] = useState('')
 const [isRegistering, setIsRegistering] = useState(false)
-const [accountType, setAccountType] = useState('technician')
+const [accountType, setAccountType] = useState('')
+const [accountField, setAccountField] = useState('')
 const [profile, setProfile] = useState(cachedProfile)
 const [profileError, setProfileError] = useState('')
 const [loginError, setLoginError] = useState('')
@@ -482,7 +162,7 @@ useEffect(() => {
 }, [loggedIn])
 
 useEffect(() => {
-  if (!loggedIn || userRole === 'admin') {
+  if (!loggedIn || ['admin', 'store', 'client'].includes(userRole)) {
     return
   }
 
@@ -502,7 +182,7 @@ useEffect(() => {
 }, [loggedIn, userRole])
 
 useEffect(() => {
-  if (!loggedIn || userRole === 'admin') {
+  if (!loggedIn || ['admin', 'client'].includes(userRole)) {
     return
   }
 
@@ -544,12 +224,12 @@ useEffect(() => {
 }, [loggedIn, userRole])
 
 useEffect(() => {
-  if (!loggedIn || !profile || profileError || profile.role === 'admin') return
+  if (!loggedIn || !profile || profileError || ['admin', 'client'].includes(profile.role)) return
   const id = profile.user_id
   const sync = () => { syncQueue(id).catch(() => {}) }
   const refresh = event => {
     if (event.detail.userId !== String(id) || localStorage.getItem('user_id') !== String(id)) return
-    getMyJobCards().then(rows => { setMyJobCards(rows); setJobCardsError('') }).catch(() => {})
+    if (profile.role !== 'store') getMyJobCards().then(rows => { setMyJobCards(rows); setJobCardsError('') }).catch(() => {})
     getMySpareParts().then(rows => { setMySpareParts(rows); setMySparePartsError('') }).catch(() => {})
   }
   sync()
@@ -604,12 +284,8 @@ if (!loggedIn) {
 
         {isRegistering && (
           <div className="mt-6">
-            <label htmlFor="account-type" className="mb-2 block text-sm font-medium text-slate-700">{t('Account type')}</label>
-            <select id="account-type" value={accountType} onChange={(event) => setAccountType(event.target.value)} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3">
-              {['technician', 'organization', 'institution', 'health_facility', 'other_business'].map((role) => <option key={role} value={role}>{t(role)}</option>)}
-            </select>
-            <p className="mb-4 text-sm text-slate-500">{t(accountType === 'technician' ? 'Personal account. Your name is recorded automatically on job cards.' : 'Shared account. Each job card records the name of the person submitting it.')}</p>
-            <label htmlFor="account-name" className="mb-2 block text-sm font-medium text-slate-700">{t(accountType === 'technician' ? 'Full name' : 'Organization or business name')}</label>
+            <AccountChoices field={accountField} role={accountType} onField={setAccountField} onRole={setAccountType} />
+            <label htmlFor="account-name" className="mb-2 block text-sm font-medium text-slate-700">{t(accountType === 'store' ? 'Store name' : 'Full name')}</label>
 
             <input
               id="account-name"
@@ -617,7 +293,7 @@ if (!loggedIn) {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder={t(accountType === 'technician' ? 'Enter your full name' : 'Enter the name of your organization or business')}
+              placeholder={t(accountType === 'store' ? 'Enter store name' : 'Enter your full name')}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
             />
           </div>
@@ -679,7 +355,8 @@ if (!loggedIn) {
                   return
                 }
 
-                await registerUser(fullName, email, phone, password, accountType)
+                if (!accountField || !accountType) throw new Error('Choose your field and role')
+                await registerUser(fullName, email, phone, password, accountType, accountField)
                 setIsRegistering(false)
                 setAuthMessage('Account created. You can now log in.')
                 return
@@ -744,7 +421,18 @@ if (!profile || profileError) {
 }
 
 if (loggedIn && userRole === 'admin') {
-  return <AdminDashboard onLogout={handleLogout} onHome={() => navigate('home')} />
+  return <AdminConsole onLogout={handleLogout} onHome={() => navigate('home')} />
+}
+
+if (!profile.account_field) {
+  return <AccountSetup account={profile} onLogout={handleLogout} onDone={account => {
+    cacheProfile(account); setProfile(account); setUserRole(account.role)
+    localStorage.setItem('user_role', account.role)
+    setStoreConversation(null)
+  }} />
+}
+if (['store', 'client'].includes(profile.role)) {
+  return <RoleWorkspace key={profile.user_id} account={profile} onHome={() => navigate('home')} onLogout={handleLogout} />
 }
 
 if (storeConversation) {
@@ -778,7 +466,7 @@ if (storeConversation) {
 
           <div className="flex flex-wrap items-center gap-3">
   <LanguageSwitcher />
-  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">{t(profile.role)}</span>
+  <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">{t(profile.account_field)} · {t(profile.role)}</span>
 
   <button onClick={() => navigate('home')} className="rounded-xl border border-slate-500 px-4 py-2 text-sm text-white">{homeText.home}</button>
   <button
@@ -1151,6 +839,7 @@ if (storeConversation) {
 
         {/* Digital Job Card form */}
         <SaleItems />
+        <ItemMarket />
         {/* Chat area */}
     {/* Help area */}
 {helpMode === 'maintenance' && (

@@ -6,7 +6,7 @@ from backend.auth import create_access_token
 from backend.database import SessionLocal
 from backend.models.users import User
 from backend.schemas.auth import LoginRequest
-from backend.schemas.users import UserCreate
+from backend.schemas.users import UserCreate, AccountSetup
 from backend.security import hash_password, verify_password
 
 from backend.auth import create_access_token, get_current_user_id
@@ -46,7 +46,8 @@ def register_user(
         email=user_data.email,
         phone=user_data.phone,
         password_hash=hash_password(user_data.password),
-        role=user_data.role
+        role=user_data.role,
+        account_field=user_data.account_field,
     )
 
     db.add(new_user)
@@ -66,7 +67,8 @@ def register_user(
         "full_name": new_user.full_name,
         "email": new_user.email,
         "phone": new_user.phone,
-        "role": new_user.role
+        "role": new_user.role,
+        "account_field": new_user.account_field,
     }
 
 
@@ -109,7 +111,8 @@ def login_user(
         "token_type": "bearer",
         "user_id": user.user_id,
         "full_name": user.full_name,
-        "role": user.role
+        "role": user.role,
+        "account_field": user.account_field,
     }
 
 @router.get("/me")
@@ -132,5 +135,19 @@ def get_my_profile(
         "full_name": user.full_name,
         "email": user.email,
         "phone": user.phone,
-        "role": user.role
+        "role": user.role,
+        "account_field": user.account_field,
     }
+
+
+@router.put('/account-setup')
+def setup_account(data: AccountSetup, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.user_id == user_id).with_for_update().first()
+    if not user or user.role == 'admin':
+        raise HTTPException(403, 'Admin accounts are managed separately')
+    if user.account_field is not None:
+        raise HTTPException(409, 'Account setup is already complete')
+    user.account_field = data.account_field
+    user.role = data.role
+    db.commit()
+    return get_my_profile(user_id=user_id, db=db)

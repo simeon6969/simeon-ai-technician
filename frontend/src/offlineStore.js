@@ -54,7 +54,7 @@ export function updateQueued(record) {
 
 // Cache only the identity needed to resume this account's own drafts, never tokens.
 export function cacheProfile(account) {
-  const profile = { user_id: account.user_id, full_name: account.full_name, role: account.role }
+  const profile = { user_id: account.user_id, full_name: account.full_name, role: account.role, account_field: account.account_field }
   try { localStorage.setItem(`offline-profile:${account.user_id}`, JSON.stringify(profile)) } catch { /* Online use still works. */ }
 }
 export function cachedProfile() {

@@ -2,9 +2,17 @@ from typing import Literal
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
-class UserCreate(BaseModel):
+AccountField = Literal['medical', 'it', 'electrical', 'mechanical']
+AccountRole = Literal['technician', 'store', 'client']
+
+
+class AccountSetup(BaseModel):
+    account_field: AccountField
+    role: AccountRole
+
+
+class UserCreate(AccountSetup):
     full_name: str = Field(min_length=1, max_length=150)
-    role: Literal['technician', 'organization', 'institution', 'health_facility', 'other_business'] = 'technician'
     email: EmailStr
     phone: str | None = None
     password: str

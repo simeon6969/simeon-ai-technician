@@ -8,6 +8,7 @@ from backend.base import Base
 
 class User(Base):
     __tablename__ = "users"
+    account_field: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     user_id: Mapped[int] = mapped_column(
         Integer,
