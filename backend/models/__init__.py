@@ -8,3 +8,7 @@ from backend.models.chat import ChatSession, ChatMessage
 from backend.models.sale_items import SaleItem
 from backend.models.offline_submission import OfflineSubmission
 from backend.models.item_requests import ItemRequest
+
+from backend.models.delivery import DeliveryContact
+
+from backend.models.recovery import AccountRecovery

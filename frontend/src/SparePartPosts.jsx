@@ -1,3 +1,4 @@
+import FastDelivery from './FastDelivery'
 import { Spinner } from './LoadingStatus'
 import { useEffect, useState } from 'react'
 import { getSparePartPosts, postSparePart } from './api'
@@ -55,7 +56,7 @@ export default function SparePartPosts() {
         <p className="my-2 text-sm font-medium">{t(post.availability_status)}</p>
         {post.photo_data && <img src={post.photo_data} alt={post.part_name} className="mb-3 max-h-48 rounded-lg object-contain" />}
         <dl className="space-y-2 text-sm">{[['part_number', 'Part Number'], ['manufacturer', 'Manufacturer'], ['compatibility', 'Compatible equipment'], ['specifications', 'Specifications'], ['description', 'Description']].map(([key, label]) => <div key={key}><dt className="font-medium">{t(label)}</dt><dd className="whitespace-pre-wrap break-words text-slate-600">{post[key] || t('Not provided')}</dd></div>)}</dl>
-      </article>)}</div>
+      <FastDelivery name={post.part_name} /></article>)}</div>
       {posts.length < total && <button disabled={busy} onClick={() => load(posts.length)} className="mt-4 rounded-xl border border-slate-300 px-4 py-2">{t('Load more')}</button>}
     </div>}
   </section>
