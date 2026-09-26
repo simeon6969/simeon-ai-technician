@@ -21,6 +21,7 @@ from backend.routes.sale_items import router as sale_items_router
 from backend.routes.offline import router as offline_router
 from backend.routes.item_requests import router as item_requests_router
 from backend.routes.admin_manage import router as admin_manage_router
+from backend.routes.delivery import router as delivery_router
 
 
 app = FastAPI(title="Simeon API")
@@ -107,3 +108,8 @@ def database_test(admin_id: int = Depends(require_admin)):
         "status": "connected",
         "postgresql_version": version
     }
+
+app.include_router(delivery_router)
+
+from backend.routes.recovery import router as recovery_router
+app.include_router(recovery_router)

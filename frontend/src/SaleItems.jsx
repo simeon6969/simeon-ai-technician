@@ -1,3 +1,4 @@
+import FastDelivery from './FastDelivery'
 import PhotoSizeOption from './PhotoSizeOption'
 import { preparePhoto } from './preparePhoto'
 import { Spinner } from './LoadingStatus'
@@ -105,7 +106,7 @@ export default function SaleItems() {
       <img src={item.photo_data} alt={item.name} className="my-3 max-h-52 rounded-lg object-contain" />
       <p className="whitespace-pre-wrap break-words text-sm text-slate-600">{item.description}</p>
       {board ? <p className="mt-3 text-sm">{t('Technician')}: {item.seller_name}</p> : <div className="mt-4 flex gap-3"><button disabled={busy || !!item.posted_at} onClick={() => action(item, false)} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{item.posted_at ? t('Posted') : w[13]}</button><button disabled={busy} onClick={() => action(item, true)} className="rounded-xl border border-red-300 px-4 py-2 text-red-700">{t('Delete')}</button></div>}
-    </article>)}</div>
+    <FastDelivery name={item.name} /></article>)}</div>
     {board && items.length < total && <button disabled={busy} onClick={async () => {
       setBusy(true); setError('')
       try { const result = await saleItemsRequest(`/posts?offset=${items.length}`); setItems((previous) => [...previous, ...result.items.filter((item) => !previous.some((value) => value.item_id === item.item_id))]); setTotal(result.total) }

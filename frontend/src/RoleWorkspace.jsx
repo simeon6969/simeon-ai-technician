@@ -1,3 +1,5 @@
+import AccountRecovery from './AccountRecovery'
+import FastDelivery from './FastDelivery'
 import { useEffect, useState } from 'react'
 import { useLanguage } from './language'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -38,9 +40,9 @@ export default function RoleWorkspace({ account, onHome, onLogout }) {
             if (!window.confirm(t('Delete this spare part? Existing requests for it will also be removed.'))) return
             setBusy(true)
             try { await deleteSparePart(part.spare_part_id); setRevision(value => value + 1) } catch (failure) { setError(failure.message) } finally { setBusy(false) }
-          }}>{t('Delete')}</button></article>)}</div><SparePartPosts />
+          }}>{t('Delete')}</button><FastDelivery name={part.part_name} /></article>)}</div><SparePartPosts />
         </section><SaleItems /></>}
-      <ItemMarket />
+      <AccountRecovery setup /><ItemMarket />
     </main>
   </div>
 }

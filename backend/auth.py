@@ -34,6 +34,7 @@ def create_access_token(user_id: int) -> str:
 
     payload = {
         "sub": str(user_id),
+        "iat": datetime.now(timezone.utc).timestamp(),
         "exp": expire
     }
 
@@ -88,6 +89,13 @@ def get_current_user_id(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
+        from backend.models.recovery import AccountRecovery
+        recovery = db.get(AccountRecovery, user_id)
+        if recovery and recovery.sessions_revoked_at:
+            claims = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            issued = claims.get('iat', 0)
+            if issued <= recovery.sessions_revoked_at.replace(tzinfo=timezone.utc).timestamp():
+                raise HTTPException(401, 'Password changed. Please log in again.')
         return user_id
     finally:
         db.close()

@@ -1,3 +1,5 @@
+import AccountRecovery from './AccountRecovery'
+import FastDelivery from './FastDelivery'
 import { Spinner } from './LoadingStatus'
 import AccountChoices from './AccountChoices'
 import AccountSetup from './AccountSetup'
@@ -399,6 +401,7 @@ if (!loggedIn) {
           {authBusy && <Spinner />}{isRegistering ? t('Create account') : t('Login')}
         </button>
 
+        {!isRegistering && <AccountRecovery />}
         {authMessage && (
           <p className="mt-4 text-sm text-green-700">
             {t(authMessage)}
@@ -776,7 +779,7 @@ if (storeConversation) {
                     <h4 className="font-semibold text-slate-900">
                       {part.part_name}
                     </h4>
-              <SparePartPrice part={part} />
+              <SparePartPrice part={part} /><FastDelivery name={part.part_name} />
                     <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
                     </p>
                   </div>
@@ -847,7 +850,7 @@ if (storeConversation) {
         </section>
 
         {/* Digital Job Card form */}
-        <SaleItems />
+        <AccountRecovery setup /><SaleItems />
         <ItemMarket />
         {/* Chat area */}
     {/* Help area */}
@@ -976,7 +979,7 @@ if (storeConversation) {
               <h4 className="font-semibold text-slate-900">
                 {part.part_name}
               </h4>
-              <SparePartPrice part={part} />
+              <SparePartPrice part={part} /><FastDelivery name={part.part_name} />
               <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
               </p>
             </div>
