@@ -138,7 +138,7 @@ Email|Imeyili|Adresse e-mail
 Password|Ijambo ry'ibanga|Mot de passe
 Phone (optional)|Telefoni (si ngombwa)|Téléphone (facultatif)
 Intelligent Technician Friend|Inshuti y'umunyabwenge y'umutekinisiye|L’allié intelligent du technicien
-Technician|Umutekinisiye|Technicien
+Technician|Injeniyeri cyangwa umutekinisiye|Ingénieur ou technicien
 Welcome to Simeon|Murakaza neza kuri Simeon|Bienvenue sur Simeon
 What would you like to do today?|Ni iki wifuza gukora uyu munsi?|Que souhaitez-vous faire aujourd’hui ?
 Store a Job Card or Spare Part|Bika ifishi y'akazi cyangwa igice gisimbura|Enregistrer une fiche ou une pièce de rechange
@@ -301,7 +301,7 @@ cancelled|Byahagaritswe|Annulée
 draft|Inyandiko y'agateganyo|Brouillon
 validated|Byemejwe|Validée
 pending|Birategereje|En attente
-technician|Umutekinisiye|Technicien
+technician|Injeniyeri cyangwa umutekinisiye|Ingénieur ou technicien
 admin|Umuyobozi|Administrateur
 Invalid email or password|Imeyili cyangwa ijambo ry'ibanga si byo|Adresse e-mail ou mot de passe incorrect
 Registration failed|Gufungura konti byanze|Échec de l’inscription
@@ -332,8 +332,9 @@ export const translations = Object.fromEntries(rows.trim().split('\n').map((row)
 
 export function translate(language, key) {
   if (language === 'en') {
-    const labels = { medical: 'Medical', it: 'IT', electrical: 'Electrical', mechanical: 'Mechanical', technician: 'Technician', store: 'Store', client: 'Client' }
+    const labels = { medical: 'Medical', it: 'IT', electrical: 'Electrical', mechanical: 'Mechanical', technician: 'Engineer or technician', store: 'Store', client: 'Client' }
     if (labels[key]) return labels[key]
   }
-  return translations[key]?.[language] || key
+  const text = translations[key]?.[language] || key
+  return text.replace(/\btechnicians?\b/gi, word => `${word[0] === 'T' ? 'Engineer' : 'engineer'}${word.toLowerCase().endsWith('s') ? 's' : ''} or ${word.toLowerCase()}`)
 }

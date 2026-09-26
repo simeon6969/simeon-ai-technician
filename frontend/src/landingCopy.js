@@ -1,8 +1,8 @@
 export const landingCopy = {
   en: {
     eyebrow: 'FOUR FIELDS. ONE CONNECTED WORKSPACE.', title: 'Keep work moving.\nFind what you need.',
-    intro: 'Simeon brings technicians, stores and clients together. Record maintenance, manage your stock, and connect with people looking for the right equipment.',
-    how: 'Choose your role', boardIntro: 'Find your next piece of equipment.', boardDetail: 'Explore equipment and spare parts posted by technicians and stores. Filter by field, then sign in to send a request.',
+    intro: 'Simeon brings engineers or technicians, stores and clients together. Record maintenance, manage your stock, and connect with people looking for the right equipment.',
+    how: 'Choose your role', boardIntro: 'Find your next piece of equipment.', boardDetail: 'Explore equipment and spare parts posted by engineers or technicians and stores. Filter by field, then sign in to send a request.',
     list: 'Open your workspace', cta: 'A place for every part of the work.', ctaDetail: 'Choose your field. Choose your role. Make Simeon your workspace.',
     fields: 'Your field. Your community.', fieldDetail: 'Medical, IT, Electrical and Mechanical — explore listings across all four fields.',
     roleDetail: 'Start with the tools that match what you do.', workspace: 'A workspace built around your role',
