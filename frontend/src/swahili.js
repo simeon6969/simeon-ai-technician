@@ -135,7 +135,7 @@ Email|Barua pepe
 Password|Nenosiri
 Phone (optional)|Simu (si lazima)
 Intelligent Technician Friend|Rafiki mwerevu wa fundi
-Technician|Fundi
+Technician|Mhandisi au fundi
 Welcome to Simeon|Karibu Simeon
 What would you like to do today?|Ungependa kufanya nini leo?
 Store a Job Card or Spare Part|Hifadhi kadi ya kazi au kipuri
@@ -298,7 +298,7 @@ cancelled|Limeghairiwa
 draft|Rasimu
 validated|Imethibitishwa
 pending|Inasubiri
-technician|Fundi
+technician|Mhandisi au fundi
 admin|Msimamizi
 Invalid email or password|Barua pepe au nenosiri si sahihi
 Registration failed|Usajili umeshindikana
