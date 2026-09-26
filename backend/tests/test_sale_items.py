@@ -58,9 +58,29 @@ class SaleItemTests(unittest.TestCase):
         self.assertEqual(self.client.post(f'/sale-items/{item_id}/post').status_code, 404)
         self.assertEqual(self.client.delete(f'/sale-items/{item_id}').status_code, 404)
         self.assertEqual(self.client.get('/sale-items/posts').json()['total'], 1)
+
         self.app.dependency_overrides[get_current_user_id] = lambda: 1
         self.assertEqual(self.client.delete(f'/sale-items/{item_id}').status_code, 200)
         self.assertEqual(self.client.get('/sale-items/posts').json()['total'], 0)
+
+    def test_medical_categories_and_stock_updates(self):
+        user = self.db.get(User, 1)
+        user.role, user.account_field = 'store', 'medical'
+        self.db.commit()
+        for category in ['consumables', 'biomedical', 'pharmacy']:
+            data = {**self.payload, 'medical_category': category, 'medical_details': {'quantity': 12, 'unit': 'box', 'batch_number': 'LOT-1', 'expiry_date': '2027-12-31'}}
+            result = self.client.post('/sale-items/', json=data)
+            self.assertEqual(result.status_code, 200, result.text)
+            item = result.json()
+            self.assertEqual(item['medical_category'], category)
+            self.assertEqual(item['medical_details']['quantity'], 12)
+            result = self.client.patch(f"/sale-items/{item['item_id']}/medical-stock", json={'quantity': 5, 'unit': 'box'})
+            self.assertEqual(result.status_code, 200, result.text)
+            self.assertEqual(result.json()['medical_details']['quantity'], 5)
+            self.assertEqual(self.client.patch(f"/sale-items/{item['item_id']}/medical-stock", json={'quantity': -1, 'unit': 'box'}).status_code, 422)
+        user.account_field = 'it'
+        self.db.commit()
+        self.assertEqual(self.client.post('/sale-items/', json=data).status_code, 403)
 
     def test_validation(self):
         for values in [{'price': '-1'}, {'price': 'NaN'}, {'price': '1.001'}, {'currency': 'BAD'}, {'photo_data': ''}, {'photo_data': 'javascript:bad'}, {'name': ' '}]:

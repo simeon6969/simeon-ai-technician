@@ -1,3 +1,5 @@
+import InventorySimeon from './InventorySimeon'
+import MySubscription from './MySubscription'
 import AccountRecovery from './AccountRecovery'
 import FastDelivery from './FastDelivery'
 import { useEffect, useState } from 'react'
@@ -32,7 +34,8 @@ export default function RoleWorkspace({ account, onHome, onLogout }) {
       <div><h1 className="text-2xl font-bold">{account.full_name}</h1><p>{t(account.account_field)} · {t(account.role)}</p></div>
       <LanguageSwitcher /><button onClick={onHome}>{t('Home')}</button><button onClick={onLogout}>{t('Logout')}</button>
     </div></header>
-    <main className="mx-auto max-w-6xl p-6">
+    <main className="mx-auto max-w-6xl p-6"><MySubscription subscription={account.subscription} /><InventorySimeon account={account} />
+      {account.role === 'store' && account.account_field === 'medical' && <SaleItems medical />}
       {account.role === 'store' && <><OfflineStatus account={account} /><button onClick={() => setRecording(true)} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t('Store Spare Part')}</button>
         <section className="my-6 rounded-2xl bg-white p-6"><h2 className="text-xl font-bold">{t('My Spare Parts')}</h2><button onClick={() => setRevision(value => value + 1)}>{t('Refresh')}</button>
           {error && <p role="alert" className="text-red-700">{t(error)}</p>}
@@ -41,7 +44,7 @@ export default function RoleWorkspace({ account, onHome, onLogout }) {
             setBusy(true)
             try { await deleteSparePart(part.spare_part_id); setRevision(value => value + 1) } catch (failure) { setError(failure.message) } finally { setBusy(false) }
           }}>{t('Delete')}</button><FastDelivery name={part.part_name} /></article>)}</div><SparePartPosts />
-        </section><SaleItems /></>}
+        </section>{account.account_field !== 'medical' && <SaleItems />}</>}
       <AccountRecovery setup /><ItemMarket />
     </main>
   </div>

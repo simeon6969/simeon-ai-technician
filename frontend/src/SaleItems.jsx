@@ -1,3 +1,5 @@
+import { medicalCategories } from './medicalCategories'
+import { MedicalStockFields, MedicalStockSummary } from './MedicalStock'
 import FastDelivery from './FastDelivery'
 import PhotoSizeOption from './PhotoSizeOption'
 import { preparePhoto } from './preparePhoto'
@@ -15,9 +17,11 @@ const labels = {
 const empty = { name: '', description: '', price: '', currency: 'RWF', photo_data: '' }
 const fields = ['name', 'description', 'price', 'currency', 'photo_data']
 
-export default function SaleItems() {
+export default function SaleItems({ medical = false }) {
   const { t, language } = useLanguage()
   const w = labels[language] || labels.en
+  const [category, setCategory] = useState('consumables')
+  const [editingStock, setEditingStock] = useState(null)
   const [items, setItems] = useState([])
   const [board, setBoard] = useState(false)
   const [total, setTotal] = useState(0)
@@ -75,13 +79,19 @@ export default function SaleItems() {
     finally { setBusy(false) }
   }
 
+  const visibleItems = items.filter(item => !medical || board || (category === 'general' ? !item.medical_category : item.medical_category === category))
   return <section className="mt-10 rounded-2xl bg-white p-6 shadow-sm">
-    <h3 className="text-2xl font-bold text-slate-900">{w[0]}</h3>
+    <h3 className="text-2xl font-bold text-slate-900">{medical ? 'Medical store inventory' : w[0]}</h3>
+    {medical && <div className="my-4 flex flex-wrap gap-2">{Object.entries({ ...medicalCategories, general: 'Other items' }).map(([key, label]) => <button key={key} disabled={busy || !!draft || !!editingStock} aria-pressed={category === key} onClick={() => setCategory(key)} className={`rounded-xl border px-4 py-3 ${category === key ? 'bg-teal-700 text-white' : ''}`}>{label}</button>)}</div>}
     <div className="my-4 flex flex-wrap gap-3">
-      <button disabled={busy || !!draft} onClick={() => { setDraft({ ...empty }); setStep(0); setError(''); setNotice(false) }} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{w[1]}</button>
+      <button disabled={busy || !!draft} onClick={() => { setDraft({ ...empty, ...(medical && category !== 'general' ? { medical_category: category, medical_details: { quantity: 0, unit: '' } } : {}) }); setStep(0); setError(''); setNotice(false) }} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{w[1]}</button>
       <button disabled={busy || !!draft} onClick={() => { setBoard(!board); setNotice(false) }} className="rounded-xl border border-slate-300 px-4 py-2">{board ? w[3] : w[2]}</button>
       <button disabled={busy || !!draft} onClick={() => setReload((value) => value + 1)} className="rounded-xl border border-slate-300 px-4 py-2">{t('Refresh')}</button>
     </div>
+    {editingStock && <form className="my-4 rounded-xl border p-4" onSubmit={async event => {
+      event.preventDefault(); setBusy(true); setError('')
+      try { const updated = await saleItemsRequest(`/${editingStock.item_id}/medical-stock`, 'PATCH', editingStock.medical_details); setItems(previous => previous.map(item => item.item_id === updated.item_id ? updated : item)); setEditingStock(null) } catch { setError('load') } finally { setBusy(false) }
+    }}><h4>{editingStock.name}</h4><MedicalStockFields category={editingStock.medical_category} value={editingStock.medical_details} disabled={busy} onChange={medical_details => setEditingStock({ ...editingStock, medical_details })} /><button disabled={busy} className="rounded-lg bg-teal-700 px-4 py-2 text-white">{busy && <Spinner />}Save stock details</button><button type="button" disabled={busy} onClick={() => setEditingStock(null)} className="ml-3">Cancel</button></form>}
     {notice && <p role="status" className="my-3 text-green-700">{w[18]}</p>}
     {draft && <div className="my-6 rounded-xl bg-slate-50 p-5">
       <p className="mb-3 font-semibold">Simeon · {step < 5 ? `${step + 1}/5` : w[11]}</p>
@@ -94,18 +104,20 @@ export default function SaleItems() {
         <label htmlFor="sale-answer" className="mb-3 block">{w[step + 4]}</label>
         {step === 4 ? <><PhotoSizeOption checked={compressPhoto} onChange={setCompressPhoto} disabled={busy} /><input id="sale-answer" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => upload(event.target.files[0])} />{draft.photo_data && <img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" />}</> : step === 3 ? <select id="sale-answer" value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value })} className="rounded-lg border p-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map((currency) => <option key={currency}>{currency}</option>)}</select> : <textarea id="sale-answer" key={step} autoFocus rows={step === 1 ? 4 : 2} maxLength={step === 0 ? 200 : step === 2 ? 15 : 12000} inputMode={step === 2 ? 'decimal' : 'text'} value={draft[fields[step]]} onChange={(event) => setDraft({ ...draft, [fields[step]]: event.target.value })} className="w-full rounded-xl border border-slate-300 p-3" />}
         <button disabled={busy} className="mt-4 block rounded-xl bg-slate-900 px-4 py-2 text-white">{w[9]}</button>
-      </form> : <><h4 className="font-semibold">{draft.name}</h4><p className="whitespace-pre-wrap break-words">{draft.description}</p><p>{draft.price} {draft.currency}</p><img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" /><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-4 py-2 text-white">{busy && <Spinner />}{t(busy ? 'Saving...' : '') || w[12]}</button></>}
+      </form> : <form onSubmit={event => { event.preventDefault(); save() }}><h4 className="font-semibold">{draft.name}</h4><p className="whitespace-pre-wrap break-words">{draft.description}</p><p>{draft.price} {draft.currency}</p><img src={draft.photo_data} alt={draft.name} className="my-3 max-h-48 rounded-lg" /><>{draft.medical_category && <MedicalStockFields category={draft.medical_category} value={draft.medical_details} onChange={medical_details => setDraft({ ...draft, medical_details })} disabled={busy} />}</><button disabled={busy} type="submit" className="rounded-xl bg-slate-900 px-4 py-2 text-white">{busy && <Spinner />}{t(busy ? 'Saving...' : '') || w[12]}</button></form>}
       <div className="mt-4 flex gap-4">{step > 0 && <button disabled={busy} onClick={() => { setError(''); setStep(step - 1) }}>{w[10]}</button>}<button disabled={busy} onClick={() => { setDraft(null); setError('') }}>{t('Cancel')}</button></div>
     </div>}
     {error && <p role="alert" className="my-3 text-red-600">{error === 'load' ? w[17] : error === 'answer' ? w[16] : t(error)}</p>}
     {busy && <p role="status" className="flex items-center gap-2"><Spinner />{t('Updating...')}</p>}
-    {!busy && !error && !items.length && <p className="text-slate-500">{w[14]}</p>}
-    <div className="mt-4 grid gap-4 md:grid-cols-2">{items.map((item) => <article key={item.item_id} className="rounded-xl border border-slate-200 p-4">
+    {!busy && !error && !visibleItems.length && <p className="text-slate-500">{w[14]}</p>}
+    <div className="mt-4 grid gap-4 md:grid-cols-2">{visibleItems.map((item) => <article key={item.item_id} className="rounded-xl border border-slate-200 p-4">
       {!board && item.posted_at && <a href="#sales-board" className="mb-2 block text-sm font-medium text-teal-700 underline">{t('View on homepage')}</a>}
       <h4 className="font-semibold">{item.name}</h4><p className="my-2 text-lg font-bold">{new Intl.NumberFormat(language, { style: 'currency', currency: item.currency }).format(Number(item.price))}</p>
       <img src={item.photo_data} alt={item.name} className="my-3 max-h-52 rounded-lg object-contain" />
       <p className="whitespace-pre-wrap break-words text-sm text-slate-600">{item.description}</p>
       {board ? <p className="mt-3 text-sm">{t('Technician')}: {item.seller_name}</p> : <div className="mt-4 flex gap-3"><button disabled={busy || !!item.posted_at} onClick={() => action(item, false)} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{item.posted_at ? t('Posted') : w[13]}</button><button disabled={busy} onClick={() => action(item, true)} className="rounded-xl border border-red-300 px-4 py-2 text-red-700">{t('Delete')}</button></div>}
+    <MedicalStockSummary item={item} />
+    {!board && item.medical_category && <button disabled={busy} onClick={() => setEditingStock({ ...item, medical_details: { ...item.medical_details } })} className="my-3 rounded-lg border px-3 py-2">Update stock details</button>}
     <FastDelivery name={item.name} /></article>)}</div>
     {board && items.length < total && <button disabled={busy} onClick={async () => {
       setBusy(true); setError('')

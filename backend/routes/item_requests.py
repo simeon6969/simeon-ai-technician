@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -28,6 +29,10 @@ def request_item(data: RequestInput, user_id: int = Depends(get_current_user_id)
     item = db.get(SaleItem if data.item_type == 'sale' else SparePart, data.item_id)
     if not item or item.posted_at is None:
         raise HTTPException(404, 'Posted item not found')
+    if data.item_type == 'sale' and item.medical_details:
+        details = item.medical_details
+        if details.get('quantity', 0) <= 0 or (details.get('expiry_date') and details['expiry_date'] < date.today().isoformat()):
+            raise HTTPException(400, 'This medical item is out of stock or expired')
     seller_id = item.seller_id if data.item_type == 'sale' else item.submitted_by
     if seller_id == user_id:
         raise HTTPException(400, 'You cannot request your own item')

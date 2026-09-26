@@ -1,4 +1,4 @@
-from backend.routes.subscriptions import selected_subscription
+from backend.routes.subscriptions import selected_subscription, account_subscription
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -121,6 +121,7 @@ def login_user(
         "full_name": user.full_name,
         "role": user.role,
         "account_field": user.account_field,
+        "subscription": account_subscription(user.user_id, db),
     }
 
 @router.get("/me")
@@ -145,6 +146,7 @@ def get_my_profile(
         "phone": user.phone,
         "role": user.role,
         "account_field": user.account_field,
+        "subscription": account_subscription(user.user_id, db),
     }
 
 

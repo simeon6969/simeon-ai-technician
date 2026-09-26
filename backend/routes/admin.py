@@ -101,6 +101,7 @@ def get_admin_sale_items(admin_id: int = Depends(require_admin), db: Session = D
         'name': item.name, 'description': item.description, 'price': str(item.price),
         'currency': item.currency, 'photo_data': item.photo_data,
         'posted_at': item.posted_at, 'created_at': item.created_at,
+        'medical_category': item.medical_category, 'medical_details': item.medical_details,
     } for item, name in items]
 
 

@@ -73,3 +73,15 @@ class SubscriptionTests(unittest.TestCase):
         result = self.client.put('/admin/subscription-plans', headers=self.headers, json=Settings(period='monthly').model_dump(mode='json'))
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()['period'], 'monthly')
+
+    def test_legacy_selection_is_once_and_profile_shows_plan(self):
+        token = {'Authorization': 'Bearer ' + create_access_token(3)}
+        self.assertIsNone(self.client.get('/users/me', headers=token).json()['subscription'])
+        data = {'plan': 'standard', 'currency': 'RWF', 'revision': 1, 'accepted_terms': True}
+        result = self.client.put('/users/subscription', headers=token, json=data)
+        self.assertEqual(result.status_code, 200, result.text)
+        self.assertEqual(result.json()['payment_status'], 'pending')
+        profile = self.client.get('/users/me', headers=token).json()
+        self.assertEqual(profile['subscription']['plan'], 'standard')
+        self.assertEqual(self.client.put('/users/subscription', headers=token, json={**data, 'plan': 'free'}).status_code, 409)
+        self.assertEqual(self.client.put('/users/subscription', headers=self.headers, json=data).status_code, 403)

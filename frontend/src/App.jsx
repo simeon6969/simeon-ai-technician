@@ -1,3 +1,5 @@
+import InventorySimeon from './InventorySimeon'
+import MySubscription, { SubscriptionSetup } from './MySubscription'
 import { SubscriptionChoices } from './Subscriptions'
 import AccountRecovery from './AccountRecovery'
 import FastDelivery from './FastDelivery'
@@ -443,6 +445,11 @@ if (!profile.account_field) {
     setStoreConversation(null)
   }} />
 }
+if (!profile.subscription) {
+  return <SubscriptionSetup onLogout={handleLogout} onDone={subscription => {
+    const updated = { ...profile, subscription }; cacheProfile(updated); setProfile(updated)
+  }} />
+}
 if (['store', 'client'].includes(profile.role)) {
   return <RoleWorkspace key={profile.user_id} account={profile} onHome={() => navigate('home')} onLogout={handleLogout} />
 }
@@ -491,7 +498,7 @@ if (storeConversation) {
 
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <OfflineStatus account={profile} />
+        <MySubscription subscription={profile.subscription} /><InventorySimeon account={profile} /><OfflineStatus account={profile} />
 
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900"> {t("Welcome to Simeon")} </h2>

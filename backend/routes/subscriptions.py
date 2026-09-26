@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
-from backend.auth import require_admin
+from backend.auth import require_admin, get_current_user_id
 from backend.routes.admin import get_db
 from backend.models.subscriptions import SubscriptionSettings, AccountSubscription
 from backend.models.users import User
@@ -89,6 +89,29 @@ def list_subscriptions(admin=Depends(require_admin), db: Session = Depends(get_d
 
 class PaymentUpdate(BaseModel):
     status: Literal['pending', 'paid', 'waived']
+
+
+def account_subscription(user_id, db):
+    sub = db.get(AccountSubscription, user_id)
+    if sub is None:
+        return None
+    return {'plan': sub.plan, 'currency': sub.currency, 'amount': str(sub.amount),
+            'amount_rwf': str(sub.amount_rwf), 'period': sub.period,
+            'payment_status': sub.payment_status, 'payment_required': sub.payment_required}
+
+
+@router.put('/users/subscription')
+def choose_subscription(data: Selection, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    user = db.query(User).filter_by(user_id=user_id).with_for_update().first()
+    if not user or user.role == 'admin':
+        raise HTTPException(403, 'This selection is for user accounts')
+    if db.get(AccountSubscription, user_id) is not None:
+        raise HTTPException(409, 'A subscription is already assigned. Contact admin to change it.')
+    sub = selected_subscription(data, db)
+    sub.user_id = user_id
+    db.add(sub)
+    db.commit()
+    return account_subscription(user_id, db)
 
 @router.patch('/admin/subscriptions/{user_id}')
 def payment_status(user_id: int, data: PaymentUpdate, admin=Depends(require_admin), db: Session = Depends(get_db)):
