@@ -47,8 +47,11 @@ jobs:
           VITE_ANDROID_BUILD_NUMBER: ${{ github.run_number }}
       - name: Set increasing Android version
         run: |
+          # Build 9 starts the public version series: 1.0, 1.1, 1.2, ...
+          VERSION_NAME="1.$((GITHUB_RUN_NUMBER - 9))"
+          echo "ANDROID_VERSION_NAME=${VERSION_NAME}" >> "$GITHUB_ENV"
           sed -i "s/versionCode [0-9]*/versionCode ${GITHUB_RUN_NUMBER}/" frontend/android/app/build.gradle
-          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${GITHUB_RUN_NUMBER}\"/" frontend/android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" frontend/android/app/build.gradle
       - run: bash gradlew assembleDebug
         working-directory: frontend/android
       - name: Prepare download
@@ -73,5 +76,5 @@ jobs:
 
           This is a debug-signed test APK, not a Google Play production release. Device testing is still required. A later production version may require uninstalling this test app first.
           NOTES
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "Simeon Android test ${GITHUB_RUN_NUMBER}" --notes-file release-notes.md
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "Simeon Android ${ANDROID_VERSION_NAME}" --notes-file release-notes.md
           gh release upload "$TAG" Simeon-test.apk Simeon-test.apk.sha256 --clobber
