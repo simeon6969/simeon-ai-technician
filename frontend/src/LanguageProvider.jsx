@@ -1,3 +1,4 @@
+import PaymentGate from './PaymentGate'
 import { useEffect, useState } from 'react'
 import { LanguageContext } from './language'
 import LoadingStatus from './LoadingStatus'
@@ -27,7 +28,7 @@ export default function LanguageProvider({ children }) {
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t: (key) => translate(language, key) }}>
       {children}
-      <LoadingStatus />
+      <LoadingStatus /><PaymentGate />
     </LanguageContext.Provider>
   )
 }

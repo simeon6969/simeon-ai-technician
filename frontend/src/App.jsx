@@ -1,3 +1,4 @@
+import { SubscriptionChoices } from './Subscriptions'
 import AccountRecovery from './AccountRecovery'
 import FastDelivery from './FastDelivery'
 import { Spinner } from './LoadingStatus'
@@ -112,6 +113,7 @@ const [phone, setPhone] = useState('')
 const [isRegistering, setIsRegistering] = useState(false)
 const [accountType, setAccountType] = useState('')
 const [accountField, setAccountField] = useState('')
+const [subscription, setSubscription] = useState(null)
 const [profile, setProfile] = useState(cachedProfile)
 const [profileError, setProfileError] = useState('')
 const [loginError, setLoginError] = useState('')
@@ -289,7 +291,7 @@ if (!loggedIn) {
 
         {isRegistering && (
           <div className="mt-6">
-            <AccountChoices field={accountField} role={accountType} onField={setAccountField} onRole={setAccountType} />
+            <SubscriptionChoices value={subscription} onChange={setSubscription} /><AccountChoices field={accountField} role={accountType} onField={setAccountField} onRole={setAccountType} />
             <label htmlFor="account-name" className="mb-2 block text-sm font-medium text-slate-700">{t(accountType === 'store' ? 'Store name' : 'Full name')}</label>
 
             <input
@@ -363,7 +365,8 @@ if (!loggedIn) {
                 }
 
                 if (!accountField || !accountType) throw new Error('Choose your field and role')
-                await registerUser(fullName, email, phone, password, accountType, accountField)
+                if (!subscription?.accepted_terms) throw new Error('Review and accept the yearly subscription terms')
+                await registerUser(fullName, email, phone, password, accountType, accountField, subscription)
                 setIsRegistering(false)
                 setAuthMessage('Account created. You can now log in.')
                 return

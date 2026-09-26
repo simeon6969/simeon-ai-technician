@@ -96,6 +96,8 @@ def get_current_user_id(
             issued = claims.get('iat', 0)
             if issued <= recovery.sessions_revoked_at.replace(tzinfo=timezone.utc).timestamp():
                 raise HTTPException(401, 'Password changed. Please log in again.')
+        from backend.subscription_access import check_subscription
+        check_subscription(user, db)
         return user_id
     finally:
         db.close()
