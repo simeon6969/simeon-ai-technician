@@ -1,5 +1,6 @@
 import './home.css'
-import HomeShowcase, { FieldIcon } from './HomeShowcase'
+import HomeShowcase from './HomeShowcase'
+import FieldCarousel from './FieldCarousel'
 import { Spinner } from './LoadingStatus'
 import FastDelivery from './FastDelivery'
 import { landingCopy } from './landingCopy'
@@ -62,7 +63,7 @@ export default function HomePage({ loggedIn, onEnter, onRegister }) {
           <HomeShowcase c={c} t={t} onEnter={loggedIn ? onEnter : onRegister} />
         </div>
       </section>
-      <section id="fields" className="mx-auto max-w-7xl px-6 py-14"><div className="mb-7"><h2 className="text-2xl font-semibold tracking-tight">{c.fields}</h2><p className="mt-3 text-slate-600">{c.fieldDetail}</p></div><div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{['medical', 'it', 'electrical', 'mechanical'].map((value) => <button key={value} onClick={() => { setField(value); setItems([]); setOffset(0); setLoading(true); window.location.hash = 'sales-board' }} className="field-tile group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-teal-500 hover:shadow-lg"><span className="mb-5 inline-flex rounded-xl bg-teal-50 px-3 py-2 text-sm font-bold text-teal-700"><FieldIcon field={value} /></span><p className="flex items-center justify-between font-semibold">{t(value)} <span aria-hidden="true" className="text-teal-700">&#8599;&#65038;</span></p></button>)}</div></section>
+      <section id="fields" className="mx-auto max-w-7xl px-6 py-14"><div className="mb-7"><h2 className="text-2xl font-semibold tracking-tight">{c.fields}</h2><p className="mt-3 text-slate-600">{c.fieldDetail}</p></div><FieldCarousel t={t} onSelect={value => { setField(value); setItems([]); setOffset(0); setLoading(true); window.location.hash = 'sales-board' }} /></section>
       <section id="how-it-works" className="border-y border-slate-200 bg-white"><div className="mx-auto max-w-7xl px-6 py-14"><h2 className="text-2xl font-semibold tracking-tight">{c.how}</h2><p className="mt-3 text-slate-600">{c.roleDetail}</p><div className="mt-8 grid gap-5 md:grid-cols-3">{['technician', 'store', 'client'].map((value, index) => <article key={value} className="role-card flex flex-col rounded-2xl p-6"><p className="text-sm font-bold text-teal-700">0{index + 1}</p><h3 className="mt-5 text-xl font-semibold">{t(value)}</h3><p className="my-4 flex-1 text-sm leading-relaxed text-slate-600">{c[value]}</p><button onClick={loggedIn ? onEnter : onRegister} className="self-start text-sm font-semibold text-teal-700">{loggedIn ? c.enter : c.join} &#8594;</button></article>)}</div></div></section>
       <section id="sales-board" className="mx-auto max-w-7xl scroll-mt-8 px-6 py-16">
         <div className="flex flex-wrap items-end justify-between gap-6"><div><p className="mb-3 text-xs font-bold uppercase tracking-widest text-teal-700">{c.board}</p><h2 className="text-3xl font-semibold tracking-tight">{c.boardIntro}</h2><p className="mt-3 max-w-2xl text-slate-600">{c.boardDetail}</p></div><button onClick={loggedIn ? onEnter : onRegister} className={secondary}>{c.list} &#8599;&#65038;</button></div>

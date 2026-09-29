@@ -17,7 +17,6 @@
 .showcase-top { display:flex; align-items:center; gap:12px; }
 .showcase-mark { background:#00cbb8; color:#00cbb8; border-radius:12px; width:42px; height:42px; display:grid; place-items:center; font-size:24px; font-weight:800; }
 .showcase-top p { font-size:11px; color:#a5b4cb; margin-top:3px; }
-.showcase-spark { margin-left:auto; font-size:32px; color:#38efdb; }
 .showcase-tabs { display:flex; gap:4px; padding:5px; background:#0b1223; border-radius:12px; margin-top:22px; }
 .showcase-tabs button { flex:1; min-width:0; overflow-wrap:anywhere; padding:9px 4px; font-size:12px; border-radius:9px; transition:background .2s; }
 .showcase-tabs button[aria-pressed=true] { background:#172238; box-shadow:0 2px 5px #f8fafc12; font-weight:700; }
@@ -69,3 +68,34 @@
 .simeon-home .board-search :is(input, select) { color-scheme:light; background:#f7fafc; color:#152638; border-color:#ccd8e3; }
 .simeon-home .board-search option { background:#fff; color:#152638; }
 .simeon-home .board-search input::placeholder { color:#64748b; }
+
+.field-carousel { container-type:inline-size; }
+.field-window { overflow:hidden; padding-block:8px; }
+.field-track { display:flex; width:max-content; animation:field-scroll-right 28s linear infinite; }
+.field-cycle { display:grid; grid-template-columns:repeat(4, max(180px, calc((100cqw - 48px) / 4))); gap:16px; padding-right:16px; }
+.field-cycle .field-tile { min-width:0; }
+.simeon-home .field-cycle .field-tile { padding:0; overflow:hidden; }
+.field-photo { display:block; width:100%; aspect-ratio:3/2; object-fit:cover; }
+.field-photo-label { padding:18px 20px; }
+.showcase-orbit { height:260px; max-width:380px; }
+.showcase-orbit .orbit-node { width:112px; height:75px; overflow:hidden; border-radius:14px; border-color:#52647a; }
+.orbit-node img { display:block; width:100%; height:100%; object-fit:cover; }
+.showcase-orbit .orbit-medical { left:4px; top:12px; }
+.showcase-orbit .orbit-it { right:4px; top:12px; }
+.showcase-orbit .orbit-electrical { left:4px; bottom:12px; }
+.showcase-orbit .orbit-mechanical { right:4px; bottom:12px; }
+.field-carousel[data-paused=true] .field-track,
+.field-window:hover .field-track { animation-play-state:paused; }
+/* Keyboard focus exposes the original four controls without clipped targets. */
+.field-window:has(:focus-visible) { overflow-x:auto; }
+.field-window:has(:focus-visible) .field-track { animation:none; transform:none; }
+.field-window:has(:focus-visible) .field-cycle[aria-hidden=true] { display:none; }
+@keyframes field-scroll-right { from { transform:translateX(-50%); } to { transform:translateX(0); } }
+@media(prefers-reduced-motion:reduce) {
+  .field-track { animation:none; transform:none; width:100%; }
+  .field-cycle { width:100%; grid-template-columns:repeat(4,minmax(0,1fr)); padding-right:0; }
+  .field-cycle[aria-hidden=true], .field-motion-control { display:none; }
+}
+@media(prefers-reduced-motion:reduce) and (max-width:767px) {
+  .field-cycle { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
