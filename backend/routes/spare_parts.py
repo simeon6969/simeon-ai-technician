@@ -169,7 +169,7 @@ def list_posts(
          'description': part.description, 'specifications': part.specifications,
          'compatibility': part.compatibility, 'photo_data': part.photo_data,
          'availability_status': part.availability_status, 'posted_at': part.posted_at,
-         'technician_name': name, 'technician_id': part.submitted_by}
+         **({'technician_name': name, 'technician_id': part.submitted_by} if db.get(User, user_id).role == 'admin' else {})}
         for part, name in rows
     ]}
 

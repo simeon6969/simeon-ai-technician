@@ -52,7 +52,7 @@ export default function ItemMarket() {
     {error && <p role="alert" className="my-3 text-red-700">{t(error)}</p>}{notice && <p role="status" className="my-3 text-teal-700">{notice}</p>}
     {loading ? <p role="status"><Spinner />{t('Loading...')}</p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{items.map(item => <article key={item.listing_key} className="rounded-xl border p-4">
       {item.photo_data && <img src={item.photo_data} alt={item.name} className="mb-3 h-40 w-full object-contain" />}
-      <h3 className="font-semibold">{item.name}</h3><p className="text-sm text-slate-600">{item.seller_name} · {t(item.account_field || 'Not provided')}</p>
+      <h3 className="font-semibold">{item.name}</h3><p className="text-sm text-slate-600">{t(item.account_field || 'Not provided')}</p>
       <p className="my-2 font-semibold">{item.price == null ? t('Price not provided') : new Intl.NumberFormat(language, { style: 'currency', currency: item.currency || 'RWF' }).format(Number(item.price))}</p>
       <p className="mb-3 whitespace-pre-wrap text-sm">{item.description}</p>
       <textarea aria-label={`${t('Optional request note')} — ${item.name}`} maxLength={2000} value={notes[item.listing_key] || ''} onChange={event => setNotes({ ...notes, [item.listing_key]: event.target.value })} className="w-full rounded-lg border p-2" />
@@ -63,7 +63,7 @@ export default function ItemMarket() {
     <h2 className="mb-3 mt-8 text-xl font-semibold">{t('Item requests')}</h2>
     {requests.map(row => <article key={row.request_id} className="mb-3 rounded-xl border p-4">
       <h3 className="font-semibold">{row.item_name} · {t(row.status)}</h3>
-      <p>{t('Requester:')} {row.requester_name} {row.requester_phone}</p><p>{t('Seller')}: {row.seller_name} {row.seller_phone}</p><p>{row.notes}</p>
+      <p>{t('Requester:')} {row.requester_name} {row.requester_phone}</p>{row.seller_name && <p>{t('Seller')}: {row.seller_name} {row.seller_phone}</p>}<p>{row.notes}</p>
       {row.can_manage && <select aria-label={`${t('Request status')} #${row.request_id}`} disabled={busy} value={row.status} onChange={event => act(() => accountRequest(`/item-requests/${row.request_id}`, 'PATCH', { status: event.target.value }))} className="mt-3 rounded-lg border p-2">{['pending', 'accepted', 'declined', 'fulfilled'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select>}
     <FastDelivery name={row.item_name} /></article>)}
   </section>

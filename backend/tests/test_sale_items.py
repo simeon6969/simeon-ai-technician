@@ -16,6 +16,25 @@ class SaleItemTests(unittest.TestCase):
     def tearDown(self):
         test_spare_part_posts.PostTests.tearDown(self)
 
+    def test_seller_identity_is_admin_only_and_requests_still_work(self):
+        from backend.routes.item_requests import router as requests_router
+        self.app.include_router(requests_router)
+        item = self.client.post('/sale-items/', json=self.payload).json()
+        self.client.post(f"/sale-items/{item['item_id']}/post")
+        self.app.dependency_overrides[get_current_user_id] = lambda: 2
+        posted = self.client.get('/sale-items/posts').json()['items'][0]
+        self.assertNotIn('seller_name', posted)
+        self.assertNotIn('seller_id', posted)
+        response = self.client.post('/item-requests/', json={'item_type': 'sale', 'item_id': item['item_id']})
+        self.assertEqual(response.status_code, 200)
+        request = self.client.get('/item-requests/').json()[0]
+        for key in ['seller_name', 'seller_phone', 'seller_id']:
+            self.assertNotIn(key, request)
+        self.db.get(User, 2).role = 'admin'
+        self.db.commit()
+        self.assertEqual(self.client.get('/sale-items/posts').json()['items'][0]['seller_name'], 'Tech 1')
+        self.assertEqual(self.client.get('/item-requests/').json()[0]['seller_name'], 'Tech 1')
+
     def test_spare_part_price_survives_storage_and_public_post(self):
         from decimal import Decimal
         from backend.routes.admin import get_all_spare_parts
@@ -139,7 +158,7 @@ class SaleItemTests(unittest.TestCase):
         self.assertEqual(response.json()['total'], 1)
         item = response.json()['items'][0]
         self.assertEqual(item['name'], 'Analyzer')
-        self.assertEqual(item['seller_name'], 'Tech 1')
+        self.assertNotIn('seller_name', item)
         for field in ['seller_id', 'email', 'phone', 'password_hash']:
             self.assertNotIn(field, item)
         self.assertEqual(self.client.get('/sale-items/public?search=analyzer').json()['total'], 1)

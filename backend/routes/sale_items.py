@@ -119,13 +119,13 @@ def public_posts(
         SaleItem.item_id.label('item_id'), SaleItem.name.label('name'),
         SaleItem.description.label('description'), SaleItem.price.label('price'),
         SaleItem.currency.label('currency'), SaleItem.photo_data.label('photo_data'),
-        SaleItem.posted_at.label('posted_at'), User.full_name.label('seller_name'), User.account_field.label('account_field'),
+        SaleItem.posted_at.label('posted_at'), User.account_field.label('account_field'),
         literal('sale').label('item_type'), cast(literal(None), String).label('availability_status'),
     ).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
     parts = db.query(
         SparePart.spare_part_id, SparePart.part_name, SparePart.description,
         SparePart.price, SparePart.currency,
-        SparePart.photo_data, SparePart.posted_at, User.full_name, User.account_field,
+        SparePart.photo_data, SparePart.posted_at, User.account_field,
         literal('spare_part'), SparePart.availability_status,
     ).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))
     listings = sales.union_all(parts).subquery()
@@ -144,7 +144,7 @@ def public_posts(
 def posts(offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=50), user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
     query = db.query(SaleItem, User.full_name).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
     return {'total': query.count(), 'items': [
-        {**serialize(item), 'seller_name': name} for item, name in query.order_by(SaleItem.posted_at.desc(), SaleItem.item_id.desc()).offset(offset).limit(limit).all()
+        {**{key: value for key, value in serialize(item).items() if key != 'seller_id'}, **({'seller_id': item.seller_id, 'seller_name': name} if db.get(User, user_id).role == 'admin' else {})} for item, name in query.order_by(SaleItem.posted_at.desc(), SaleItem.item_id.desc()).offset(offset).limit(limit).all()
     ]}
 
 

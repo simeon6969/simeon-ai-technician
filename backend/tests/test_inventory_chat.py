@@ -29,6 +29,7 @@ class InventoryChatTests(unittest.TestCase):
         records = result.json()['records']
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['name'], 'Public gloves')
+        self.assertNotIn('seller_name', records[0])
         self.assertNotIn('storage_location', records[0]['medical_details'])
         self.assertTrue(records[0]['can_request'])
 
