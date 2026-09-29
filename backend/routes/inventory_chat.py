@@ -44,13 +44,13 @@ def inventory_records(db, user, field, scope, search='', category=None):
         expired = bool(details.get('expiry_date') and details['expiry_date'] < date.today().isoformat())
         available = not expired and (not details or details.get('quantity', 0) > 0)
         records.append({'item_type': 'sale', 'item_id': item.item_id, 'name': item.name, 'description': item.description[:2000],
-                        'seller_name': seller.full_name, 'price': str(item.price), 'currency': item.currency,
+                        **({'seller_name': seller.full_name} if user.role == 'admin' else {}), 'price': str(item.price), 'currency': item.currency,
                         'medical_category': item.medical_category, 'medical_details': details,
                         'availability': 'expired' if expired else 'out_of_stock' if not available else 'stored',
                         'can_request': available and item.posted_at is not None and seller.user_id != user.user_id})
     for item, seller in parts.order_by(SparePart.spare_part_id.desc()).limit(20).all():
         records.append({'item_type': 'spare_part', 'item_id': item.spare_part_id, 'name': item.part_name, 'description': (item.description or '')[:2000],
-                        'seller_name': seller.full_name, 'price': str(item.price) if item.price is not None else None, 'currency': item.currency,
+                        **({'seller_name': seller.full_name} if user.role == 'admin' else {}), 'price': str(item.price) if item.price is not None else None, 'currency': item.currency,
                         'availability': item.availability_status, 'medical_details': {},
                         'can_request': item.availability_status != 'unavailable' and item.posted_at is not None and seller.user_id != user.user_id})
     return {'total': total, 'records': records, 'has_more': total > len(records)}

@@ -48,7 +48,8 @@ class PostTests(unittest.TestCase):
         self.app.dependency_overrides[get_current_user_id] = lambda: 2
         result = self.client.get('/spare-parts/posts').json()
         self.assertEqual(result['total'], 1)
-        self.assertEqual(result['posts'][0]['technician_name'], 'Tech 1')
+        self.assertNotIn('technician_name', result['posts'][0])
+        self.assertNotIn('technician_id', result['posts'][0])
         self.assertNotIn('email', result['posts'][0])
         self.client.post('/spare-parts/2/post')
         result = self.client.get('/spare-parts/posts?limit=1&offset=1').json()
