@@ -1,3 +1,4 @@
+import CommissionPanel from './CommissionPanel'
 import { useState } from 'react'
 import { accountRequest } from './api'
 import { useLanguage } from './language'
@@ -22,6 +23,7 @@ export default function InventorySimeon({ account }) {
   const [result, setResult] = useState(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [requested, setRequested] = useState({})
   const [notice, setNotice] = useState('')
   async function ask(message) {
     if (!message.trim() || busy) return
@@ -41,7 +43,7 @@ export default function InventorySimeon({ account }) {
     {error && <p role="alert" className="my-3 text-red-700">{error}</p>}{notice && <p role="status" className="my-3 text-teal-700">{notice}</p>}
     {result && <><p className="my-3 text-sm">{w[10]}: {result.records.length} / {result.total}</p>{!result.records.length && <p>{w[9]}</p>}<div className="grid gap-3 md:grid-cols-2">{result.records.map(item => <article key={`${item.item_type}-${item.item_id}`} className="rounded-xl border p-4"><h3 className="font-bold">{item.name}</h3><p>{item.seller_name ? `${item.seller_name} / ` : ''}{item.price == null ? t('Price not provided') : `${item.price} ${item.currency}`}</p><p>{item.description}</p><p>{t(item.availability)}</p><MedicalStockSummary item={item} />{item.can_request && <button disabled={busy} className="mt-3 rounded-lg bg-teal-700 px-3 py-2 text-white" onClick={async () => {
       setBusy(true); setError(''); setNotice('')
-      try { await accountRequest('/item-requests/', 'POST', { item_type: item.item_type, item_id: item.item_id }); setNotice(w[8]) } catch (error) { setError(error.message) } finally { setBusy(false) }
-    }}>{w[7]}</button>}<FastDelivery name={item.name} /></article>)}</div></>}
+      try { const request = await accountRequest('/item-requests/', 'POST', { item_type: item.item_type, item_id: item.item_id }); setRequested(previous => ({ ...previous, [`${item.item_type}-${item.item_id}`]: request.request_id })); setNotice(w[8]) } catch (error) { setError(error.message) } finally { setBusy(false) }
+    }}>{w[7]}</button>}{requested[`${item.item_type}-${item.item_id}`] && <CommissionPanel requestId={requested[`${item.item_type}-${item.item_id}`]} />}<FastDelivery name={item.name} /></article>)}</div></>}
   </section>
 }

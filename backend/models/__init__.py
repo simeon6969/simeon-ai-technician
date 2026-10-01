@@ -14,3 +14,9 @@ from backend.models.delivery import DeliveryContact
 from backend.models.recovery import AccountRecovery
 
 from backend.models.subscriptions import SubscriptionSettings, AccountSubscription
+
+from backend.models.commissions import CommissionSettings, CommissionAgreement, PaymentReviewNotification
+
+from backend.models.branding import AccountBranding
+
+from backend.models.location import AccountLocation
