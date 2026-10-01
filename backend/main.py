@@ -150,3 +150,6 @@ def start_google_sheet_sync():
 def stop_google_sheet_sync():
     from backend.sheet_sync import stop_worker
     stop_worker()
+
+from backend.routes.app_branding import router as app_branding_router
+app.include_router(app_branding_router)

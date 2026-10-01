@@ -1,3 +1,4 @@
+import BrandingProvider from './BrandingProvider'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -16,10 +17,10 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator && window.isSecureConte
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <LanguageProvider>
+    <BrandingProvider><LanguageProvider>
       <App />
       <InstallApp />
       <Footer />
-    </LanguageProvider>
+    </LanguageProvider></BrandingProvider>
   </StrictMode>,
 )

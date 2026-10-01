@@ -1,3 +1,4 @@
+import { useBranding, brandText } from './branding'
 import PaymentGate from './PaymentGate'
 import { useEffect, useState } from 'react'
 import { LanguageContext } from './language'
@@ -6,6 +7,7 @@ import { translate } from './translations'
 const languages = ['en', 'rw', 'fr', 'sw']
 
 export default function LanguageProvider({ children }) {
+  const branding = useBranding()
   const [language, setLanguage] = useState(() => {
     try {
       const saved = localStorage.getItem('simeon_language')
@@ -25,7 +27,7 @@ export default function LanguageProvider({ children }) {
   }, [language])
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t: (key) => translate(language, key) }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t: (key) => brandText(translate(language, key), branding.name) }}>
       {children}
       <PaymentGate />
     </LanguageContext.Provider>

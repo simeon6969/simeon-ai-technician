@@ -1,3 +1,4 @@
+import BrandingSettings from './BrandingSettings'
 import JobCardSettings from './JobCardSettings'
 import PaymentReviews from './PaymentReviews'
 import usePaymentReviews from './usePaymentReviews'
@@ -14,7 +15,7 @@ import DashboardLayout from './DashboardLayout'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['overview', 'Overview'], ['job-settings', 'Job cards & Google Sheets'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['overview', 'Overview'], ['branding', 'App branding'], ['job-settings', 'Job cards & Google Sheets'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
   ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'S'],
 ]
@@ -118,6 +119,7 @@ export default function AdminConsole({ account, onHome, onLogout }) {
           <div className="mt-6 grid gap-4 md:grid-cols-2"><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account field')}</h3>{['medical', 'it', 'electrical', 'mechanical'].map(value => <button key={value} onClick={() => { go('users'); setField(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.account_field === value).length}</strong></button>)}</section><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account role')}</h3>{['technician', 'store', 'client'].map(value => <button key={value} onClick={() => { go('users'); setRole(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.role === value).length}</strong></button>)}</section></div>
         </>}
         {section === 'assistant' && <AdminChat />}
+        {section === 'branding' && <BrandingSettings />}
         {section === 'job-settings' && <JobCardSettings />}
         {section === 'commissions' && <CommissionSettings />}
         {section === 'delivery' && <DeliverySettings />}

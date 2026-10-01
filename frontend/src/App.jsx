@@ -1,3 +1,6 @@
+import BrandMark from './BrandMark'
+import { useBranding, brandCopy } from './branding'
+import BrandName from './BrandName'
 import DashboardLayout, { DashboardOverview } from './DashboardLayout'
 import MedicalStoreDashboard from './MedicalStoreDashboard'
 import InventorySimeon from './InventorySimeon'
@@ -42,7 +45,7 @@ import {
 } from './api'
 import { jsPDF } from 'jspdf'
 
-async function downloadJobCardPdf(card) {
+async function downloadJobCardPdf(card, appBranding) {
   const branding = await accountRequest('/users/me/branding')
   const pdf = new jsPDF()
   let headingY = 20
@@ -69,7 +72,7 @@ async function downloadJobCardPdf(card) {
   ]
 
   pdf.setFontSize(16)
-  const heading = pdf.splitTextToSize(card.account_name || 'S Job Card', 170)
+  const heading = pdf.splitTextToSize(card.account_name || `${appBranding.name} Job Card`, 170)
   pdf.text(heading, 20, headingY)
   let y = headingY + 6 + heading.length * 7
   const bottom = 277, labelWidth = 48, valueWidth = 122, lineHeight = 5
@@ -133,17 +136,19 @@ async function downloadJobCardPdf(card) {
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(9)
     pdf.setTextColor(100, 116, 139)
-    pdf.text(`S | Job Card #${card.job_card_id}`, 20, 289)
+    pdf.text(`${appBranding.name} | Job Card #${card.job_card_id}`, 20, 289)
     pdf.text(`${page} / ${pageCount}`, 190, 289, { align: 'right' })
   }
 
-  pdf.save(`S-job-card-${card.job_card_id}.pdf`)
+  const fileBrand = appBranding.name.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-|-$/g, '') || 'app'
+  pdf.save(`${fileBrand}-job-card-${card.job_card_id}.pdf`)
 }
 
 
 function App() {
   const { t, language } = useLanguage()
-  const homeText = homeCopy[language] || homeCopy.en
+  const appBranding = useBranding()
+  const homeText = brandCopy(homeCopy[language] || homeCopy.en, appBranding.name)
   const [page, setPage] = useState(() => ['#login', '#app'].includes(window.location.hash) ? window.location.hash.slice(1) : 'home')
   useEffect(() => {
     const change = () => setPage(['#login', '#app'].includes(window.location.hash) ? window.location.hash.slice(1) : 'home')
@@ -336,8 +341,9 @@ if (!loggedIn) {
         <div className="mb-6 flex justify-end"><LanguageSwitcher /></div>
 
         <div className="mb-8 text-center">
+          <div className="mx-auto mb-3 h-14 w-14"><BrandMark /></div>
           <h1 className="text-3xl font-bold text-slate-900">
-            S
+            <BrandName />
           </h1>
 
           <p className="mt-2 text-sm text-slate-500"> {t("Intelligence Recovery program")} </p>
@@ -632,7 +638,7 @@ if (storeConversation) {
                 <div className="mt-4 flex flex-col items-start gap-3">
                   <p className="text-sm text-slate-600">{t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
                   <button
-                    onClick={() => downloadJobCardPdf(card).catch((error) => {
+                    onClick={() => downloadJobCardPdf(card, appBranding).catch((error) => {
                       setJobCardsError(error.message || 'Unable to export PDF')
                     })}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -898,7 +904,7 @@ if (storeConversation) {
 {chatAnswer && (
   <div className="mt-6 rounded-xl bg-slate-50 p-5">
     <h4 className="font-semibold text-slate-900">
-      S
+      <BrandName />
     </h4>
 
     <p className="mt-2 whitespace-pre-wrap text-slate-700">

@@ -1,3 +1,4 @@
+from backend.services.brand_identity import branded_instructions
 """Admin-only database questions using bounded, read-only ORM queries."""
 import json
 
@@ -114,7 +115,7 @@ Respond in the requested language. Historical answers are not fresh evidence.
     for step in range(7):
         response = client.responses.create(
             model=OPENAI_MODEL,
-            instructions=instructions,
+            instructions=branded_instructions(instructions, db),
             input=json.dumps({'schema': schema, 'question': question,
                               'history': history, 'language': language,
                               'query_results': evidence,

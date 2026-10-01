@@ -1,3 +1,4 @@
+from backend.services.brand_identity import branded_instructions
 import os
 
 from dotenv import load_dotenv
@@ -120,7 +121,7 @@ Do not fabricate missing technical information.
 
     response = client.responses.create(
         model=OPENAI_MODEL,
-        instructions=SYSTEM_PROMPT,
+        instructions=branded_instructions(SYSTEM_PROMPT),
         input=prompt
     )
 

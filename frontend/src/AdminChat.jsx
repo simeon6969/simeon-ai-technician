@@ -1,3 +1,4 @@
+import { useBranding, brandText } from './branding'
 import { Spinner } from './LoadingStatus'
 import { useState } from 'react'
 import { sendAdminChatMessage } from './api'
@@ -11,8 +12,9 @@ const copy = {
 }
 
 export default function AdminChat() {
+  const branding = useBranding()
   const { language, t } = useLanguage()
-  const labels = copy[language] || copy.en
+  const labels = (copy[language] || copy.en).map(text => brandText(text, branding.name))
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
@@ -45,7 +47,7 @@ export default function AdminChat() {
       <div role="log" aria-live="polite" className="my-4 max-h-[32rem] space-y-3 overflow-y-auto">
         {messages.map((message, index) => (
           <article key={index} className={`rounded-xl p-4 ${message.role === 'user' ? 'bg-slate-100' : 'border border-slate-200'}`}>
-            <p className="mb-2 text-xs font-semibold text-slate-500">{message.role === 'user' ? t('admin') : 'S'}</p>
+            <p className="mb-2 text-xs font-semibold text-slate-500">{message.role === 'user' ? t('admin') : branding.name}</p>
             <p className="whitespace-pre-wrap break-words text-sm text-slate-800">{message.content}</p>
             {message.sources?.length > 0 && <details className="mt-3 text-xs text-slate-600"><summary className="cursor-pointer">{labels[3]}</summary><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words">{JSON.stringify(message.sources, null, 2)}</pre></details>}
           </article>

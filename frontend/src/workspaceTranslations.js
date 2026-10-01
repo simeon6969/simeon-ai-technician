@@ -1,5 +1,11 @@
 // English keys remain stable; stored enum values are never translated.
 const rows = `
+App branding|Ikirango cya porogaramu|Identité de l’application|Utambulisho wa programu
+App name|Izina rya porogaramu|Nom de l’application|Jina la programu
+App logo|Ikirango|Logo de l’application|Nembo ya programu
+Remove logo|Kuraho ikirango|Supprimer le logo|Ondoa nembo
+Branding saved.|Ikirango cyabitswe.|Identité enregistrée.|Utambulisho umehifadhiwa.
+Choose an image up to 5 MB.|Hitamo ifoto itarengeje 5 MB.|Choisissez une image de 5 Mo maximum.|Chagua picha isiyozidi MB 5.
 Include existing job cards|Ongeramo amafishi y’akazi asanzwe|Inclure les fiches existantes|Jumuisha kadi zilizopo
 Job cards & Google Sheets|Amafishi y’akazi na Google Sheets|Fiches de travail et Google Sheets|Kadi za kazi na Google Sheets
 Google Sheets connection|Ihuza rya Google Sheets|Connexion Google Sheets|Muunganisho wa Google Sheets

@@ -1,3 +1,4 @@
+import { useBranding, brandText } from './branding'
 import { useEffect, useState } from 'react'
 import { useLanguage } from './language'
 import { listQueue, updateQueued } from './offlineStore'
@@ -6,7 +7,8 @@ import { offlineCopy } from './offlineCopy'
 
 export default function OfflineStatus({ account }) {
   const { language, t } = useLanguage()
-  const w = offlineCopy[language] || offlineCopy.en
+  const branding = useBranding()
+  const w = (offlineCopy[language] || offlineCopy.en).map(text => brandText(text, branding.name))
   const [records, setRecords] = useState([])
   const [offline, setOffline] = useState(!navigator.onLine)
   const [error, setError] = useState(false)
