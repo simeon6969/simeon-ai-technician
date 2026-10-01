@@ -1,3 +1,5 @@
+import { readRequestIntent } from './requestIntent'
+import ItemRequestStatus from './ItemRequestStatus'
 import BrandMark from './BrandMark'
 import { useBranding, brandCopy } from './branding'
 import BrandName from './BrandName'
@@ -12,7 +14,6 @@ import { Spinner } from './LoadingStatus'
 import AccountChoices from './AccountChoices'
 import AccountSetup from './AccountSetup'
 import RoleWorkspace from './RoleWorkspace'
-import ItemMarket from './ItemMarket'
 import { cacheProfile, cachedProfile } from './offlineStore'
 import { syncQueue } from './offlineSync'
 import OfflineStatus from './OfflineStatus'
@@ -178,10 +179,11 @@ const [accountField, setAccountField] = useState('')
 const [subscription, setSubscription] = useState(null)
 const [profile, setProfile] = useState(cachedProfile)
 const [profileError, setProfileError] = useState('')
+const [sessionRevision, setSessionRevision] = useState(0)
 const [loginError, setLoginError] = useState('')
 const [authMessage, setAuthMessage] = useState('')
 
-  const [dashboardSection, setDashboardSection] = useState('overview')
+  const [dashboardSection, setDashboardSection] = useState(() => readRequestIntent() ? 'assistant' : 'overview')
   const [storeConversation, setStoreConversation] = useState(null)
 const [helpMode, setHelpMode] = useState(null)
 
@@ -212,6 +214,25 @@ const [chatLoading, setChatLoading] = useState(false)
 const [authBusy, setAuthBusy] = useState(false)
 
 useEffect(() => {
+  let token = localStorage.getItem('access_token')
+  function syncSession() {
+    const current = localStorage.getItem('access_token')
+    if (current === token) return
+    token = current
+    setProfile(null)
+    setProfileError('')
+    setLoggedIn(Boolean(current))
+    setSessionRevision(value => value + 1)
+  }
+  window.addEventListener('storage', syncSession)
+  window.addEventListener('focus', syncSession)
+  return () => {
+    window.removeEventListener('storage', syncSession)
+    window.removeEventListener('focus', syncSession)
+  }
+}, [loggedIn])
+
+useEffect(() => {
   if (!loggedIn) return
   let active = true
   getMyProfile().then((account) => {
@@ -228,7 +249,7 @@ useEffect(() => {
     else { setProfile(null); setProfileError('Unable to load account. Please log in again.') }
   })
   return () => { active = false }
-}, [loggedIn])
+}, [loggedIn, sessionRevision])
 
 useEffect(() => {
   if (!loggedIn || ['admin', 'store', 'client'].includes(userRole)) {
@@ -468,6 +489,7 @@ if (!loggedIn) {
               setProfile(result)
               setProfileError('')
 
+              if (readRequestIntent()) setDashboardSection('assistant')
               setLoggedIn(true)
               navigate('app')
 
@@ -555,7 +577,7 @@ if (storeConversation) {
 
   return (
     <DashboardLayout account={profile} sections={[
-      ['overview', 'Overview'], ['assistant', 'Ask S'], ['jobs', 'My Job Cards'], ['parts', 'My Spare Parts'], ['items', 'Items for sale'], ['help', 'Maintenance & spare-part help'], ['requests', 'Requests & marketplace'], ['account', 'My account'],
+      ['overview', 'Overview'], ['assistant', 'Ask S'], ['jobs', 'My Job Cards'], ['parts', 'My Spare Parts'], ['items', 'Items for sale'], ['help', 'Maintenance & spare-part help'], ['account', 'My account'],
     ]} section={dashboardSection} onNavigate={setDashboardSection} onHome={() => navigate('home')} onLogout={handleLogout}>
       {dashboardSection === 'overview' && <DashboardOverview actions={[
         { label: 'Digital Job Card', description: 'Record maintenance work with S.', onClick: () => setStoreConversation('job') },
@@ -563,7 +585,6 @@ if (storeConversation) {
         { label: 'Ask S', description: 'Find available products and inventory information.', onClick: () => setDashboardSection('assistant') },
         { label: 'Maintenance Help', description: 'Find maintenance knowledge from successful job cards.', onClick: () => { setHelpMode('maintenance'); setDashboardSection('help') } },
         { label: 'Items for sale', description: 'Manage equipment and posted items.', onClick: () => setDashboardSection('items') },
-        { label: 'Requests & marketplace', description: 'Browse products and follow requests.', onClick: () => setDashboardSection('requests') },
       ]}><MySubscription subscription={profile.subscription} /><OfflineStatus account={profile} /></DashboardOverview>}
       {dashboardSection === 'assistant' && <InventorySimeon account={profile} />}
       {dashboardSection === 'jobs' && <><button className="rounded-xl bg-teal-700 px-5 py-3 text-white" onClick={() => setStoreConversation('job')}>{t('Digital Job Card')}</button>
@@ -767,7 +788,7 @@ if (storeConversation) {
                     <h4 className="font-semibold text-slate-900">
                       {part.part_name}
                     </h4>
-              <SparePartPrice part={part} /><FastDelivery name={part.part_name} />
+              <ItemRequestStatus item={part} /><SparePartPrice part={part} /><FastDelivery name={part.part_name} />
                     <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
                     </p>
                   </div>
@@ -841,7 +862,6 @@ if (storeConversation) {
       </>}
       {dashboardSection === 'items' && <SaleItems />}
       {dashboardSection === 'account' && <><MySubscription subscription={profile.subscription} /><AccountRecovery setup /><OfflineStatus account={profile} /></>}
-      {dashboardSection === 'requests' && <ItemMarket />}
       {dashboardSection === 'help' && <div className="mb-5 flex flex-wrap gap-3"><button onClick={() => setHelpMode('maintenance')} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t('Maintenance Help')}</button><button onClick={() => setHelpMode('spare_part')} className="rounded-xl border bg-white px-5 py-3">{t('Spare-Part Help')}</button></div>}
         {/* Chat area */}
     {/* Help area */}
@@ -970,7 +990,7 @@ if (storeConversation) {
               <h4 className="font-semibold text-slate-900">
                 {part.part_name}
               </h4>
-              <SparePartPrice part={part} /><FastDelivery name={part.part_name} />
+              <ItemRequestStatus item={part} /><SparePartPrice part={part} /><FastDelivery name={part.part_name} />
               <p className="mt-1 text-sm text-slate-600"> {t("Part number:")} {part.part_number || t('Not provided')}
               </p>
             </div>

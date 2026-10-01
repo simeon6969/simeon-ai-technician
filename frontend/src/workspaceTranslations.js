@@ -1,5 +1,37 @@
 // English keys remain stable; stored enum values are never translated.
 const rows = `
+Refresh item commission|Vugurura komisiyo y’igicuruzwa|Actualiser la commission de cet article|Sasisha kamisheni ya bidhaa
+Seller information|Amakuru y’ugurisha|Informations du vendeur|Taarifa za muuzaji
+Commission steps|Intambwe za komisiyo|Etapes de commission|Hatua za kamisheni
+1. Agree on the fee|1. Mwemeranye amafaranga|1. Accepter les frais|1. Kubaliana ada
+2. Pay by MoMo|2. Ishyura kuri MoMo|2. Payer par MoMo|2. Lipa kwa MoMo
+3. Admin confirms payment|3. Ubuyobozi bwemeza ubwishyu|3. Validation du paiement|3. Msimamizi anathibitisha malipo
+4. Seller information unlocked|4. Amakuru y’ugurisha arafungurwa|4. Informations du vendeur debloquees|4. Taarifa za muuzaji zimefunguliwa
+Accept fee and continue to payment|Emera amafaranga ukomeze kwishyura|Accepter les frais et passer au paiement|Kubali ada na endelea kulipa
+Accept zero fee and request approval|Emera kutishyura usabe kwemezwa|Accepter les frais nuls et demander validation|Kubali ada sifuri na omba idhini
+Payment submitted. Wait for admin confirmation, then refresh this item to view seller information.|Ubwishyu bwoherejwe. Tegereza ubuyobozi bwemeze, uvugurure iki gicuruzwa urebe amakuru y’ugurisha.|Paiement soumis. Attendez la validation puis actualisez cet article pour voir les informations du vendeur.|Malipo yamewasilishwa. Subiri idhini ya msimamizi kisha sasisha bidhaa kuona taarifa za muuzaji.
+Set commission percentages|Shyiraho ijanisha rya komisiyo|Definir les pourcentages de commission|Weka asilimia za kamisheni
+Review payments and unlock seller info|Suzuma ubwishyu ufungure amakuru y’ugurisha|Verifier les paiements et debloquer le vendeur|Kagua malipo na fungua taarifa za muuzaji
+Review payment and unlock|Suzuma ubwishyu ufungure|Verifier le paiement et debloquer|Kagua malipo na fungua
+Set your starting percentage, minimum percentage and reduction per round. Review submitted payments to unlock seller information.|Shyiraho ijanisha ribanza, rito ntarengwa n’irigabanywa buri nshuro. Suzuma ubwishyu ufungure amakuru y’ugurisha.|Definissez le taux initial, le minimum et la reduction par tour. Verifiez les paiements soumis pour debloquer les informations du vendeur.|Weka asilimia ya kuanzia, kiwango cha chini na punguzo kwa kila hatua. Kagua malipo yaliyowasilishwa kufungua taarifa za muuzaji.
+Approval becomes available after the payer accepts the fee and submits payment for review.|Kwemeza bishoboka nyuma y’uko uwishyura yemeye amafaranga kandi yohereje ubwishyu ngo busuzumwe.|L’approbation devient disponible apres acceptation des frais et soumission du paiement.|Idhini inapatikana baada ya mlipaji kukubali ada na kuwasilisha malipo yakaguliwe.
+My requests|Ubusabe bwanjye|Mes demandes|Maombi yangu
+Remove this request? Pending item requests will be cancelled. Payment history is retained for admin review.|Ukureho ubu busabe? Ubutararangira burahagarikwa. Amakuru yo kwishyura arabikwa ku buyobozi.|Supprimer cette demande ? Les demandes en cours seront annulees. L’historique des paiements reste accessible a l’administrateur.|Ondoa ombi hili? Maombi yanayosubiri yataghairiwa. Historia ya malipo itabaki kwa msimamizi.
+Continue with the item you selected on Home.|Komeza ku gicuruzwa wahisemo ku ahabanza.|Continuez avec l’article choisi sur l’accueil.|Endelea na bidhaa uliyochagua Mwanzo.
+Requested|Cyasabwe|Demande en cours|Imeombwa
+Non-requested|Ntikirasabwa|Aucune demande en cours|Haijaombwa
+Commission|Komisiyo|Commission|Kamisheni
+Fees & negotiations|Amafaranga n’ibiganiro|Frais et negociations|Ada na majadiliano
+All negotiations|Ibiganiro byose|Toutes les negociations|Majadiliano yote
+Commission requests|Ubusabe bwa komisiyo|Demandes de commission|Maombi ya kamisheni
+Request created|Ubusabe bwakozwe|Demande creee|Ombi liliundwa
+Open negotiation|Fungura ikiganiro|Ouvrir la negociation|Fungua majadiliano
+Your item is being requested.|Hari usaba igicuruzwa cyawe.|Votre article fait l’objet d’une demande.|Bidhaa yako inaombwa.
+Request|Saba|Demander|Omba
+Request to seller|Ohereza ubusabe ku ugurisha|Envoyer une demande au vendeur|Tuma ombi kwa muuzaji
+Request seller info|Saba amakuru y’ugurisha|Demander les informations du vendeur|Omba taarifa za muuzaji
+Refresh section|Vugurura iki gice|Actualiser cette section|Sasisha sehemu
+Last refreshed|Byaherukaga kuvugururwa|Derniere actualisation|Ilisasishwa mwisho
 App branding|Ikirango cya porogaramu|Identité de l’application|Utambulisho wa programu
 App name|Izina rya porogaramu|Nom de l’application|Jina la programu
 App logo|Ikirango|Logo de l’application|Nembo ya programu

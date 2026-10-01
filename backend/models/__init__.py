@@ -24,3 +24,5 @@ from backend.models.location import AccountLocation
 from backend.models.job_forms import JobFormVersion, JobSheetSettings, JobSheetSubmission
 
 from .app_branding import AppBranding
+
+from .hidden_requests import HiddenRequest

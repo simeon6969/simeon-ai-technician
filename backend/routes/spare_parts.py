@@ -1,3 +1,4 @@
+from backend.services.item_request_status import active_request_counts, request_status
 from backend.permissions import require_inventory
 import json
 
@@ -114,6 +115,7 @@ def get_my_spare_parts(
     user_id: int = Depends(require_inventory),
     db: Session = Depends(get_db)
 ):
+    counts = active_request_counts(db, user_id, 'spare_part')
     parts = (
         db.query(
             SparePart,
@@ -145,6 +147,7 @@ def get_my_spare_parts(
             "attachments_data": part.attachments_data,
             "availability_status": part.availability_status,
             "notification_count": notification_count,
+            **request_status(counts.get(part.spare_part_id, 0)),
             "posted_at": part.posted_at,
             "created_at": part.created_at,
         }

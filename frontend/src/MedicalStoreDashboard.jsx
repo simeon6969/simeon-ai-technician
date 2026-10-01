@@ -1,3 +1,5 @@
+import { readRequestIntent } from './requestIntent'
+import ItemRequestStatus from './ItemRequestStatus'
 import BrandMark from './BrandMark'
 import { useEffect, useState } from 'react'
 import { accountRequest, saleItemsRequest, getMySpareParts, deleteSparePart } from './api'
@@ -8,7 +10,6 @@ import MedicalRecording from './MedicalRecording'
 import StoreConversation from './StoreConversation'
 import InventorySimeon from './InventorySimeon'
 import SaleItems from './SaleItems'
-import ItemMarket from './ItemMarket'
 import MySubscription from './MySubscription'
 import AccountRecovery from './AccountRecovery'
 import OfflineStatus from './OfflineStatus'
@@ -17,11 +18,11 @@ import SparePartPrice from './SparePartPrice'
 import FastDelivery from './FastDelivery'
 import { Spinner } from './LoadingStatus'
 
-const sections = [['overview', 'Overview', '01'], ['assistant', 'Ask S', '02'], ['consumables', 'Medical consumables', '03'], ['biomedical', 'Biomedical equipment', '04'], ['pharmacy', 'Pharmacy', '05'], ['parts', 'Spare parts', '06'], ['requests', 'Requests & marketplace', '07'], ['general', 'Other items', '08'], ['account', 'My account', '09']]
+const sections = [['overview', 'Overview', '01'], ['assistant', 'Ask S', '02'], ['consumables', 'Medical consumables', '03'], ['biomedical', 'Biomedical equipment', '04'], ['pharmacy', 'Pharmacy', '05'], ['parts', 'Spare parts', '06'], ['general', 'Other items', '07'], ['account', 'My account', '08']]
 
 export default function MedicalStoreDashboard({ account, onHome, onLogout }) {
   const { t } = useLanguage()
-  const [section, setSection] = useState('overview')
+  const [section, setSection] = useState(() => readRequestIntent() ? 'assistant' : 'overview')
   const [recording, setRecording] = useState(null)
   const [revision, setRevision] = useState(0)
   const [items, setItems] = useState([])
@@ -32,9 +33,13 @@ export default function MedicalStoreDashboard({ account, onHome, onLogout }) {
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     let active = true
-    Promise.all([saleItemsRequest('/my'), getMySpareParts(), accountRequest('/item-requests/')]).then(([items, parts, requests]) => {
-      if (active) { setItems(items); setParts(parts); setRequests(requests); setError('') }
-    }).catch(error => { if (active) setError(error.message) }).finally(() => { if (active) setLoading(false) })
+    Promise.allSettled([saleItemsRequest('/my'), getMySpareParts(), accountRequest('/item-requests/')]).then(results => {
+      if (!active) return
+      const setters = [setItems, setParts, setRequests]
+      results.forEach((result, index) => { if (result.status === 'fulfilled') setters[index](result.value) })
+      setError(results.filter(result => result.status === 'rejected').map(result => result.reason.message).join(' / '))
+      setLoading(false)
+    })
     return () => { active = false }
   }, [revision])
   function refresh() { setLoading(true); setRevision(value => value + 1) }
@@ -52,7 +57,7 @@ export default function MedicalStoreDashboard({ account, onHome, onLogout }) {
     else if (details.reorder_level != null && details.quantity <= details.reorder_level) reasons.push('Reorder level reached')
     return reasons.length ? [{ ...item, reasons }] : []
   })
-  const pending = requests.filter(row => row.seller_id === account.user_id && row.status === 'pending').length
+  const pending = requests.filter(row => (row.incoming || row.seller_id === account.user_id) && row.status === 'pending').length
   if (recording === 'parts') return <StoreConversation kind="part" account={account} onClose={() => { setRecording(null); navigate('parts') }} onSaved={refresh} />
   if (recording) return <MedicalRecording category={recording} account={account} onClose={() => { const category = recording; setRecording(null); navigate(category) }} onSaved={refresh} />
   const title = sections.find(([key]) => key === section)[1]
@@ -70,9 +75,8 @@ export default function MedicalStoreDashboard({ account, onHome, onLogout }) {
         </>}
         {section === 'assistant' && <InventorySimeon account={account} />}
         {(section in medicalCategories || section === 'general') && <SaleItems key={`${section}-${revision}`} medical initialCategory={section} hideCategoryNavigation onRecordMedical={setRecording} />}
-        {section === 'requests' && <ItemMarket />}
         {section === 'account' && <><MySubscription subscription={account.subscription} /><AccountRecovery setup /><OfflineStatus account={account} /></>}
-        {section === 'parts' && <><OfflineStatus account={account} /><button onClick={() => setRecording('parts')} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t('Store Spare Part')}</button><div className="my-5 grid gap-4 md:grid-cols-2">{parts.map(part => <article key={part.spare_part_id} className="rounded-xl border bg-white p-4"><h3 className="font-semibold">{part.part_name}</h3><SparePartPrice part={part} /><p>{part.description}</p>{part.photo_data && <img src={part.photo_data} alt={part.part_name} className="my-3 max-h-40" />}<PostSparePartButton part={part} onPosted={refresh} /><button disabled={busy} onClick={async () => { if (!window.confirm(t('Delete this spare part? Existing requests for it will also be removed.'))) return; setBusy(true); try { await deleteSparePart(part.spare_part_id); refresh() } catch (error) { setError(error.message) } finally { setBusy(false) } }} className="ml-3 text-red-700">{t('Delete')}</button><FastDelivery name={part.part_name} /></article>)}</div><SparePartPosts /></>}
+        {section === 'parts' && <><OfflineStatus account={account} /><button onClick={() => setRecording('parts')} className="rounded-xl bg-teal-700 px-5 py-3 text-white">{t('Store Spare Part')}</button><div className="my-5 grid gap-4 md:grid-cols-2">{parts.map(part => <article key={part.spare_part_id} className="rounded-xl border bg-white p-4"><h3 className="font-semibold">{part.part_name}</h3><ItemRequestStatus item={part} /><SparePartPrice part={part} /><p>{part.description}</p>{part.photo_data && <img src={part.photo_data} alt={part.part_name} className="my-3 max-h-40" />}<PostSparePartButton part={part} onPosted={refresh} /><button disabled={busy} onClick={async () => { if (!window.confirm(t('Delete this spare part? Existing requests for it will also be removed.'))) return; setBusy(true); try { await deleteSparePart(part.spare_part_id); refresh() } catch (error) { setError(error.message) } finally { setBusy(false) } }} className="ml-3 text-red-700">{t('Delete')}</button><FastDelivery name={part.part_name} /></article>)}</div><SparePartPosts /></>}
       </main>
     </div>
   </div>

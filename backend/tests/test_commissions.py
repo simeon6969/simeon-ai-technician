@@ -224,3 +224,87 @@ class CommissionTests(unittest.TestCase):
         for user_id in [2, 4]:
             self.as_user(user_id)
             self.assertEqual(self.client.get('/my/commission-approvals').json()['total'], 0)
+
+    def test_seller_requests_are_anonymous_even_after_approval(self):
+        self.db.get(User, 1).phone = '+250700111222'
+        self.db.get(ItemRequest, self.request_id).notes = 'Contact me at private-client@example.test'
+        self.db.commit()
+        self.as_user(2)
+        row = self.client.get('/item-requests/').json()[0]
+        self.assertEqual(row['item_name'], 'Pump')
+        self.assertTrue(row['incoming'])
+        for key in ['requester_id', 'requester_name', 'requester_phone', 'notes']:
+            self.assertNotIn(key, row)
+        self.as_user(3)
+        self.assertIn('notes', self.client.get('/item-requests/').json()[0])
+        self.as_user(1)
+        self.assertIn('notes', self.client.get('/item-requests/').json()[0])
+        state = self.start()
+        state = self.action(state, 'accept')
+        state = self.action(state, 'payment', payment_reference='PAYMENT-123')
+        self.as_user(3)
+        self.action(state, 'approve')
+        self.as_user(2)
+        row = self.client.get('/item-requests/').json()[0]
+        for key in ['requester_id', 'requester_name', 'requester_phone', 'notes']:
+            self.assertNotIn(key, row)
+        self.assertNotIn('private-client', str(row))
+        self.as_user(4)
+        self.assertEqual(self.client.get('/item-requests/').json(), [])
+
+    def test_admin_activity_includes_pending_without_notification(self):
+        from backend.models.commissions import PaymentReviewNotification
+        state = self.start()
+        self.assertEqual(self.client.get('/admin/commission-activity').status_code, 403)
+        self.as_user(3)
+        self.assertEqual(self.client.get('/admin/commission-activity?status=negotiating').json()['total'], 1)
+        self.as_user(1)
+        state = self.action(state, 'accept')
+        state = self.action(state, 'payment', payment_reference='MOMO-QUEUE')
+        self.db.query(PaymentReviewNotification).delete()
+        self.db.commit()
+        self.as_user(3)
+        queue = self.client.get('/admin/commission-activity').json()
+        self.assertEqual(queue['total'], 1)
+        self.assertEqual(queue['items'][0]['client_name'], 'Tech 1')
+        self.assertEqual(queue['items'][0]['seller_name'], 'Tech 2')
+        self.action(state, 'approve')
+        self.assertEqual(self.client.get('/admin/commission-activity').json()['total'], 0)
+        self.assertEqual(self.client.get('/admin/commission-activity?status=approved').json()['total'], 1)
+        self.assertEqual(self.client.get('/admin/commission-activity?status=all&offset=1').json()['items'], [])
+
+    def test_owner_inventory_request_status_and_completed_requests(self):
+        from backend.routes.sale_items import router as sale_router
+        self.app.include_router(sale_router)
+        self.as_user(2)
+        item = self.client.get('/sale-items/my').json()[0]
+        self.assertEqual(item['request_status'], 'requested')
+        self.assertEqual(item['active_request_count'], 1)
+        self.assertNotIn('requester_name', item)
+        self.db.get(ItemRequest, self.request_id).status = 'fulfilled'
+        self.db.commit()
+        self.assertEqual(self.client.get('/sale-items/my').json()[0]['request_status'], 'non_requested')
+        self.db.add(ItemRequest(requester_id=1, seller_id=2, spare_part_id=2, status='accepted'))
+        self.db.commit()
+        part = self.client.get('/spare-parts/my').json()[0]
+        self.assertEqual(part['request_status'], 'requested')
+        self.assertEqual(part['active_request_count'], 1)
+        self.as_user(1)
+        self.assertEqual(self.client.get('/sale-items/my').status_code, 403)
+
+    def test_client_remove_request_preserves_commission_and_owner_permissions(self):
+        from backend.models.commissions import CommissionAgreement
+        self.start()
+        self.as_user(2)
+        self.assertEqual(self.client.delete(f'/item-requests/{self.request_id}').status_code, 404)
+        self.as_user(1)
+        self.assertEqual(self.client.delete(f'/item-requests/{self.request_id}').status_code, 200)
+        self.assertEqual(self.client.get('/item-requests/').json(), [])
+        self.assertIsNotNone(self.db.get(CommissionAgreement, self.request_id))
+        self.assertEqual(self.db.get(ItemRequest, self.request_id).status, 'cancelled')
+        self.as_user(3)
+        self.assertEqual(len(self.client.get('/item-requests/').json()), 1)
+        self.as_user(1)
+        response = self.client.post('/item-requests/', json={'item_type': 'sale', 'item_id': 1})
+        self.assertEqual(response.json()['request_id'], self.request_id)
+        self.assertEqual(self.client.get('/item-requests/').json()[0]['status'], 'pending')

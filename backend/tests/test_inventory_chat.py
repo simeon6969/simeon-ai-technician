@@ -44,3 +44,11 @@ class InventoryChatTests(unittest.TestCase):
         self.assertEqual(result['records'][0]['availability'], 'out_of_stock')
         self.assertFalse(result['records'][0]['can_request'])
         self.assertEqual(inventory_records(self.db, store, 'it', 'posted')['total'], 0)
+
+    def test_selected_home_item_is_exact_and_private_stock_stays_hidden(self):
+        result = self.client.get('/inventory-chat/selected/sale/1')
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual([row['item_id'] for row in result.json()['records']], [1])
+        self.assertNotIn('seller_name', result.json()['records'][0])
+        self.assertEqual(self.client.get('/inventory-chat/selected/sale/2').json()['records'], [])
+        self.assertEqual(self.client.get('/inventory-chat/selected/sale/9999').json()['records'], [])

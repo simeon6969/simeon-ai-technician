@@ -351,7 +351,12 @@ export async function saleItemsRequest(path, method = 'GET', data) {
     method, headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     ...(data ? { body: JSON.stringify(data) } : {}),
   })
-  if (!response.ok) throw new Error('Unable to update or load sale items.')
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    const error = new Error(typeof body.detail === 'string' ? body.detail : 'Unable to update or load sale items.')
+    error.status = response.status
+    throw error
+  }
   return response.json()
 }
 

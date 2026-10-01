@@ -1,21 +1,20 @@
 import BrandingSettings from './BrandingSettings'
 import JobCardSettings from './JobCardSettings'
-import PaymentReviews from './PaymentReviews'
-import usePaymentReviews from './usePaymentReviews'
+import CommissionWorkspace from './CommissionWorkspace'
 import { commissionStatuses } from './commissionLabels'
-import CommissionPanel, { CommissionSettings } from './CommissionPanel'
+import CommissionPanel from './CommissionPanel'
 import UpgradeSubscription from './UpgradeSubscription'
 import { SubscriptionAdmin } from './Subscriptions'
 import { DeliverySettings } from './FastDelivery'
 import { Spinner } from './LoadingStatus'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { accountRequest } from './api'
 import { useLanguage } from './language'
 import DashboardLayout from './DashboardLayout'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['overview', 'Overview'], ['branding', 'App branding'], ['job-settings', 'Job cards & Google Sheets'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['overview', 'Overview'], ['branding', 'App branding'], ['job-settings', 'Job cards & Google Sheets'], ['account', 'My account'], ['commissions', 'Commission'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
   ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'S'],
 ]
@@ -26,7 +25,6 @@ const fields = {
   'spare-parts': [['part_name', 'Part Name'], ['part_number', 'Part Number'], ['manufacturer', 'Manufacturer'], ['description', 'Description'], ['specifications', 'Specifications'], ['compatibility', 'Compatible equipment'], ['price', 'Asking price'], ['currency', 'Currency', ['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX']], ['availability_status', 'Availability', ['available', 'limited', 'unavailable', 'unknown']]],
   'sale-items': [['name', 'Name'], ['description', 'Description'], ['price', 'Asking price'], ['currency', 'Currency', ['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX']]],
 }
-const endpoint = key => key === 'item-requests' ? '/item-requests/' : `/admin/${key}`
 
 function Editor({ editing, onCancel, onSave, busy }) {
   const { t } = useLanguage()
@@ -63,9 +61,12 @@ function Editor({ editing, onCancel, onSave, busy }) {
 export default function AdminConsole({ account, onHome, onLogout }) {
   const { t } = useLanguage()
   const [section, setSection] = useState('overview')
-  const [paymentOffset, setPaymentOffset] = useState(0)
-  const paymentQueue = usePaymentReviews(paymentOffset)
   const [data, setData] = useState({})
+  const [counts, setCounts] = useState({})
+  const [offset, setOffset] = useState(0)
+  const [updated, setUpdated] = useState(null)
+  const generation = useRef(0)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -74,18 +75,44 @@ export default function AdminConsole({ account, onHome, onLogout }) {
   const [role, setRole] = useState('')
   const [editing, setEditing] = useState(null)
   const [notice, setNotice] = useState('')
-  const load = useCallback(async () => {
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
+  const load = useCallback(async (all = false) => {
+    const request = ++generation.current
     setLoading(true); setError('')
-    const keys = Object.keys(ids)
-    const responses = await Promise.allSettled(keys.map(key => accountRequest(endpoint(key))))
-    const updates = {}
-    const failed = []
-    responses.forEach((result, index) => { if (result.status === 'fulfilled') updates[keys[index]] = result.value; else failed.push(keys[index]) })
-    setData(previous => ({ ...previous, ...updates }))
-    if (failed.length) setError(`${t('Unable to load')}: ${failed.map(key => t(sections.find(([id]) => id === key)[1])).join(', ')}`)
-    setLoading(false)
-  }, [t])
-  useEffect(() => { const timer = setTimeout(load, 0); return () => clearTimeout(timer) }, [load])
+    try {
+      const params = new URLSearchParams({ offset, limit: 25, search: debouncedSearch, field, role })
+      const [summary, page] = await Promise.all([
+        all || section === 'overview' ? accountRequest('/admin/overview-counts') : null,
+        ids[section] ? accountRequest(`/admin/records/${section}?${params}`) : null,
+      ])
+      if (request !== generation.current) return
+      if (summary) setCounts(summary)
+      if (page) {
+        if (offset && offset >= page.total) { setOffset(Math.max(0, Math.ceil(page.total / 25) - 1) * 25); return }
+        setData(previous => ({ ...previous, [section]: page }))
+      }
+      setUpdated(new Date())
+    } catch (failure) { if (request === generation.current) setError(failure.message) }
+    finally { if (request === generation.current) setLoading(false) }
+  }, [section, offset, debouncedSearch, field, role])
+  useEffect(() => {
+    const counter = generation
+    const timer = setTimeout(() => load(), 0)
+    return () => { clearTimeout(timer); counter.current++ }
+  }, [load])
+  async function openRecord(row, edit = false) {
+    const request = generation.current
+    setBusy(true); setError('')
+    try {
+      const detail = await accountRequest(`/admin/records/${section}/${row[ids[section]]}`)
+      if (request !== generation.current) return
+      if (edit) { setEditing({ section, row: detail }); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+      else setData(previous => ({ ...previous, [section]: { ...previous[section], items: previous[section].items.map(item => item[ids[section]] === row[ids[section]] ? { ...item, ...detail, detailLoaded: true } : item) } }))
+    } catch (failure) { setError(failure.message) } finally { setBusy(false) }
+  }
   async function mutate(path, method, payload) {
     setBusy(true); setError(''); setNotice('')
     try { await accountRequest(path, method, payload); setNotice(t('Changes saved')); await load() }
@@ -93,40 +120,30 @@ export default function AdminConsole({ account, onHome, onLogout }) {
     finally { setBusy(false) }
   }
   const action = (path, method, payload) => mutate(path, method, payload).catch(() => {})
-  const users = data.users || []
-  function owner(row) {
-    const userId = row.user_id || row.technician_id || row.submitted_by || row.seller_id || row.supplier_technician?.user_id || (data['job-cards'] || []).find(card => card.job_card_id === row.source_job_card_id)?.technician_id
-    return users.find(user => user.user_id === userId)
-  }
-  const rows = (data[section] || []).filter(row => {
-    const account = owner(row)
-    const text = Object.entries(row).filter(([key]) => !['photo_data', 'attachments_data'].includes(key)).map(([, value]) => typeof value === 'object' ? JSON.stringify(value) : value).join(' ').toLowerCase()
-    return (!field || (field === 'unset' ? !account?.account_field : account?.account_field === field)) && (!role || account?.role === role) && (!search || text.includes(search.toLowerCase()))
-  })
+  const owner = row => row.owner
+  const rows = data[section]?.items || []
+  const total = data[section]?.total || 0
   const button = 'rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium disabled:opacity-50'
-  function go(key) { setSection(key); setEditing(null); setSearch(''); setField(''); setRole('') }
-  return <DashboardLayout account={account} sections={sections} badges={{ 'payment-reviews': paymentQueue.total }} section={section} onNavigate={go} onHome={onHome} onLogout={onLogout}>
-    <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-      <button className="font-semibold underline" onClick={() => { setPaymentOffset(0); go('payment-reviews') }}>{t('Payments awaiting review')}: {paymentQueue.total ?? '...'}</button>
-      <p role="status" className="mt-1 text-sm">{paymentQueue.error ? t('Unable to refresh payment notifications. Previously loaded reminders are kept.') : t('Pending reminders stay visible until approved or returned for correction.')}</p>
-    </div>
-    {section === 'payment-reviews' && <PaymentReviews queue={paymentQueue} offset={paymentOffset} onPage={setPaymentOffset} />}
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><p className="text-slate-600">{t('Manage every field, role and record from one workspace.')}</p><button disabled={loading || busy} onClick={load} className={`${button} bg-white`}>{loading && <Spinner />}{t('Refresh all')}</button></div>
+  function go(key) { setSection(key); setEditing(null); setSearch(''); setDebouncedSearch(''); setOffset(0); setField(''); setRole('') }
+  return <DashboardLayout account={account} sections={sections} section={section} onNavigate={go} onHome={onHome} onLogout={onLogout}>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><p className="text-slate-600">{t('Manage every field, role and record from one workspace.')}</p><div className="flex flex-wrap items-center gap-3">{(ids[section] || section === 'overview') && <button disabled={loading || busy} onClick={() => load()} className={`${button} bg-white`}>{loading && <Spinner />}{t('Refresh section')}</button>}<button disabled={loading || busy} onClick={() => load(true)} className={button}>{t('Refresh all')}</button>{updated && <span className="text-xs text-slate-500">{t('Last refreshed')}: {updated.toLocaleTimeString()}</span>}</div></div>
         {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-red-700">{t(error)}</p>}{notice && <p role="status" className="mb-4 text-teal-800">{notice}</p>}
         {section === 'overview' && <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[['users', 'Accounts'], ['job-cards', 'Job Cards'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests']].map(([key, label]) => <button key={key} onClick={() => go(key)} className="rounded-2xl bg-white p-6 text-left shadow-sm"><p className="text-sm text-slate-500">{t(label)}</p><p className="mt-3 text-4xl font-semibold">{data[key]?.length ?? '—'}</p></button>)}</div>
-          <section className="mt-6 rounded-2xl bg-slate-900 p-6 text-white"><h3 className="text-xl font-semibold">{t('Account setup')}</h3><p className="my-3">{users.filter(user => user.role !== 'admin' && !user.account_field).length} · {t('Accounts awaiting field and role selection')}</p><button onClick={() => { go('users'); setField('unset') }} className={`${button} border-slate-500`}>{t('Review accounts')}</button></section>
-          <div className="mt-6 grid gap-4 md:grid-cols-2"><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account field')}</h3>{['medical', 'it', 'electrical', 'mechanical'].map(value => <button key={value} onClick={() => { go('users'); setField(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.account_field === value).length}</strong></button>)}</section><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account role')}</h3>{['technician', 'store', 'client'].map(value => <button key={value} onClick={() => { go('users'); setRole(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.role === value).length}</strong></button>)}</section></div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[['users', 'Accounts'], ['job-cards', 'Job Cards'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests']].map(([key, label]) => <button key={key} onClick={() => go(key)} className="rounded-2xl bg-white p-6 text-left shadow-sm"><p className="text-sm text-slate-500">{t(label)}</p><p className="mt-3 text-4xl font-semibold">{counts[key] ?? '—'}</p></button>)}</div>
+          <section className="mt-6 rounded-2xl bg-slate-900 p-6 text-white"><h3 className="text-xl font-semibold">{t('Account setup')}</h3><p className="my-3">{counts.awaiting_setup ?? '...' } · {t('Accounts awaiting field and role selection')}</p><button onClick={() => { go('users'); setField('unset') }} className={`${button} border-slate-500`}>{t('Review accounts')}</button></section>
+          <div className="mt-6 grid gap-4 md:grid-cols-2"><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account field')}</h3>{['medical', 'it', 'electrical', 'mechanical'].map(value => <button key={value} onClick={() => { go('users'); setField(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{counts.fields?.[value] ?? '...'}</strong></button>)}</section><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account role')}</h3>{['technician', 'store', 'client'].map(value => <button key={value} onClick={() => { go('users'); setRole(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{counts.roles?.[value] ?? '...'}</strong></button>)}</section></div>
         </>}
         {section === 'assistant' && <AdminChat />}
         {section === 'branding' && <BrandingSettings />}
         {section === 'job-settings' && <JobCardSettings />}
-        {section === 'commissions' && <CommissionSettings />}
+        {section === 'commissions' && <CommissionWorkspace />}
         {section === 'delivery' && <DeliverySettings />}
         {section === 'subscriptions' && <SubscriptionAdmin />}
         {ids[section] && <>
-          <div className="mb-5 flex flex-wrap gap-3"><input aria-label={t('Search records')} placeholder={t('Search records')} value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1 rounded-xl border p-3" /><select aria-label={t('Account field')} value={field} onChange={event => setField(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All fields')}</option>{['medical', 'it', 'electrical', 'mechanical', 'unset'].map(value => <option key={value} value={value}>{t(value === 'unset' ? 'Not provided' : value)}</option>)}</select><select aria-label={t('Account role')} value={role} onChange={event => setRole(event.target.value)} className="rounded-xl border p-3"><option value="">{t('All roles')}</option>{['technician', 'store', 'client', 'admin'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select></div>
+          <div className="mb-5 flex flex-wrap gap-3"><input aria-label={t('Search records')} placeholder={t('Search records')} value={search} onChange={event => { setOffset(0); setSearch(event.target.value) }} className="min-w-0 flex-1 rounded-xl border p-3" /><select aria-label={t('Account field')} value={field} onChange={event => { setOffset(0); setField(event.target.value) }} className="rounded-xl border p-3"><option value="">{t('All fields')}</option>{['medical', 'it', 'electrical', 'mechanical', 'unset'].map(value => <option key={value} value={value}>{t(value === 'unset' ? 'Not provided' : value)}</option>)}</select><select aria-label={t('Account role')} value={role} onChange={event => { setOffset(0); setRole(event.target.value) }} className="rounded-xl border p-3"><option value="">{t('All roles')}</option>{['technician', 'store', 'client', 'admin'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select></div>
           {editing && <Editor key={`${editing.section}-${editing.row[ids[editing.section]]}`} editing={editing} busy={busy} onCancel={() => setEditing(null)} onSave={async payload => { await mutate(`/admin/${editing.section}/${editing.row[ids[editing.section]]}`, 'PATCH', payload); setEditing(null) }} />}
+          <div className="my-4 flex items-center gap-4"><button className={button} disabled={loading || busy || !offset} onClick={() => setOffset(value => Math.max(0, value - 25))}>{t('Previous')}</button><span>{total ? offset + 1 : 0}-{Math.min(offset + 25, total)} / {total}</span><button className={button} disabled={loading || busy || offset + 25 >= total} onClick={() => setOffset(value => value + 25)}>{t('Next')}</button></div>
+          {busy && <p role="status"><Spinner />{t('Loading...')}</p>}
           {loading && <p role="status" className="mb-3"><Spinner />{t('Loading admin data...')}</p>}
           {!loading && rows.length === 0 && <p className="rounded-xl bg-white p-8">{t('No matching records')}</p>}
           <div className="grid gap-4 xl:grid-cols-2">{rows.map(row => {
@@ -140,10 +157,10 @@ export default function AdminConsole({ account, onHome, onLogout }) {
               {section === 'users' && <p className="mt-2 text-sm">{t(row.is_active ? 'Active' : 'Inactive')}</p>}
               {['spare-parts', 'sale-items'].includes(section) && <p className="mt-2 text-sm">{t(row.posted_at ? 'Posted' : 'Not posted')}</p>}
               {row.photo_data && <img src={row.photo_data} alt={title} loading="lazy" className="my-3 h-40 w-full object-contain" />}
-              <details className="my-4"><summary className="cursor-pointer text-sm font-medium text-teal-700">{t('View details')}</summary><dl className="mt-3 space-y-2 text-sm">{Object.entries(row).filter(([key]) => !['photo_data', 'attachments_data', 'can_manage'].includes(key)).map(([key, value]) => <div key={key}><dt className="font-medium">{t(key.replaceAll('_', ' '))}</dt><dd className="whitespace-pre-wrap break-words text-slate-600">{value == null ? t('Not provided') : typeof value === 'object' ? Object.entries(value).map(([k, v]) => `${k}: ${v ?? ''}`).join('\n') : key === 'role' ? t(String(value)) : String(value)}</dd></div>)}</dl></details>
+              <details className="my-4" onToggle={event => { if (event.currentTarget.open && !row.detailLoaded && !busy) openRecord(row) }}><summary className="cursor-pointer text-sm font-medium text-teal-700">{t('View details')}</summary><dl className="mt-3 space-y-2 text-sm">{Object.entries(row).filter(([key]) => !['photo_data', 'attachments_data', 'can_manage', 'owner', 'detailLoaded'].includes(key)).map(([key, value]) => <div key={key}><dt className="font-medium">{t(key.replaceAll('_', ' '))}</dt><dd className="whitespace-pre-wrap break-words text-slate-600">{value == null ? t('Not provided') : typeof value === 'object' ? Object.entries(value).map(([k, v]) => `${k}: ${v ?? ''}`).join('\n') : key === 'role' ? t(String(value)) : String(value)}</dd></div>)}</dl></details>
               {section === 'users' && !protectedAccount && <UpgradeSubscription user={row} />}
               {!protectedAccount && <div className="flex flex-wrap gap-2">
-                {fields[section] && <button disabled={busy} onClick={() => { setEditing({ section, row }); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className={button}>{t('Edit')}</button>}
+                {fields[section] && <button disabled={busy} onClick={() => openRecord(row, true)} className={button}>{t('Edit')}</button>}
                 {section === 'users' && <button disabled={busy} onClick={() => action(`/admin/users/${id}/status?is_active=${!row.is_active}`, 'PUT')} className={button}>{t(row.is_active ? 'Deactivate' : 'Activate')}</button>}
                 {['spare-parts', 'sale-items'].includes(section) && <button disabled={busy} onClick={() => action(`/admin/${section}/${id}/publication`, 'PATCH', { published: !row.posted_at })} className={button}>{t(row.posted_at ? 'Unpublish' : 'Publish')}</button>}
                 {section === 'job-cards' && row.successful && row.status !== 'validated' && <button disabled={busy} onClick={() => action(`/admin/job-cards/${id}/validate`, 'POST')} className={button}>{t('Validate')}</button>}

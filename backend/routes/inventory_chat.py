@@ -24,12 +24,16 @@ class Question(BaseModel):
     history: list[AdminChatTurn] = Field(default_factory=list, max_length=6)
 
 
-def inventory_records(db, user, field, scope, search='', category=None):
+def inventory_records(db, user, field, scope, search='', category=None, selected=None):
     own = scope == 'mine' and user.role in {'store', 'technician', 'admin'}
     sales = db.query(SaleItem, User).join(User, User.user_id == SaleItem.seller_id)
     parts = db.query(SparePart, User).join(User, User.user_id == SparePart.submitted_by)
     sales = sales.filter(SaleItem.seller_id == user.user_id) if own else sales.filter(SaleItem.posted_at.is_not(None), User.is_active.is_(True))
     parts = parts.filter(SparePart.submitted_by == user.user_id) if own else parts.filter(SparePart.posted_at.is_not(None), User.is_active.is_(True))
+    if selected:
+        kind, record_id = selected
+        sales = sales.filter(SaleItem.item_id == record_id if kind == 'sale' else SaleItem.item_id < 0)
+        parts = parts.filter(SparePart.spare_part_id == record_id if kind == 'spare_part' else SparePart.spare_part_id < 0)
     if field != 'all':
         sales, parts = sales.filter(User.account_field == field), parts.filter(User.account_field == field)
     if category:
@@ -92,3 +96,9 @@ def ask(data: Question, user_id: int = Depends(get_current_user_id), db: Session
         except Exception:
             pass
     return {'answer': answer, **evidence}
+
+
+@router.get('/selected/{item_type}/{item_id}')
+def selected_item(item_type: Literal['sale', 'spare_part'], item_id: int,
+                  user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    return inventory_records(db, db.get(User, user_id), 'all', 'posted', selected=(item_type, item_id))
