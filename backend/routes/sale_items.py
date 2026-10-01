@@ -1,3 +1,4 @@
+from backend.services.item_request_status import active_request_counts, request_status
 from backend.permissions import require_inventory
 from datetime import datetime, timezone, date
 from decimal import Decimal
@@ -119,7 +120,8 @@ def create_item(data: SaleItemCreate, user_id: int = Depends(require_inventory),
 
 @router.get('/my')
 def my_items(user_id: int = Depends(require_inventory), db: Session = Depends(get_db)):
-    return [serialize(item) for item in db.query(SaleItem).filter(SaleItem.seller_id == user_id).order_by(SaleItem.item_id.desc()).all()]
+    counts = active_request_counts(db, user_id, 'sale')
+    return [{**serialize(item), **request_status(counts.get(item.item_id, 0))} for item in db.query(SaleItem).filter(SaleItem.seller_id == user_id).order_by(SaleItem.item_id.desc()).all()]
 
 
 @router.get('/public')

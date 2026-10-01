@@ -1,0 +1,33 @@
+const assert = require('node:assert/strict')
+const { chromium } = require('../../desktop/node_modules/playwright-core')
+;(async () => {
+ const browser = await chromium.launch({ channel: 'msedge', headless: true })
+ try {
+  const blocked = false
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.addInitScript(() => { localStorage.setItem('access_token', 'mock'); localStorage.setItem('user_id', '1') })
+  await page.route('**/*', route => {
+   const u = new URL(route.request().url()); if (u.port === '5199') return route.continue()
+   const json = body => route.fulfill({ json: body })
+   if (u.pathname === '/app-branding') return json({ name: 'S', logo: null })
+   if (u.pathname === '/users/me') return json({ user_id: 1, full_name: 'Medical Store', role: route.request().headers().authorization === 'Bearer client-token' ? 'client' : 'store', account_field: 'medical', subscription: { plan: 'free', amount: '0', currency: 'RWF', period: 'yearly', payment_status: 'not_required' } })
+   if (u.pathname === '/sale-items/my') return blocked ? route.fulfill({ status: 403, json: { detail: 'This function is not available for your account role' } }) : json([{ item_id: 1, name: 'Stored medicine', price: 100, currency: 'RWF', medical_category: 'pharmacy', medical_details: { quantity: 10, unit: 'box', generic_name: 'Medicine', dosage_form: 'Tablet' } }])
+   if (u.pathname === '/item-requests/') return route.fulfill({ status: 503, json: { detail: 'Requests unavailable' } })
+   if (u.pathname === '/sale-items/public') return json({ items: [], total: 0 })
+   return json([])
+  })
+  await page.goto('http://127.0.0.1:5199/#app')
+  await page.getByRole('navigation').getByRole('button', { name: /05.*Pharmacy/ }).click()
+  await page.getByRole('heading', { name: 'Stored medicine', exact: true }).waitFor()
+  assert.ok(await page.getByRole('button', { name: 'Update stock details', exact: true }).isVisible())
+  const second = await page.context().newPage()
+  await second.route('**/*', route => route.fulfill({ contentType: 'text/html', body: '<html></html>' }))
+  await second.goto('http://127.0.0.1:5199/')
+  await second.evaluate(() => { localStorage.setItem('access_token', 'client-token'); localStorage.setItem('user_id', '2') })
+  await page.waitForFunction(() => !document.querySelector('nav[aria-label="Medical store navigation"]'))
+  await page.getByRole('navigation').getByRole('button', { name: /My requests/ }).waitFor()
+  assert.equal(await page.getByRole('navigation', { name: 'Medical store navigation' }).count(), 0)
+  console.log('PASS: changing login in another tab removes stale pharmacy dashboard and loads current client workspace')
+ } finally { await browser.close() }
+})().catch(error => { console.error(error); process.exitCode = 1 })

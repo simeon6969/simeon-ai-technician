@@ -1,3 +1,4 @@
+import ItemRequestStatus from './ItemRequestStatus'
 import { medicalCategories } from './medicalCategories'
 import { MedicalStockFields, MedicalStockSummary } from './MedicalStock'
 import FastDelivery from './FastDelivery'
@@ -40,7 +41,7 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
       try {
         const result = await saleItemsRequest(board ? '/posts' : '/my')
         if (active) { setItems(board ? result.items : result); setTotal(board ? result.total : result.length) }
-      } catch { if (active) setError('load') }
+      } catch (failure) { if (active) setError(failure.message || 'load') }
       finally { if (active) setBusy(false) }
     }, 0)
     return () => { active = false; clearTimeout(timer) }
@@ -63,9 +64,9 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
     setBusy(true); setError('')
     try {
       const created = await saleItemsRequest('/', 'POST', draft)
-      setItems(previous => [created, ...previous]); setTotal(value => value + 1)
+      setItems(previous => [{ ...created, request_status: 'non_requested', active_request_count: 0 }, ...previous]); setTotal(value => value + 1)
       setDraft(null); setNotice(true); setBoard(false)
-    } catch { setError('load') }
+    } catch (failure) { setError(failure.message || 'load') }
     finally { setBusy(false) }
   }
 
@@ -74,8 +75,8 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
     setBusy(true); setError('')
     try {
       const result = await saleItemsRequest(`/${item.item_id}${remove ? '' : '/post'}`, remove ? 'DELETE' : 'POST')
-      setItems((previous) => remove ? previous.filter((value) => value.item_id !== item.item_id) : previous.map((value) => value.item_id === item.item_id ? result : value))
-    } catch { setError('load') }
+      setItems((previous) => remove ? previous.filter((value) => value.item_id !== item.item_id) : previous.map((value) => value.item_id === item.item_id ? { ...value, ...result } : value))
+    } catch (failure) { setError(failure.message || 'load') }
     finally { setBusy(false) }
   }
 
@@ -91,7 +92,7 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
     </div>
     {editingStock && <form className="my-4 rounded-xl border p-4" onSubmit={async event => {
       event.preventDefault(); setBusy(true); setError('')
-      try { const updated = await saleItemsRequest(`/${editingStock.item_id}/medical-stock`, 'PATCH', editingStock.medical_details); setItems(previous => previous.map(item => item.item_id === updated.item_id ? updated : item)); setEditingStock(null) } catch { setError('load') } finally { setBusy(false) }
+      try { const updated = await saleItemsRequest(`/${editingStock.item_id}/medical-stock`, 'PATCH', editingStock.medical_details); setItems(previous => previous.map(item => item.item_id === updated.item_id ? { ...item, ...updated } : item)); setEditingStock(null) } catch (failure) { setError(failure.message || 'load') } finally { setBusy(false) }
     }}><h4>{editingStock.name}</h4><MedicalStockFields category={editingStock.medical_category} value={editingStock.medical_details} disabled={busy} onChange={medical_details => setEditingStock({ ...editingStock, medical_details })} /><button disabled={busy} className="rounded-lg bg-teal-700 px-4 py-2 text-white">{busy && <Spinner />}{t("Save stock details")}</button><button type="button" disabled={busy} onClick={() => setEditingStock(null)} className="ml-3">{t("Cancel")}</button></form>}
     {notice && <p role="status" className="my-3 text-green-700">{w[18]}</p>}
     {draft && <div className="my-6 rounded-xl bg-slate-50 p-5">
@@ -117,13 +118,13 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
       <img src={item.photo_data} alt={item.name} className="my-3 max-h-52 rounded-lg object-contain" />
       <p className="whitespace-pre-wrap break-words text-sm text-slate-600">{item.description}</p>
       {board ? item.seller_name && <p className="mt-3 text-sm">{t('Technician')}: {item.seller_name}</p> : <div className="mt-4 flex gap-3"><button disabled={busy || !!item.posted_at} onClick={() => action(item, false)} className="rounded-xl bg-slate-900 px-4 py-2 text-white disabled:opacity-50">{item.posted_at ? t('Posted') : w[13]}</button><button disabled={busy} onClick={() => action(item, true)} className="rounded-xl border border-red-300 px-4 py-2 text-red-700">{t('Delete')}</button></div>}
-    <MedicalStockSummary item={item} />
+    {!board && <ItemRequestStatus item={item} />}<MedicalStockSummary item={item} />
     {!board && item.medical_category && <button disabled={busy} onClick={() => setEditingStock({ ...item, medical_details: { ...item.medical_details } })} className="my-3 rounded-lg border px-3 py-2">{t("Update stock details")}</button>}
     <FastDelivery name={item.name} /></article>)}</div>
     {board && items.length < total && <button disabled={busy} onClick={async () => {
       setBusy(true); setError('')
       try { const result = await saleItemsRequest(`/posts?offset=${items.length}`); setItems((previous) => [...previous, ...result.items.filter((item) => !previous.some((value) => value.item_id === item.item_id))]); setTotal(result.total) }
-      catch { setError('load') } finally { setBusy(false) }
+      catch (failure) { setError(failure.message || 'load') } finally { setBusy(false) }
     }} className="mt-4 rounded-xl border px-4 py-2">{t('Load more')}</button>}
   </section>
 }

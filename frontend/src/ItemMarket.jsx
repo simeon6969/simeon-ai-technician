@@ -1,3 +1,4 @@
+import HomeItemRequest from './HomeItemRequest'
 import CommissionPanel from './CommissionPanel'
 import ListingPhoto from './ListingPhoto'
 import FastDelivery from './FastDelivery'
@@ -59,14 +60,14 @@ export default function ItemMarket() {
       <p className="my-2 font-semibold">{item.price == null ? t('Price not provided') : new Intl.NumberFormat(language, { style: 'currency', currency: item.currency || 'RWF' }).format(Number(item.price))}</p>
       <p className="mb-3 whitespace-pre-wrap text-sm">{item.description}</p>
       <textarea aria-label={`${t('Optional request note')} — ${item.name}`} maxLength={2000} value={notes[item.listing_key] || ''} onChange={event => setNotes({ ...notes, [item.listing_key]: event.target.value })} className="w-full rounded-lg border p-2" />
-      <button disabled={busy || item.availability_status === 'unavailable'} onClick={() => act(() => accountRequest('/item-requests/', 'POST', { item_type: item.item_type, item_id: item.item_id, notes: notes[item.listing_key] || null }))} className="mt-2 rounded-lg bg-teal-700 px-4 py-2 text-white disabled:opacity-50">{busy && <Spinner />}{t('Request item')}</button>
+      <HomeItemRequest item={item} notes={notes[item.listing_key]} onRequested={() => { setRequestsLoading(true); setRevision(value => value + 1) }} />
     <FastDelivery name={item.name} /></article>)}</div>}
     {!loading && items.length === 0 && <p>{t('No items found')}</p>}
     <div className="mt-4 flex gap-3"><button disabled={offset === 0 || loading} onClick={() => { setLoading(true); setOffset(Math.max(0, offset - 12)) }}>{t('Previous')}</button><button disabled={offset + 12 >= total || loading} onClick={() => { setLoading(true); setOffset(offset + 12) }}>{t('Next')}</button></div>
     <div className="mb-3 mt-8 flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold">{t('Item requests')}</h2><button disabled={requestsLoading || busy} onClick={() => { setLoading(true); setRequestsLoading(true); setRevision(value => value + 1) }} className="rounded-lg border px-4 py-2 disabled:opacity-50">{requestsLoading && <Spinner />}{t('Refresh requests')}</button></div>
     {requests.map(row => <article key={row.request_id} className="mb-3 rounded-xl border p-4">
       <h3 className="font-semibold">{row.item_name} · {t(row.status)}</h3>
-      <p>{t('Requester:')} {row.requester_name} {row.requester_phone}</p>{row.seller_name && <p>{t('Seller')}: {row.seller_name} {row.seller_phone}</p>}<p>{row.notes}</p>
+      {row.incoming ? <p role="status" className="my-2 rounded-lg bg-teal-50 p-3 text-teal-800">{t('Your item is being requested.')}</p> : row.requester_name && <p>{t('Requester:')} {row.requester_name} {row.requester_phone}</p>}{row.seller_name && <p>{t('Seller')}: {row.seller_name} {row.seller_phone}</p>}{!row.incoming && row.notes && <p>{row.notes}</p>}
       {row.can_manage && <select aria-label={`${t('Request status')} #${row.request_id}`} disabled={busy} value={row.status} onChange={event => act(() => accountRequest(`/item-requests/${row.request_id}`, 'PATCH', { status: event.target.value }))} className="mt-3 rounded-lg border p-2">{['pending', 'accepted', 'declined', 'fulfilled'].map(value => <option key={value} value={value}>{t(value)}</option>)}</select>}
     <CommissionPanel requestId={row.request_id} /><FastDelivery name={row.item_name} /></article>)}
   </section>

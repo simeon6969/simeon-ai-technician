@@ -1,3 +1,4 @@
+from backend.models.hidden_requests import HiddenRequest
 from datetime import date
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
@@ -43,6 +44,11 @@ def request_item(data: RequestInput, user_id: int = Depends(get_current_user_id)
     query = db.query(ItemRequest).filter(ItemRequest.requester_id == user_id, column == data.item_id)
     existing = query.first()
     if existing:
+        hidden = db.get(HiddenRequest, existing.request_id)
+        if hidden:
+            db.delete(hidden)
+            if existing.status == 'cancelled': existing.status = 'pending'
+            db.commit()
         return {'request_id': existing.request_id, 'status': existing.status}
     record = ItemRequest(requester_id=user_id, seller_id=seller_id, notes=data.notes,
                          **{column.key: data.item_id})
@@ -67,16 +73,21 @@ def list_requests(user_id: int = Depends(get_current_user_id), db: Session = Dep
     elif account.role != 'admin':
         query = query.filter(or_(ItemRequest.requester_id == user_id, ItemRequest.seller_id == user_id))
     results = []
+    if account.role != 'admin':
+        query = query.filter(~ItemRequest.request_id.in_(db.query(HiddenRequest.request_id)))
     for row in query.order_by(ItemRequest.created_at.desc()).all():
         item = db.get(SaleItem, row.sale_item_id) if row.sale_item_id else db.get(SparePart, row.spare_part_id)
         commission = db.get(CommissionAgreement, row.request_id)
         unlocked = bool(commission and commission.status == 'approved' and row.requester_id == user_id)
         requester, seller = db.get(User, row.requester_id), db.get(User, row.seller_id)
         results.append({'request_id': row.request_id, 'item_name': (item.name if row.sale_item_id else item.part_name) if item else 'Deleted item',
-            'requester_id': row.requester_id, 'requester_name': requester.full_name, 'requester_phone': requester.phone,
+            **({'requester_id': row.requester_id, 'requester_name': requester.full_name, 'requester_phone': requester.phone, 'notes': row.notes} if account.role == 'admin' or row.requester_id == user_id else {}),
+            'incoming': row.seller_id == user_id,
+            'item_type': 'sale' if row.sale_item_id else 'spare_part',
+            'item_id': row.sale_item_id or row.spare_part_id,
             **({'seller_id': row.seller_id, 'seller_name': seller.full_name, 'seller_phone': seller.phone, 'seller_email': seller.email} if account.role == 'admin' or unlocked else {}),
             'commission_status': commission.status if commission else 'not_started',
-            'account_field': seller.account_field, 'notes': row.notes, 'status': row.status,
+            'account_field': seller.account_field, 'status': row.status,
             'created_at': row.created_at, 'can_manage': account.role == 'admin' or row.seller_id == user_id})
     return results
 
@@ -92,3 +103,14 @@ def update_request(request_id: int, data: StatusInput, user_id: int = Depends(ge
     row.status = data.status
     db.commit()
     return {'request_id': row.request_id, 'status': row.status}
+
+
+@router.delete('/{request_id}')
+def remove_my_request(request_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    row = db.query(ItemRequest).filter(ItemRequest.request_id == request_id, ItemRequest.requester_id == user_id).with_for_update().first()
+    if not row: raise HTTPException(404, 'Request not found')
+    if not db.get(HiddenRequest, request_id):
+        db.add(HiddenRequest(request_id=request_id))
+    if row.status not in ('fulfilled', 'declined'): row.status = 'cancelled'
+    db.commit()
+    return {'removed': True}

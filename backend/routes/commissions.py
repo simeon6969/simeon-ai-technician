@@ -236,3 +236,29 @@ def my_approvals(offset: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=5
         {'request_id': row.request_id, 'item_name': row.name or row.part_name or 'Deleted item',
          'approved_at': row.approved_at.isoformat() + 'Z' if row.approved_at else None}
         for row in query.order_by(CommissionAgreement.approved_at.desc(), CommissionAgreement.request_id.desc()).offset(offset).limit(limit).all()]}
+
+
+@router.get('/admin/commission-activity')
+def commission_activity(offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100),
+                        status: Literal['all', 'negotiating', 'awaiting_payment', 'pending_review', 'approved'] = 'pending_review',
+                        user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    admin_only(db, user_id)
+    client, seller = aliased(User), aliased(User)
+    query = db.query(CommissionAgreement, ItemRequest.created_at, SaleItem.name, SparePart.part_name,
+                     client.full_name, seller.full_name).join(ItemRequest, ItemRequest.request_id == CommissionAgreement.request_id).join(
+        client, client.user_id == ItemRequest.requester_id).join(seller, seller.user_id == ItemRequest.seller_id).outerjoin(
+        SaleItem, SaleItem.item_id == ItemRequest.sale_item_id).outerjoin(SparePart, SparePart.spare_part_id == ItemRequest.spare_part_id)
+    if status != 'all': query = query.filter(CommissionAgreement.status == status)
+    total = query.count()
+    rows = query.order_by(ItemRequest.created_at, CommissionAgreement.request_id).offset(offset).limit(limit).all()
+    return {'total': total, 'items': [
+        {'notification_id': agreement.request_id, 'request_id': agreement.request_id,
+         'status': agreement.status, 'revision': agreement.revision,
+         'submitted_at': created.isoformat() + 'Z', 'item_name': name or part_name or 'Deleted item',
+         'client_name': client_name, 'seller_name': seller_name,
+         'payer': agreement.payer, 'payer_name': client_name if agreement.payer == 'client' else seller_name,
+         'current_percent': str(agreement.current_percent), 'currency': agreement.currency,
+         'amount': str((agreement.listed_price * agreement.current_percent / 100).quantize(
+             Decimal('1') if agreement.currency in {'RWF', 'UGX'} else Decimal('0.01'), rounding=ROUND_UP)),
+         'payment_reference': agreement.payment_reference}
+        for agreement, created, name, part_name, client_name, seller_name in rows]}

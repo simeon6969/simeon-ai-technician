@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { accountRequest } from './api'
 
-export default function usePaymentReviews(offset) {
+export default function usePaymentReviews(offset, status) {
   const [queue, setQueue] = useState({ total: null, items: [] })
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -14,8 +14,8 @@ export default function usePaymentReviews(offset) {
       pending = true
       setLoading(true)
       try {
-        const result = await accountRequest(`/admin/payment-reviews?offset=${offset}&limit=50`)
-        if (!stopped) { setQueue(result); setError(false) }
+        const result = await accountRequest(status ? `/admin/commission-activity?offset=${offset}&limit=50&status=${status}` : `/admin/payment-reviews?offset=${offset}&limit=50`)
+        if (!stopped) { setQueue({ ...result, filter: status }); setError(false) }
       } catch { if (!stopped) setError(true) }
       finally { pending = false; if (!stopped) setLoading(false) }
     }
@@ -25,6 +25,6 @@ export default function usePaymentReviews(offset) {
     document.addEventListener('visibilitychange', load)
     window.addEventListener('commission-reviewed', load)
     return () => { stopped = true; clearInterval(timer); window.removeEventListener('focus', load); document.removeEventListener('visibilitychange', load); window.removeEventListener('commission-reviewed', load) }
-  }, [offset, revision])
-  return { ...queue, error, loading, refresh }
+  }, [offset, revision, status])
+  return { ...queue, items: queue.filter === status ? queue.items : [], total: queue.filter === status ? queue.total : null, error, loading, refresh }
 }
