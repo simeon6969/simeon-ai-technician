@@ -16,6 +16,44 @@ class SaleItemTests(unittest.TestCase):
     def tearDown(self):
         test_spare_part_posts.PostTests.tearDown(self)
 
+    def test_lightweight_posts_and_separate_preview_preserve_original(self):
+        import base64
+        from io import BytesIO
+        from PIL import Image
+        photo = BytesIO()
+        Image.new('RGB', (1600, 1200), 'blue').save(photo, 'PNG')
+        original = photo.getvalue()
+        payload = {**self.payload, 'photo_data': 'data:image/png;base64,' + base64.b64encode(original).decode()}
+        item = self.client.post('/sale-items/', json=payload).json()
+        url = f"/sale-items/public-photo/sale/{item['item_id']}"
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.client.post(f"/sale-items/{item['item_id']}/post")
+        response = self.client.get('/sale-items/public?lightweight=true')
+        row = response.json()['items'][0]
+        self.assertTrue(row['has_photo'])
+        self.assertNotIn('photo_data', row)
+        self.assertLess(len(response.content), len(original))
+        preview = self.client.get(url)
+        self.assertEqual(preview.status_code, 200)
+        self.assertEqual(preview.headers['content-type'], 'image/webp')
+        with Image.open(BytesIO(preview.content)) as image:
+            self.assertLessEqual(max(image.size), 480)
+        self.assertLess(len(preview.content), len(original))
+        self.assertEqual(self.client.get(url + '?original=true').content, original)
+        self.assertEqual(self.client.get(url, headers={'If-None-Match': preview.headers['etag']}).status_code, 304)
+        self.client.delete(f"/sale-items/{item['item_id']}")
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_spare_part_preview_and_invalid_photo(self):
+        self.client.post('/spare-parts/1/post')
+        row = self.client.get('/sale-items/public?lightweight=true').json()['items'][0]
+        self.assertFalse(row['has_photo'])
+        self.assertNotIn('photo_data', row)
+        self.assertEqual(self.client.get('/sale-items/public-photo/spare_part/1').status_code, 404)
+        item = self.client.post('/sale-items/', json=self.payload).json()
+        self.client.post(f"/sale-items/{item['item_id']}/post")
+        self.assertEqual(self.client.get(f"/sale-items/public-photo/sale/{item['item_id']}").status_code, 404)
+
     def test_seller_identity_is_admin_only_and_requests_still_work(self):
         from backend.routes.item_requests import router as requests_router
         self.app.include_router(requests_router)

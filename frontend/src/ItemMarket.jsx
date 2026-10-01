@@ -1,3 +1,4 @@
+import ListingPhoto from './ListingPhoto'
 import FastDelivery from './FastDelivery'
 import { Spinner } from './LoadingStatus'
 import { useEffect, useState } from 'react'
@@ -51,7 +52,7 @@ export default function ItemMarket() {
     </form>
     {error && <p role="alert" className="my-3 text-red-700">{t(error)}</p>}{notice && <p role="status" className="my-3 text-teal-700">{notice}</p>}
     {loading ? <p role="status"><Spinner />{t('Loading...')}</p> : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{items.map(item => <article key={item.listing_key} className="rounded-xl border p-4">
-      {item.photo_data && <img src={item.photo_data} alt={item.name} className="mb-3 h-40 w-full object-contain" />}
+      <div className="mb-3 min-h-40"><ListingPhoto item={item} /></div>
       <h3 className="font-semibold">{item.name}</h3><p className="text-sm text-slate-600">{t(item.account_field || 'Not provided')}</p>
       <p className="my-2 font-semibold">{item.price == null ? t('Price not provided') : new Intl.NumberFormat(language, { style: 'currency', currency: item.currency || 'RWF' }).format(Number(item.price))}</p>
       <p className="mb-3 whitespace-pre-wrap text-sm">{item.description}</p>

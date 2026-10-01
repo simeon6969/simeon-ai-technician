@@ -1,5 +1,6 @@
 // English keys remain stable; stored enum values are never translated.
 const rows = `
+Photo not available|Ifoto ntiboneka|Photo indisponible|Picha haipatikani
 Access will be blocked until admin confirms payment.|Kwinjira birahagarikwa kugeza umuyobozi yemeje ubwishyu.|L’accès sera bloqué jusqu’à confirmation du paiement par l’administrateur.|Ufikiaji utazuiwa hadi msimamizi athibitishe malipo.
 Confirm upgrade?|Emeza kuzamura ifatabuguzi?|Confirmer le changement d’offre ?|Unathibitisha kupandisha mpango?
 Loading...|Birimo gufunguka...|Chargement...|Inapakia...
