@@ -1,3 +1,4 @@
+import BrandName from './BrandName'
 import { getJobCardForm } from './api'
 import PhotoSizeOption from './PhotoSizeOption'
 import { preparePhoto } from './preparePhoto'
@@ -143,7 +144,7 @@ function Conversation({ kind, account, onClose, onSaved, initial, form }) {
   }
 
   return <div className="min-h-screen bg-slate-100">
-    <header className="bg-slate-900 px-6 py-4 text-white"><div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-bold">S</h1><p className="text-sm text-slate-300">{t(kind === 'job' ? 'Digital Job Card' : 'Spare Part')}</p></div><LanguageSwitcher /></div></header>
+    <header className="bg-slate-900 px-6 py-4 text-white"><div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-bold"><BrandName /></h1><p className="text-sm text-slate-300">{t(kind === 'job' ? 'Digital Job Card' : 'Spare Part')}</p></div><LanguageSwitcher /></div></header>
     <main className="mx-auto max-w-3xl px-4 py-6">
       <p className="mb-4 font-semibold text-slate-700">{account.full_name} · {t(account.role)}</p>
       {kind === 'job' && account.role === 'technician' && <p className="mb-4 text-sm text-slate-600">{t('Submitter name')}: {account.full_name}</p>}
@@ -153,13 +154,13 @@ function Conversation({ kind, account, onClose, onSaved, initial, form }) {
       <p className="mb-6 rounded-2xl bg-white p-5 text-slate-700">{w[1]}</p>
       <div className="space-y-4">
         {fields.slice(0, step).map(([key, label, , , type], index) => <div key={key}>
-          <p className="mb-2 text-sm text-slate-600">S · {t(label)}</p>
+          <p className="mb-2 text-sm text-slate-600"><BrandName /> · {t(label)}</p>
           <div className="ml-8 rounded-2xl bg-slate-200 p-4"><p className="whitespace-pre-wrap break-words">{display(key, type)}</p>{type === 'photo' && answers[key] && <img src={answers[key]} alt={t(label)} className="mt-2 max-h-40 rounded-lg" />}{!saved && <button disabled={busy} onClick={() => edit(index)} className="mt-2 text-sm underline">{w[6]}</button>}</div>
         </div>)}
       </div>
       <div ref={bottom} className="mt-6 rounded-2xl bg-white p-5 shadow-sm" aria-live="polite">
         {saved ? <><p className="font-semibold text-green-700">{offlineWords[8]}</p></> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{busy && <Spinner />}{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
-          <p className="text-xs text-slate-500">S · {step + 1}/{fields.length}</p>
+          <p className="text-xs text-slate-500"><BrandName /> · {step + 1}/{fields.length}</p>
           <h2 className="mt-2 text-lg font-semibold">{w[2]} {t(field[1])}?</h2>
           {field[2] && <p className="my-3 text-sm text-slate-600">{t(field[2])}</p>}
           {field[4] === 'currency' && <div className="mt-4 flex flex-wrap gap-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map(value => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value}</button>)}</div>}

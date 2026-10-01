@@ -1,3 +1,4 @@
+import BrandName from './BrandName'
 import { commissionStatuses, commissionEvents } from './commissionLabels'
 import { useEffect, useState } from 'react'
 import { accountRequest } from './api'
@@ -37,7 +38,7 @@ export default function CommissionPanel({ requestId, admin = false, autoOpen = f
     <button className={button} disabled={busy} onClick={() => send('refresh')}>{busy && <Spinner />}{t(data ? 'Refresh negotiation' : 'S: seller information')}</button>
     {error && <p role="alert" className="my-2 text-red-700">{error}</p>}
     {data && <div className="mt-3 space-y-3" aria-live="polite">
-      <p className="font-semibold">S</p>
+      <p className="font-semibold"><BrandName /></p>
       {data.status === 'not_started' ? <><p>{t(data.enabled ? 'Seller contacts stay locked until admin confirms the commission payment.' : 'Commission negotiations are not configured by admin yet')}</p>{data.enabled && <button disabled={busy} className={button} onClick={() => send('start')}>{t('Start negotiation')}</button>}</> : <>
         <p>{t('Commission payer')}: <strong>{t(data.payer === 'client' ? 'Requesting client' : 'Seller')}</strong></p>
         <p>{t('Listed price')}: {data.listed_price} {data.currency}</p>

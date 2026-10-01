@@ -1,3 +1,4 @@
+import BrandingProvider from './BrandingProvider'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -18,11 +19,11 @@ if (!Capacitor.isNativePlatform() && import.meta.env.PROD && 'serviceWorker' in 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <LanguageProvider>
+    <BrandingProvider><LanguageProvider>
       <App />
       {Capacitor.getPlatform() === 'android' && <AndroidUpdate />}
       {!Capacitor.isNativePlatform() && <InstallApp />}
       <Footer />
-    </LanguageProvider>
+    </LanguageProvider></BrandingProvider>
   </StrictMode>,
 )
