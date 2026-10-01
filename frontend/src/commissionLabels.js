@@ -1,2 +1,2 @@
 export const commissionStatuses = {"not_started": "Not started", "negotiating": "Negotiating commission", "awaiting_payment": "Awaiting commission payment", "pending_review": "Awaiting admin review", "approved": "Commission approved"}
-export const commissionEvents = {"started": "Negotiation started", "counter": "New offer from Simeon", "accept": "Commission offer accepted", "payment": "Payment submitted", "approve": "Payment approved by admin", "reject": "Payment correction requested"}
+export const commissionEvents = {"started": "Negotiation started", "counter": "New offer from S", "accept": "Commission offer accepted", "payment": "Payment submitted", "approve": "Payment approved by admin", "reject": "Payment correction requested"}

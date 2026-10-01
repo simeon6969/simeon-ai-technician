@@ -6,14 +6,14 @@ async function check() {
   const environment = { ...process.env, SIMEON_SMOKE_TEST: '1' }
   delete environment.ELECTRON_RUN_AS_NODE
   const desktop = await electron.launch({
-    executablePath: path.join(__dirname, 'release', 'win-unpacked', 'Simeon.exe'),
+    executablePath: path.join(__dirname, 'release', 'win-unpacked', 'S.exe'),
     env: environment,
     timeout: 60000,
   })
   try {
     const page = await desktop.firstWindow()
     await page.waitForURL('https://simeon-frontend.onrender.com/**', { timeout: 60000 })
-    await page.getByText('Simeon', { exact: true }).first().waitFor({ timeout: 60000 })
+    await page.getByText('S', { exact: true }).first().waitFor({ timeout: 60000 })
     const preferences = await desktop.evaluate(({ BrowserWindow }) => {
       const prefs = BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences()
       return { nodeIntegration: prefs.nodeIntegration, contextIsolation: prefs.contextIsolation, sandbox: prefs.sandbox }
@@ -22,7 +22,7 @@ async function check() {
     assert.equal(await page.evaluate(() => typeof window.require), 'undefined')
     await page.evaluate(() => { window.location.hash = '#login' })
     await page.locator('input[type="password"]').first().waitFor()
-    console.log('PASS: packaged Windows app loads Simeon and login; renderer is sandboxed without Node access')
+    console.log('PASS: packaged Windows app loads S and login; renderer is sandboxed without Node access')
   } finally {
     await desktop.close()
   }

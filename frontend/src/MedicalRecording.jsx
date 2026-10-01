@@ -25,7 +25,7 @@ export default function MedicalRecording({ category, account, onClose, onSaved }
     setStep(missing === -1 ? fields.length : missing)
   }
   function edit(index) { setStep(index); setValue(answers[fields[index].key] ?? ''); setError('') }
-  return <div className="min-h-screen bg-slate-100"><header className="bg-teal-950 px-6 py-5 text-white"><div className="mx-auto max-w-3xl"><p className="text-sm text-teal-200">{account.full_name}</p><h1 className="text-2xl font-bold">{t("Simeon ·")}  {t(medicalCategories[category])}</h1></div></header>
+  return <div className="min-h-screen bg-slate-100"><header className="bg-teal-950 px-6 py-5 text-white"><div className="mx-auto max-w-3xl"><p className="text-sm text-teal-200">{account.full_name}</p><h1 className="text-2xl font-bold">{t("S ·")}  {t(medicalCategories[category])}</h1></div></header>
     <main className="mx-auto max-w-3xl p-5"><button disabled={busy} onClick={() => { if (saved || !Object.keys(answers).length || window.confirm(t('Leave this recording? Unsaved answers will be lost.'))) onClose() }} className="mb-5 font-medium text-teal-800">{t("← Back to medical store")}</button>
       {saved ? <section className="rounded-xl bg-white p-6"><p role="status">{t("Saved to")} {t(medicalCategories[category])}{t(". You can review and post it from your inventory.")}</p><button onClick={onClose} className="mt-4 rounded-lg bg-teal-700 px-4 py-3 text-white">{t("Return to inventory")}</button></section> : <section className="rounded-2xl bg-white p-6 shadow-sm">
         <p className="mb-5 text-slate-600">{category === 'pharmacy' ? t('Let’s record one medicine and batch using its product label. These are stock details, not prescribing instructions.') : category === 'consumables' ? t("Let’s record the consumable specifications, pack size, and batch stock.") : t("Let’s record this equipment’s identity, condition, accessories, and service information.")}</p>
@@ -38,7 +38,7 @@ export default function MedicalRecording({ category, account, onClose, onSaved }
           if (field.type === 'price' && (!/^\d+(\.\d{1,2})?$/.test(answer) || Number(answer) <= 0 || Number(answer) >= 1e12)) { setError('Enter a valid price greater than zero, with up to two decimals.'); return }
           next(field.type === 'number' && answer ? Number(answer) : answer || null)
         }}>
-          <p className="mb-2 text-xs text-slate-500">{t("Simeon ·")}{step + 1} / {fields.length}</p><label className="block text-lg font-semibold" htmlFor="medical-answer">{t(field.label)}</label>
+          <p className="mb-2 text-xs text-slate-500">{t("S ·")}{step + 1} / {fields.length}</p><label className="block text-lg font-semibold" htmlFor="medical-answer">{t(field.label)}</label>
           {field.type === 'photo' ? <><PhotoSizeOption checked={compress} onChange={setCompress} disabled={busy} /><input id="medical-answer" type="file" disabled={busy} accept="image/jpeg,image/png,image/webp" onChange={async event => {
             const file = event.target.files[0]; if (!file) return
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { setError('Choose a JPEG, PNG, or WebP photo up to 5 MB.'); return }

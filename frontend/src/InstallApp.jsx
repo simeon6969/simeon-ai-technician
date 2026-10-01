@@ -9,7 +9,7 @@ const androidCopy = {
   sw: ['Programu ya Android', 'Sasisha programu ya Android'],
 }
 
-const androidApkUrl = 'https://github.com/simeon6969/simeon-ai-technician/releases/download/android-test-21/Simeon-test.apk'
+const androidApkUrl = 'https://github.com/simeon6969/simeon-ai-technician/releases/download/android-test-22/Simeon-test.apk'
 const windowsInstallerUrl = import.meta.env.DEV
   ? '/downloads/Simeon-Setup.exe'
   : 'https://github.com/simeon6969/simeon-ai-technician/releases/download/windows-v1.0.0/Simeon-Setup.exe'

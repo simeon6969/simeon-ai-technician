@@ -2,8 +2,8 @@
   "name": "simeon-desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "Simeon technician workspace for Windows",
-  "author": "Simeon",
+  "description": "S technician workspace for Windows",
+  "author": "S",
   "license": "UNLICENSED",
   "main": "main.cjs",
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "online.simeon.desktop",
-    "productName": "Simeon",
+    "productName": "S",
     "directories": {
       "output": "release"
     },
@@ -36,7 +36,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Simeon",
+      "shortcutName": "S",
       "runAfterFinish": false
     }
   },

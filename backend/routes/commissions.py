@@ -172,7 +172,7 @@ def commission_action(request_id: int, data: ActionInput, user_id: int = Depends
                 raise HTTPException(409, 'This offer is already accepted')
             if data.action == 'counter':
                 if agreement.current_percent <= agreement.minimum_percent:
-                    raise HTTPException(409, 'Simeon has reached the lowest permitted commission')
+                    raise HTTPException(409, 'S has reached the lowest permitted commission')
                 if data.counter_percent is None or data.counter_percent >= agreement.current_percent:
                     raise HTTPException(422, 'Enter a counteroffer below the current percentage')
                 agreement.current_percent = max(agreement.minimum_percent, agreement.current_percent - agreement.reduction_percent, data.counter_percent)

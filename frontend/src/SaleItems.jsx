@@ -95,7 +95,7 @@ export default function SaleItems({ medical = false, onRecordMedical, initialCat
     }}><h4>{editingStock.name}</h4><MedicalStockFields category={editingStock.medical_category} value={editingStock.medical_details} disabled={busy} onChange={medical_details => setEditingStock({ ...editingStock, medical_details })} /><button disabled={busy} className="rounded-lg bg-teal-700 px-4 py-2 text-white">{busy && <Spinner />}{t("Save stock details")}</button><button type="button" disabled={busy} onClick={() => setEditingStock(null)} className="ml-3">{t("Cancel")}</button></form>}
     {notice && <p role="status" className="my-3 text-green-700">{w[18]}</p>}
     {draft && <div className="my-6 rounded-xl bg-slate-50 p-5">
-      <p className="mb-3 font-semibold">{t("Simeon ·")} {step < 5 ? `${step + 1}/5` : w[11]}</p>
+      <p className="mb-3 font-semibold">{t("S ·")} {step < 5 ? `${step + 1}/5` : w[11]}</p>
       {step < 5 ? <form onSubmit={(event) => {
         event.preventDefault()
         const value = draft[fields[step]]

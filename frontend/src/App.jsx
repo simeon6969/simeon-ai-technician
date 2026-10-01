@@ -53,48 +53,91 @@ async function downloadJobCardPdf(card) {
     pdf.addImage(branding.image_data, 'PNG', 20, 14, width, height)
     headingY = 14 + height + 10
   }
-  const lines = [
-    `Job Card #${card.job_card_id}`,
-    `Submitted by: ${card.submitter_name || 'Not recorded'}`,
-    `Equipment ID: ${card.equipment_id}`,
-    `Maintenance type: ${card.maintenance_type}`,
-    `Status: ${card.status}`,
-    `Outcome: ${card.successful ? 'Maintenance successful' : 'Pending confirmation'}`,
-    '',
-    `Fault description: ${card.fault_description || 'Not recorded'}`,
-    `Symptoms: ${card.symptoms || 'Not recorded'}`,
-    `Diagnosis: ${card.diagnosis || 'Not recorded'}`,
-    `Actions taken: ${card.actions_taken || 'Not recorded'}`,
-    `Parts used: ${card.parts_used || 'Not recorded'}`,
-    `Result: ${card.result || 'Not recorded'}`,
+  const rows = [
+    ['Job Card', `#${card.job_card_id}`],
+    ['Submitted by', card.submitter_name],
+    ['Equipment ID', card.equipment_id],
+    ['Maintenance type', card.maintenance_type],
+    ['Status', card.status],
+    ['Outcome', card.successful ? 'Maintenance successful' : 'Pending confirmation'],
+    ['Fault description', card.fault_description],
+    ['Symptoms', card.symptoms],
+    ['Diagnosis', card.diagnosis],
+    ['Actions taken', card.actions_taken],
+    ['Parts used', card.parts_used],
+    ['Result', card.result],
   ]
 
   pdf.setFontSize(16)
-  const heading = pdf.splitTextToSize(card.account_name || 'Simeon Job Card', 170)
+  const heading = pdf.splitTextToSize(card.account_name || 'S Job Card', 170)
   pdf.text(heading, 20, headingY)
-  pdf.setFontSize(11)
+  let y = headingY + 6 + heading.length * 7
+  const bottom = 277, labelWidth = 48, valueWidth = 122, lineHeight = 5
 
-  let y = headingY + 4 + heading.length * 7
-  for (const line of lines) {
-    const wrapped = pdf.splitTextToSize(line, 170)
-    pdf.text(wrapped, 20, y)
-    y += wrapped.length * 6 + 2
-
-    if (y > 275) {
-      pdf.addPage()
-      y = 20
-    }
+  function tableHeader() {
+    pdf.setFillColor(15, 118, 110)
+    pdf.rect(20, y, 170, 10, 'F')
+    pdf.setTextColor(255, 255, 255)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(11)
+    pdf.text('Field', 23, y + 6.5)
+    pdf.text('Details', 71, y + 6.5)
+    pdf.setTextColor(30, 41, 59)
+    y += 10
   }
+  function nextPage() {
+    pdf.addPage()
+    y = 20
+    tableHeader()
+  }
+  tableHeader()
+  rows.forEach(([label, value], index) => {
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(10)
+    const lines = pdf.splitTextToSize(String(value ?? '').trim() || 'Not recorded', valueWidth - 6)
+    let offset = 0
+    while (offset < lines.length) {
+      if (bottom - y < 16) nextPage()
+      const count = Math.min(lines.length - offset, Math.floor((bottom - y - 6) / lineHeight))
+      const height = Math.max(12, count * lineHeight + 6)
+      pdf.setDrawColor(203, 213, 225)
+      pdf.setLineWidth(0.2)
+      pdf.setFillColor(...(index % 2 ? [248, 250, 252] : [255, 255, 255]))
+      pdf.rect(20, y, 170, height, 'FD')
+      pdf.line(20 + labelWidth, y, 20 + labelWidth, y + height)
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text(offset ? `${label} (cont.)` : label, 23, y + 6)
+      pdf.setFont('helvetica', 'normal')
+      pdf.text(lines.slice(offset, offset + count), 71, y + 6, { lineHeightFactor: lineHeight / (10 * 25.4 / 72) })
+      y += height
+      offset += count
+    }
+  })
 
   if (card.photo_data) {
-    if (y > 190) {
+    const properties = pdf.getImageProperties(card.photo_data)
+    const scale = Math.min(170 / properties.width, 90 / properties.height)
+    const width = properties.width * scale, height = properties.height * scale
+    if (y + height + 20 > bottom) {
       pdf.addPage()
       y = 20
     }
-    pdf.addImage(card.photo_data, 'PNG', 20, y, 100, 75)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Equipment photo', 20, y + 8)
+    pdf.addImage(card.photo_data, properties.fileType, 20, y + 12, width, height)
+  }
+  const pageCount = pdf.getNumberOfPages()
+  for (let page = 1; page <= pageCount; page++) {
+    pdf.setPage(page)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(9)
+    pdf.setTextColor(100, 116, 139)
+    pdf.text(`S | Job Card #${card.job_card_id}`, 20, 289)
+    pdf.text(`${page} / ${pageCount}`, 190, 289, { align: 'right' })
   }
 
-  pdf.save(`simeon-job-card-${card.job_card_id}.pdf`)
+  pdf.save(`S-job-card-${card.job_card_id}.pdf`)
 }
 
 
@@ -294,7 +337,7 @@ if (!loggedIn) {
 
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-slate-900">
-            Simeon
+            S
           </h1>
 
           <p className="mt-2 text-sm text-slate-500"> {t("Intelligence Recovery program")} </p>
@@ -506,12 +549,12 @@ if (storeConversation) {
 
   return (
     <DashboardLayout account={profile} sections={[
-      ['overview', 'Overview'], ['assistant', 'Ask Simeon'], ['jobs', 'My Job Cards'], ['parts', 'My Spare Parts'], ['items', 'Items for sale'], ['help', 'Maintenance & spare-part help'], ['requests', 'Requests & marketplace'], ['account', 'My account'],
+      ['overview', 'Overview'], ['assistant', 'Ask S'], ['jobs', 'My Job Cards'], ['parts', 'My Spare Parts'], ['items', 'Items for sale'], ['help', 'Maintenance & spare-part help'], ['requests', 'Requests & marketplace'], ['account', 'My account'],
     ]} section={dashboardSection} onNavigate={setDashboardSection} onHome={() => navigate('home')} onLogout={handleLogout}>
       {dashboardSection === 'overview' && <DashboardOverview actions={[
-        { label: 'Digital Job Card', description: 'Record maintenance work with Simeon.', onClick: () => setStoreConversation('job') },
+        { label: 'Digital Job Card', description: 'Record maintenance work with S.', onClick: () => setStoreConversation('job') },
         { label: 'Store Spare Part', description: 'Save a spare part and its asking price.', onClick: () => setStoreConversation('part') },
-        { label: 'Ask Simeon', description: 'Find available products and inventory information.', onClick: () => setDashboardSection('assistant') },
+        { label: 'Ask S', description: 'Find available products and inventory information.', onClick: () => setDashboardSection('assistant') },
         { label: 'Maintenance Help', description: 'Find maintenance knowledge from successful job cards.', onClick: () => { setHelpMode('maintenance'); setDashboardSection('help') } },
         { label: 'Items for sale', description: 'Manage equipment and posted items.', onClick: () => setDashboardSection('items') },
         { label: 'Requests & marketplace', description: 'Browse products and follow requests.', onClick: () => setDashboardSection('requests') },
@@ -589,14 +632,16 @@ if (storeConversation) {
                 <div className="mt-4 flex flex-col items-start gap-3">
                   <p className="text-sm text-slate-600">{t('Submitter name')}: {card.submitter_name || t('Not recorded')}</p>
                   <button
-                    onClick={() => downloadJobCardPdf(card).catch(error => setJobCardsError(error.message))}
+                    onClick={() => downloadJobCardPdf(card).catch((error) => {
+                      setJobCardsError(error.message || 'Unable to export PDF')
+                    })}
                     className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   > {t("Download PDF")} </button>
 
                   <button
                       onClick={async () => {
                         const warning = card.status === 'validated'
-                          ? 'Delete this validated job card and remove its trusted Simeon knowledge?'
+                          ? 'Delete this validated job card and remove its trusted S knowledge?'
                           : 'Delete this job card?'
 
                         if (!window.confirm(t(warning))) {
@@ -799,7 +844,7 @@ if (storeConversation) {
     <div className="mb-6">
       <h3 className="text-2xl font-bold text-slate-900"> {t("🔧 Maintenance Help")} </h3>
 
-      <p className="mt-1 text-sm text-slate-500"> {t("Ask Simeon about a equipment problem.")} </p>
+      <p className="mt-1 text-sm text-slate-500"> {t("Ask S about a equipment problem.")} </p>
     </div>
 
     <textarea
@@ -838,7 +883,7 @@ if (storeConversation) {
     } catch (error) {
       console.error(error)
       setChatAnswer(
-        'Simeon could not process the request right now.'
+        'S could not process the request right now.'
       )
     } finally {
       setChatLoading(false)
@@ -847,13 +892,13 @@ if (storeConversation) {
   disabled={chatLoading}
   className="rounded-xl bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-50"
 >
-  {chatLoading && <Spinner />}{chatLoading ? t('Thinking...') : t('Ask Simeon')}
+  {chatLoading && <Spinner />}{chatLoading ? t('Thinking...') : t('Ask S')}
 </button>
 
 {chatAnswer && (
   <div className="mt-6 rounded-xl bg-slate-50 p-5">
     <h4 className="font-semibold text-slate-900">
-      Simeon
+      S
     </h4>
 
     <p className="mt-2 whitespace-pre-wrap text-slate-700">

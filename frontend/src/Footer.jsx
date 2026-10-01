@@ -8,8 +8,8 @@ export default function Footer() {
     <footer className="border-t border-slate-700 bg-slate-900 px-6 py-8 text-sm text-slate-300">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
-          <p className="text-lg font-semibold text-white">Simeon</p>
-          <p className="mt-2">© {new Date().getFullYear()} Simeon. {t('All rights reserved.')}</p>
+          <p className="text-lg font-semibold text-white">S</p>
+          <p className="mt-2">© {new Date().getFullYear()} S. {t('All rights reserved.')}</p>
         </div>
         <address className="flex flex-col gap-3 not-italic">
           <a href="mailto:simeon0202@icloud.com" className={`${linkStyle} break-words`}>

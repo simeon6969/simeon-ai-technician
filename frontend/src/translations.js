@@ -126,7 +126,7 @@ Description:|Ibisobanuro:|Description :
 Requester:|Uwasabye:|Demandeur :
 Contact:|Aho waboneka:|Contact :
 Notes:|Ibisobanuro by'inyongera:|Notes :
-Simeon Admin|Ubuyobozi bwa Simeon|Administration Simeon
+S Admin|Ubuyobozi bwa S|Administration S
 Governance and technical knowledge control|Ubuyobozi no kugenzura ubumenyi bwa tekiniki|Gestion et contrôle des connaissances techniques
 Logout|Sohoka|Se déconnecter
 Admin Dashboard|Ibiro by'umuyobozi|Tableau de bord administrateur
@@ -140,7 +140,7 @@ Password|Ijambo ry'ibanga|Mot de passe
 Phone (optional)|Telefoni (si ngombwa)|Téléphone (facultatif)
 Intelligent Technician Friend|Inshuti y'umunyabwenge y'umutekinisiye|L’allié intelligent du technicien
 Technician|Injeniyeri cyangwa umutekinisiye|Ingénieur ou technicien
-Welcome to Simeon|Murakaza neza kuri Simeon|Bienvenue sur Simeon
+Welcome to S|Murakaza neza kuri S|Bienvenue sur S
 What would you like to do today?|Ni iki wifuza gukora uyu munsi?|Que souhaitez-vous faire aujourd’hui ?
 Store a Job Card or Spare Part|Bika ifishi y'akazi cyangwa igice gisimbura|Enregistrer une fiche ou une pièce de rechange
 Save your maintenance experience, job cards, or spare-part information to help other technicians.|Bika ubunararibonye mu gusana, amafishi y'akazi cyangwa amakuru y'ibice bisimbura kugira ngo ufashe abandi batekinisiye.|Enregistrez vos expériences, fiches d’intervention ou pièces pour aider d’autres techniciens.
@@ -149,7 +149,7 @@ Record a maintenance activity, diagnosis, and solution.|Andika igikorwa cyo gusa
 🔩 Spare Part|🔩 Igice gisimbura|🔩 Pièce de rechange
 Store information about an available spare part.|Bika amakuru y'igice gisimbura kiboneka.|Enregistrez les informations d’une pièce disponible.
 Get Maintenance or Spare-Part Help|Bona ubufasha mu gusana cyangwa ku bice bisimbura|Obtenir de l’aide pour la maintenance ou les pièces
-Ask Simeon about equipment problems, maintenance procedures, or spare parts.|Baza Simeon ku bibazo by'ibikoresho, uburyo bwo gusana cyangwa ibice bisimbura.|Interrogez Simeon sur les pannes, les procédures de maintenance ou les pièces.
+Ask S about equipment problems, maintenance procedures, or spare parts.|Baza S ku bibazo by'ibikoresho, uburyo bwo gusana cyangwa ibice bisimbura.|Interrogez S sur les pannes, les procédures de maintenance ou les pièces.
 🔧 Maintenance Help|🔧 Ubufasha mu gusana|🔧 Aide à la maintenance
 Find reliable maintenance knowledge from successful job cards.|Bona ubumenyi bwizewe bwo gusana mu mafishi y'akazi kagenze neza.|Trouvez des connaissances fiables issues d’interventions réussies.
 🔩 Spare-Part Help|🔩 Ubufasha ku bice bisimbura|🔩 Aide aux pièces de rechange
@@ -180,7 +180,7 @@ Diagnosis|Isuzuma|Diagnostic
 Solution / Repair Performed|Igisubizo / Isanwa ryakozwe|Solution / Réparation effectuée
 Parts Used|Ibice byakoreshejwe|Pièces utilisées
 Job card photo (optional)|Ifoto y'ifishi y'akazi (si ngombwa)|Photo de l’intervention (facultative)
-I confirm the maintenance was completed successfully. This will validate the job card and add it to Simeon's trusted technical knowledge.|Ndemeza ko isanwa ryarangiye neza. Ibi bizemeza ifishi y'akazi kandi biyongere ku bumenyi bwa tekiniki bwizewe bwa Simeon.|Je confirme que la maintenance a réussi. La fiche sera validée et ajoutée aux connaissances techniques fiables de Simeon.
+I confirm the maintenance was completed successfully. This will validate the job card and add it to S's trusted technical knowledge.|Ndemeza ko isanwa ryarangiye neza. Ibi bizemeza ifishi y'akazi kandi biyongere ku bumenyi bwa tekiniki bwizewe bwa S.|Je confirme que la maintenance a réussi. La fiche sera validée et ajoutée aux connaissances techniques fiables de S.
 Cancel|Hagarika|Annuler
 Spare Part|Igice gisimbura|Pièce de rechange
 Store technical information about an available spare part.|Bika amakuru ya tekiniki y'igice gisimbura kiboneka.|Enregistrez les informations techniques d’une pièce disponible.
@@ -193,7 +193,7 @@ Limited|Ni bike|Stock limité
 Unavailable|Ntikiboneka|Indisponible
 Unknown|Ntibizwi|Inconnue
 Spare-part photo (optional)|Ifoto y'igice gisimbura (si ngombwa)|Photo de la pièce (facultative)
-Ask Simeon about a equipment problem.|Baza Simeon ku kibazo cy'igikoresho.|Interrogez Simeon sur un problème d’équipement.
+Ask S about a equipment problem.|Baza S ku kibazo cy'igikoresho.|Interrogez S sur un problème d’équipement.
 Search for a spare part stored by another technician.|Shakisha igice gisimbura cyabitswe n'undi mutekinisiye.|Recherchez une pièce enregistrée par un autre technicien.
 My requests|Ubusabe bwanjye|Mes demandes
 Loading requests...|Ubusabe burimo gutegurwa...|Chargement des demandes...
@@ -208,7 +208,7 @@ Unable to read an attachment.|Umugereka ntushobora gusomwa.|Impossible de lire u
 Maintenance successful|Isanwa ryagenze neza|Maintenance réussie
 Pending confirmation|Bitegereje kwemezwa|En attente de confirmation
 Not recorded|Ntibyanditswe|Non renseigné
-Simeon Job Card|Ifishi y'akazi ya Simeon|Fiche d’intervention Simeon
+S Job Card|Ifishi y'akazi ya S|Fiche d’intervention S
 Unable to load the admin dashboard.|Ibiro by'umuyobozi ntibishobora gufungurwa.|Impossible de charger le tableau de bord administrateur.
 Technicians|Abatekinisiye|Techniciens
 Job Cards|Amafishi y'akazi|Fiches d’intervention
@@ -241,7 +241,7 @@ Login|Injira|Se connecter
 Already have an account? Log in|Usanzwe ufite konti? Injira|Vous avez déjà un compte ? Connectez-vous
 Need an account? Create one|Ukeneye konti? Yifungure|Besoin d’un compte ? Créez-en un
 Job card|Ifishi y'akazi|Fiche d’intervention
-Delete this validated job card and remove its trusted Simeon knowledge?|Usibe iyi fishi y'akazi yemejwe n'ubumenyi bwizewe bwa Simeon bujyanye na yo?|Supprimer cette fiche validée et les connaissances Simeon associées ?
+Delete this validated job card and remove its trusted S knowledge?|Usibe iyi fishi y'akazi yemejwe n'ubumenyi bwizewe bwa S bujyanye na yo?|Supprimer cette fiche validée et les connaissances S associées ?
 Delete this job card?|Usibe iyi fishi y'akazi?|Supprimer cette fiche d’intervention ?
 Unable to delete the job card.|Ifishi y'akazi ntishobora gusibwa.|Impossible de supprimer la fiche.
 Deleting...|Birimo gusibwa...|Suppression...
@@ -262,8 +262,8 @@ Describe the repair or maintenance performed|Sobanura isanwa cyangwa iyitabwaho 
 Example: Sample probe tubing|Urugero: Umuyoboro w'urushinge rufata icyitegererezo|Exemple : Tubulure de la sonde de prélèvement
 Job card preview|Ishusho y'ifishi y'akazi|Aperçu de la fiche
 Equipment, manufacturer, and model are required.|Igikoresho, uruganda n'ubwoko birakenewe.|L’équipement, le fabricant et le modèle sont obligatoires.
-Job card validated and added to Simeon knowledge.|Ifishi y'akazi yemejwe kandi yongewe ku bumenyi bwa Simeon.|Fiche validée et ajoutée aux connaissances de Simeon.
-Job card saved. Confirm success to add it to Simeon knowledge.|Ifishi y'akazi yabitswe. Emeza ko byagenze neza kugira ngo yongerwe ku bumenyi bwa Simeon.|Fiche enregistrée. Confirmez la réussite pour l’ajouter aux connaissances de Simeon.
+Job card validated and added to S knowledge.|Ifishi y'akazi yemejwe kandi yongewe ku bumenyi bwa S.|Fiche validée et ajoutée aux connaissances de S.
+Job card saved. Confirm success to add it to S knowledge.|Ifishi y'akazi yabitswe. Emeza ko byagenze neza kugira ngo yongerwe ku bumenyi bwa S.|Fiche enregistrée. Confirmez la réussite pour l’ajouter aux connaissances de S.
 Unable to save the job card.|Ifishi y'akazi ntishobora kubikwa.|Impossible d’enregistrer la fiche.
 Saving...|Birimo kubikwa...|Enregistrement...
 Save Job Card|Bika ifishi y'akazi|Enregistrer la fiche
@@ -276,9 +276,9 @@ Spare part saved successfully.|Igice gisimbura cyabitswe neza.|Pièce enregistr�
 Unable to save the spare part.|Igice gisimbura ntigishobora kubikwa.|Impossible d’enregistrer la pièce.
 Save Spare Part|Bika igice gisimbura|Enregistrer la pièce
 Example: Humacount 30TS is giving a high blank error. What should I check?|Urugero: Humacount 30TS iratanga ikosa rya high blank. Ni iki ngomba kugenzura?|Exemple : Le Humacount 30TS affiche une erreur de blanc élevé. Que dois-je vérifier ?
-Simeon could not process the request right now.|Simeon ntiyashoboye gusubiza ubusabe ubu.|Simeon ne peut pas traiter la demande pour le moment.
+S could not process the request right now.|S ntiyashoboye gusubiza ubusabe ubu.|S ne peut pas traiter la demande pour le moment.
 Thinking...|Birimo gutekerezwa...|Réflexion en cours...
-Ask Simeon|Baza Simeon|Demander à Simeon
+Ask S|Baza S|Demander à S
 Example: Humacount 30TS sample probe|Urugero: Urushinge rufata icyitegererezo rwa Humacount 30TS|Exemple : Sonde de prélèvement Humacount 30TS
 Unable to search spare parts.|Ibice bisimbura ntibishobora gushakishwa.|Impossible de rechercher les pièces.
 Searching...|Birimo gushakishwa...|Recherche...

@@ -47,7 +47,8 @@ class PartInput(BaseModel):
 def submit(data: Annotated[JobInput | PartInput, Field(discriminator='kind')],
            user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
     key = (user_id, str(data.submission_id))
-    fingerprint = hashlib.sha256(data.model_dump_json().encode()).hexdigest()
+    legacy = data.kind == 'job' and data.job.form_version == 0 and not data.job.custom_answers
+    fingerprint = hashlib.sha256(data.model_dump_json(exclude={'job': {'form_version', 'custom_answers'}} if legacy else None).encode()).hexdigest()
 
     def receipt_result(receipt):
         if receipt.fingerprint != fingerprint:
@@ -69,12 +70,14 @@ def submit(data: Annotated[JobInput | PartInput, Field(discriminator='kind')],
             equipment = Equipment(**data.equipment.model_dump())
             db.add(equipment)
             db.flush()
-            card = JobCard(**data.job.model_dump(exclude={'equipment_id', 'submitter_name'}),
+            card = JobCard(**data.job.model_dump(exclude={'equipment_id', 'submitter_name', 'form_version', 'custom_answers'}),
                            equipment_id=equipment.equipment_id, technician_id=user_id,
                            account_name=account.full_name, submitter_name=submitter)
             db.add(card)
             db.flush()
             record_id = card.job_card_id
+            from backend.job_forms import record_submission
+            record_submission(db, card, data.job)
             if card.successful:
                 card.status = 'validated'
                 card.confirmed_at = datetime.now()

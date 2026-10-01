@@ -1,3 +1,4 @@
+import { getJobCardForm } from './api'
 import PhotoSizeOption from './PhotoSizeOption'
 import { preparePhoto } from './preparePhoto'
 import { Spinner } from './LoadingStatus'
@@ -23,18 +24,33 @@ export default function StoreConversation(props) {
   const [failed, setFailed] = useState(false)
   useEffect(() => {
     let active = true
-    readDraft(props.account.user_id, props.kind).then(value => { if (active) setLoaded({ value }) }).catch(() => { if (active) setFailed(true) })
-    return () => { active = false }
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 6000)
+    readDraft(props.account.user_id, props.kind).then(async value => {
+      let form = null
+      if (props.kind === 'job' && !value) {
+        const key = `job-form:${props.account.user_id}`
+        try {
+          form = await getJobCardForm(controller.signal)
+          try { localStorage.setItem(key, JSON.stringify(form)) } catch { /* Online form remains usable. */ }
+        } catch {
+          try { form = JSON.parse(localStorage.getItem(key)) } catch { /* Use legacy offline questions. */ }
+        }
+      }
+      if (active) setLoaded({ value, form })
+    }).catch(() => { if (active) setFailed(true) }).finally(() => clearTimeout(timeout))
+    return () => { active = false; clearTimeout(timeout); controller.abort() }
   }, [props.account.user_id, props.kind])
   if (!loaded) return <div className="p-6"><p role="status">{w[failed ? 6 : 9]}</p><button onClick={props.onClose}>← {props.account.full_name}</button></div>
-  return <Conversation {...props} initial={loaded.value} />
+  return <Conversation {...props} initial={loaded.value} form={loaded.form} />
 }
 
-function Conversation({ kind, account, onClose, onSaved, initial }) {
+function Conversation({ kind, account, onClose, onSaved, initial, form }) {
   const { t, language } = useLanguage()
   const w = words[language] || words.en
   const offlineWords = offlineCopy[language] || offlineCopy.en
-  const fields = kind === 'job' ? jobFieldsForAccount(account.role) : partFields
+  const [fields] = useState(() => initial?.fields || (kind === 'job' ? (form?.questions ? [...(account.role === 'technician' ? [] : [jobFieldsForAccount(account.role)[0]]), ...form.questions] : jobFieldsForAccount(account.role)) : partFields))
+  const [formVersion] = useState(initial?.formVersion ?? form?.version ?? 0)
   const [answers, setAnswers] = useState(() => initial?.answers || (account.role === 'technician' ? { submitter_name: account.full_name } : {}))
   const [step, setStep] = useState(initial?.step || 0)
   const [draft, setDraft] = useState(initial?.draft || '')
@@ -60,11 +76,11 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
   useEffect(() => {
     if (saved || committing.current) return
     let active = true
-    const write = saveDraft(account.user_id, kind, { answers, step, draft, submissionId: submissionId.current })
+    const write = saveDraft(account.user_id, kind, { answers, step, draft, fields, formVersion, submissionId: submissionId.current })
     latestWrite.current = write
     write.then(() => { if (active) { setStorageError(false); setDraftStored(true) } }).catch(() => { if (active) { setStorageError(true); setDraftStored(false) } })
     return () => { active = false }
-  }, [account.user_id, kind, answers, step, draft, saved])
+  }, [account.user_id, kind, answers, step, draft, saved, fields, formVersion])
 
   async function close() {
     try { await latestWrite.current; onClose() }
@@ -111,7 +127,7 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
     committing.current = true
     try {
       await latestWrite.current
-      await queueDraft(account.user_id, kind, submissionPayload(kind, answers, submissionId.current))
+      await queueDraft(account.user_id, kind, submissionPayload(kind, kind === 'job' ? { ...answers, _formVersion: formVersion, _customKeys: fields.filter(([key]) => key.startsWith('custom_')).map(([key]) => key) } : answers, submissionId.current))
       setSaved(true)
       syncQueue(account.user_id).catch(() => {})
       onSaved(kind)
@@ -127,7 +143,7 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
   }
 
   return <div className="min-h-screen bg-slate-100">
-    <header className="bg-slate-900 px-6 py-4 text-white"><div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-bold">Simeon</h1><p className="text-sm text-slate-300">{t(kind === 'job' ? 'Digital Job Card' : 'Spare Part')}</p></div><LanguageSwitcher /></div></header>
+    <header className="bg-slate-900 px-6 py-4 text-white"><div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4"><div><h1 className="text-2xl font-bold">S</h1><p className="text-sm text-slate-300">{t(kind === 'job' ? 'Digital Job Card' : 'Spare Part')}</p></div><LanguageSwitcher /></div></header>
     <main className="mx-auto max-w-3xl px-4 py-6">
       <p className="mb-4 font-semibold text-slate-700">{account.full_name} · {t(account.role)}</p>
       {kind === 'job' && account.role === 'technician' && <p className="mb-4 text-sm text-slate-600">{t('Submitter name')}: {account.full_name}</p>}
@@ -137,13 +153,13 @@ function Conversation({ kind, account, onClose, onSaved, initial }) {
       <p className="mb-6 rounded-2xl bg-white p-5 text-slate-700">{w[1]}</p>
       <div className="space-y-4">
         {fields.slice(0, step).map(([key, label, , , type], index) => <div key={key}>
-          <p className="mb-2 text-sm text-slate-600">Simeon · {t(label)}</p>
+          <p className="mb-2 text-sm text-slate-600">S · {t(label)}</p>
           <div className="ml-8 rounded-2xl bg-slate-200 p-4"><p className="whitespace-pre-wrap break-words">{display(key, type)}</p>{type === 'photo' && answers[key] && <img src={answers[key]} alt={t(label)} className="mt-2 max-h-40 rounded-lg" />}{!saved && <button disabled={busy} onClick={() => edit(index)} className="mt-2 text-sm underline">{w[6]}</button>}</div>
         </div>)}
       </div>
       <div ref={bottom} className="mt-6 rounded-2xl bg-white p-5 shadow-sm" aria-live="polite">
         {saved ? <><p className="font-semibold text-green-700">{offlineWords[8]}</p></> : review ? <><p className="mb-4">{w[5]}</p><button disabled={busy} onClick={save} className="rounded-xl bg-slate-900 px-5 py-3 text-white disabled:opacity-50">{busy && <Spinner />}{t(busy ? 'Saving...' : kind === 'job' ? 'Save Job Card' : 'Save Spare Part')}</button></> : <>
-          <p className="text-xs text-slate-500">Simeon · {step + 1}/{fields.length}</p>
+          <p className="text-xs text-slate-500">S · {step + 1}/{fields.length}</p>
           <h2 className="mt-2 text-lg font-semibold">{w[2]} {t(field[1])}?</h2>
           {field[2] && <p className="my-3 text-sm text-slate-600">{t(field[2])}</p>}
           {field[4] === 'currency' && <div className="mt-4 flex flex-wrap gap-3">{['RWF', 'USD', 'EUR', 'KES', 'TZS', 'UGX'].map(value => <button key={value} onClick={() => reply(value)} className="rounded-xl border border-slate-300 px-4 py-3">{value}</button>)}</div>}

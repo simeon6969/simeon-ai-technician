@@ -9,7 +9,7 @@ import InstallApp from './InstallApp.jsx'
 if (import.meta.env.PROD && 'serviceWorker' in navigator && window.isSecureContext) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch((error) => {
-      console.error('Simeon offline support could not be registered:', error)
+      console.error('S offline support could not be registered:', error)
     })
   })
 }

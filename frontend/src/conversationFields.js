@@ -8,7 +8,7 @@ export const jobFields = [
   ['solution', 'Solution / Repair Performed', 'Describe the repair or maintenance performed'],
   ['parts_used', 'Parts Used', 'Example: Sample probe tubing'],
   ['photo_data', 'Job card photo (optional)', '', false, 'photo'],
-  ['successful', 'Maintenance successful', 'I confirm the maintenance was completed successfully. This will validate the job card and add it to Simeon\'s trusted technical knowledge.', true, 'boolean'],
+  ['successful', 'Maintenance successful', 'I confirm the maintenance was completed successfully. This will validate the job card and add it to S\'s trusted technical knowledge.', true, 'boolean'],
 ]
 
 export const partFields = [
@@ -26,6 +26,7 @@ export const partFields = [
 
 export function jobPayload(answers, equipmentId) {
   return {
+    ...(answers._formVersion != null ? { form_version: answers._formVersion, custom_answers: Object.fromEntries((answers._customKeys || []).map(key => [key, answers[key] ?? null])) } : {}),
     equipment_id: equipmentId, maintenance_type: 'corrective',
     submitter_name: answers.submitter_name || null,
     fault_description: answers.problem_description, symptoms: answers.symptoms || null,

@@ -18,7 +18,7 @@ def get_openai_client():
 
 
 SYSTEM_PROMPT = """
-You are Simeon, an intelligent technical assistant for Medical, IT, Electrical and Mechanical technicians.
+You are S, an intelligent technical assistant for Medical, IT, Electrical and Mechanical technicians.
 
 Your role is to assist technicians with maintenance,
 troubleshooting, equipment information, and spare-part knowledge.
@@ -101,7 +101,7 @@ Technician question:
 
 {question}
 
-The following is retrieved technical evidence from Simeon's
+The following is retrieved technical evidence from S's
 validated maintenance knowledge base:
 
 {evidence}

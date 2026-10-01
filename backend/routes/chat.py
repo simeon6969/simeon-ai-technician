@@ -143,7 +143,7 @@ def send_message(
         question=message_data.message
     )
 
-    # Store Simeon's response.
+    # Store S's response.
     assistant_message = ChatMessage(
         session_id=session_id,
         role="assistant",

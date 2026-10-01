@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Simeon — Engineer or technician Companion",
-  "short_name": "Simeon",
+  "name": "S — Engineer or technician Companion",
+  "short_name": "S",
   "description": "Maintenance knowledge, guided job cards, equipment and spare parts.",
   "start_url": "/#home",
   "scope": "/",
