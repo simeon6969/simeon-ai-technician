@@ -33,3 +33,5 @@ tzdata==2026.3
 uvicorn==0.52.4
 
 Pillow>=11.0,<13
+
+google-auth[requests]>=2.40,<3

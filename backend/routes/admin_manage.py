@@ -77,6 +77,9 @@ def record(db, model, record_id):
 def save(db, value, data):
     for key, content in data.model_dump().items():
         setattr(value, key, content)
+    if isinstance(value, JobCard):
+        from backend.job_forms import refresh_submission
+        refresh_submission(db, value)
     try:
         db.commit()
     except IntegrityError:

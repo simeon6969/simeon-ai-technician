@@ -1,3 +1,4 @@
+import JobCardSettings from './JobCardSettings'
 import PaymentReviews from './PaymentReviews'
 import usePaymentReviews from './usePaymentReviews'
 import { commissionStatuses } from './commissionLabels'
@@ -13,9 +14,9 @@ import DashboardLayout from './DashboardLayout'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['overview', 'Overview'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['overview', 'Overview'], ['job-settings', 'Job cards & Google Sheets'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
-  ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'Simeon'],
+  ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'S'],
 ]
 const ids = { users: 'user_id', 'job-cards': 'job_card_id', 'spare-parts': 'spare_part_id', 'sale-items': 'item_id', 'knowledge': 'knowledge_id', 'item-requests': 'request_id', 'spare-part-requests': 'request_id' }
 const fields = {
@@ -117,6 +118,7 @@ export default function AdminConsole({ account, onHome, onLogout }) {
           <div className="mt-6 grid gap-4 md:grid-cols-2"><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account field')}</h3>{['medical', 'it', 'electrical', 'mechanical'].map(value => <button key={value} onClick={() => { go('users'); setField(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.account_field === value).length}</strong></button>)}</section><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account role')}</h3>{['technician', 'store', 'client'].map(value => <button key={value} onClick={() => { go('users'); setRole(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.role === value).length}</strong></button>)}</section></div>
         </>}
         {section === 'assistant' && <AdminChat />}
+        {section === 'job-settings' && <JobCardSettings />}
         {section === 'commissions' && <CommissionSettings />}
         {section === 'delivery' && <DeliverySettings />}
         {section === 'subscriptions' && <SubscriptionAdmin />}

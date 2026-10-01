@@ -1,6 +1,6 @@
 {
   "appId": "online.simeon.app",
-  "appName": "Simeon",
+  "appName": "S",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": { "enabled": true }

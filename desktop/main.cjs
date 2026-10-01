@@ -3,6 +3,8 @@ const path = require('node:path')
 const { WEBSITE, classifyNavigation } = require('./navigation.cjs')
 
 let window
+// Retain existing sessions and preferences when the displayed product name changes.
+app.setPath('userData', path.join(app.getPath('appData'), 'Simeon'))
 app.setAppUserModelId('online.simeon.desktop')
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -18,7 +20,7 @@ if (!app.requestSingleInstanceLock()) {
     session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
     session.defaultSession.setPermissionCheckHandler(() => false)
     window = new BrowserWindow({
-      title: 'Simeon', width: 1280, height: 850, minWidth: 360, minHeight: 500,
+      title: 'S', width: 1280, height: 850, minWidth: 360, minHeight: 500,
       show: process.env.SIMEON_SMOKE_TEST !== '1',
       icon: path.join(__dirname, 'icon.png'), autoHideMenuBar: true,
       webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true },

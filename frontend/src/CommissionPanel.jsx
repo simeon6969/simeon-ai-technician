@@ -34,10 +34,10 @@ export default function CommissionPanel({ requestId, admin = false, autoOpen = f
     } catch (failure) { setError(t(failure.message)) } finally { setBusy(false) }
   }
   return <section className="mt-4 rounded-xl border border-teal-300 bg-teal-50 p-4">
-    <button className={button} disabled={busy} onClick={() => send('refresh')}>{busy && <Spinner />}{t(data ? 'Refresh negotiation' : 'Simeon: seller information')}</button>
+    <button className={button} disabled={busy} onClick={() => send('refresh')}>{busy && <Spinner />}{t(data ? 'Refresh negotiation' : 'S: seller information')}</button>
     {error && <p role="alert" className="my-2 text-red-700">{error}</p>}
     {data && <div className="mt-3 space-y-3" aria-live="polite">
-      <p className="font-semibold">Simeon</p>
+      <p className="font-semibold">S</p>
       {data.status === 'not_started' ? <><p>{t(data.enabled ? 'Seller contacts stay locked until admin confirms the commission payment.' : 'Commission negotiations are not configured by admin yet')}</p>{data.enabled && <button disabled={busy} className={button} onClick={() => send('start')}>{t('Start negotiation')}</button>}</> : <>
         <p>{t('Commission payer')}: <strong>{t(data.payer === 'client' ? 'Requesting client' : 'Seller')}</strong></p>
         <p>{t('Listed price')}: {data.listed_price} {data.currency}</p>

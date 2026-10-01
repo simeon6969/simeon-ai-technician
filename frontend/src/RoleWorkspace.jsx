@@ -17,7 +17,7 @@ import { getMySpareParts, deleteSparePart } from './api'
 export default function RoleWorkspace({ account, onHome, onLogout }) {
   const { t } = useLanguage()
   const [section, setSection] = useState('overview')
-  const sections = [['overview', 'Overview'], ['assistant', 'Ask Simeon'], ...(account.role === 'store' ? [['parts', 'Spare parts'], ['items', 'Items for sale']] : []), ['requests', 'Requests & marketplace'], ['account', 'My account']]
+  const sections = [['overview', 'Overview'], ['assistant', 'Ask S'], ...(account.role === 'store' ? [['parts', 'Spare parts'], ['items', 'Items for sale']] : []), ['requests', 'Requests & marketplace'], ['account', 'My account']]
   const [medicalRecording, setMedicalRecording] = useState(null)
   const [recording, setRecording] = useState(false)
   const [parts, setParts] = useState([])
@@ -36,8 +36,8 @@ export default function RoleWorkspace({ account, onHome, onLogout }) {
   if (recording) return <StoreConversation kind="part" account={account} onClose={() => { setRecording(false); setSection('parts') }} onSaved={() => setRevision(value => value + 1)} />
   return <DashboardLayout account={account} sections={sections} section={section} onNavigate={setSection} onHome={onHome} onLogout={onLogout}>
     {section === 'overview' && <DashboardOverview actions={[
-      { label: 'Ask Simeon', description: 'Find available items and get information from Simeon.', onClick: () => setSection('assistant') },
-      ...(account.role === 'store' ? [{ label: 'Store Spare Part', description: 'Record spare parts with Simeon.', onClick: () => setRecording(true) }, { label: 'Items for sale', description: 'Manage equipment, prices and posted items.', onClick: () => setSection('items') }] : []),
+      { label: 'Ask S', description: 'Find available items and get information from S.', onClick: () => setSection('assistant') },
+      ...(account.role === 'store' ? [{ label: 'Store Spare Part', description: 'Record spare parts with S.', onClick: () => setRecording(true) }, { label: 'Items for sale', description: 'Manage equipment, prices and posted items.', onClick: () => setSection('items') }] : []),
       { label: 'Requests & marketplace', description: 'Browse posted products and follow your requests.', onClick: () => setSection('requests') },
     ]}><MySubscription subscription={account.subscription} /></DashboardOverview>}
     {section === 'assistant' && <InventorySimeon account={account} />}

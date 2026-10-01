@@ -20,8 +20,8 @@ const { chromium } = require('../../desktop/node_modules/playwright-core');
    if (role === 'admin') { await nav.getByRole('button', { name: /Accounts/ }).click(); await page.getByRole('heading', { name: 'Accounts', exact: true }).waitFor(); assert.deepEqual(errors, []); console.log('PASS admin'); await page.close(); continue; }
    if (role === 'client') assert.equal(await nav.getByRole('button', { name: /Spare parts|Job Cards|Items for sale/i }).count(), 0);
    if (role === 'store') assert.equal(await nav.getByRole('button', { name: /Job Cards|Maintenance/ }).count(), 0);
-   await nav.getByRole('button', { name: /Ask Simeon/ }).click();
-   await page.getByRole('region', { name: 'Simeon inventory assistant' }).waitFor();
+   await nav.getByRole('button', { name: /Ask S/ }).click();
+   await page.getByRole('region', { name: 'S inventory assistant' }).waitFor();
    await nav.getByRole('button', { name: /Requests & marketplace/ }).click();
    await page.getByRole('heading', { name: 'Browse and request items' }).waitFor();
    if (role === 'technician') { await nav.getByRole('button', { name: /My Job Cards/ }).click(); await page.getByRole('button', { name: 'Digital Job Card', exact: true }).waitFor(); }

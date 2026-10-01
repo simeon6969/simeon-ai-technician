@@ -1,5 +1,27 @@
 // English keys remain stable; stored enum values are never translated.
 const rows = `
+Include existing job cards|Ongeramo amafishi y’akazi asanzwe|Inclure les fiches existantes|Jumuisha kadi zilizopo
+Job cards & Google Sheets|Amafishi y’akazi na Google Sheets|Fiches de travail et Google Sheets|Kadi za kazi na Google Sheets
+Google Sheets connection|Ihuza rya Google Sheets|Connexion Google Sheets|Muunganisho wa Google Sheets
+Open job-card spreadsheet|Fungura urupapuro rw’amafishi y’akazi|Ouvrir le tableau des fiches|Fungua lahajedwali la kadi za kazi
+Backend credentials configured. Share the spreadsheet with the account below as Editor.|Ibyangombwa by’ihuza byashyizweho. Sangiza konti iri hasi uru rupapuro uyigire Editor.|Identifiants configurés. Partagez le tableau avec le compte ci-dessous comme éditeur.|Utambulisho wa seva umewekwa. Shiriki lahajedwali na akaunti iliyo hapa chini kama mhariri.
+Google credentials are not configured. Job cards remain safe in the database and wait to sync.|Ibyangombwa bya Google ntibirashyirwaho. Amafishi abikwa muri databaze ategereje koherezwa.|Les identifiants Google ne sont pas configurés. Les fiches restent en base de données en attente de synchronisation.|Utambulisho wa Google haujawekwa. Kadi zinahifadhiwa kwenye hifadhidata zikisubiri kusawazishwa.
+Waiting to sync|Bitegereje koherezwa|En attente de synchronisation|Inasubiri kusawazishwa
+Synced job cards|Amafishi yoherejwe|Fiches synchronisées|Kadi zilizosawazishwa
+Spreadsheet link|Ihuza ry’urupapuro|Lien du tableur|Kiungo cha lahajedwali
+Enable Google Sheets sync|Emera kohereza muri Google Sheets|Activer la synchronisation Google Sheets|Wezesha usawazishaji wa Google Sheets
+Save connection settings|Bika igenamiterere ry’ihuza|Enregistrer la connexion|Hifadhi mipangilio ya muunganisho
+Refresh sync status|Vugurura uko kohereza bihagaze|Actualiser la synchronisation|Sasisha hali ya usawazishaji
+Retry pending sync|Ongera wohereze ibitegereje|Réessayer les envois en attente|Jaribu tena usawazishaji unaosubiri
+Job-card questions|Ibibazo by’ifishi y’akazi|Questions de la fiche de travail|Maswali ya kadi ya kazi
+Changes apply to new conversations. Existing drafts and answers keep their original questions. Each version uses a separate spreadsheet tab.|Impinduka zireba ibiganiro bishya. Inyandiko n’ibisubizo bya kera bigumana ibibazo byabyo. Buri verisiyo ikoresha tab yayo.|Les changements concernent les nouvelles conversations. Les brouillons et réponses existants gardent leurs questions. Chaque version utilise un onglet distinct.|Mabadiliko yanahusu mazungumzo mapya. Rasimu na majibu yaliyopo yanabaki na maswali yake. Kila toleo hutumia kichupo tofauti.
+Edit question wording and help, or add custom text questions. Essential job-card fields stay required.|Hindura ibibazo n’ibisobanuro cyangwa wongere ibibazo byandikwa. Iby’ingenzi ku ifishi bikomeza kuba ngombwa.|Modifiez les libellés et l’aide, ou ajoutez des questions libres. Les champs essentiels restent obligatoires.|Hariri maneno na msaada au ongeza maswali ya maandishi. Sehemu muhimu hubaki za lazima.
+Question / column heading|Ikibazo / umutwe w’inkingi|Question / titre de colonne|Swali / kichwa cha safu
+Question help|Ibisobanuro by’ikibazo|Aide de la question|Msaada wa swali
+Required answer|Igisubizo gisabwa|Réponse obligatoire|Jibu la lazima
+Remove question|Kuraho ikibazo|Supprimer la question|Ondoa swali
+Add question|Ongeraho ikibazo|Ajouter une question|Ongeza swali
+Publish questions|Emeza ibibazo|Publier les questions|Chapisha maswali
 Account location|Aho konti ibarizwa|Localisation du compte|Mahali pa akaunti
 Location or address|Aho ubarizwa cyangwa aderesi|Localisation ou adresse|Mahali au anwani
 Enter your address or business location, including city, district and street or landmark.|Andika aderesi yawe cyangwa aho ukorera, harimo umujyi, akarere n’umuhanda cyangwa ahantu hazwi hafi.|Indiquez votre adresse ou celle de votre entreprise : ville, district, rue ou point de repère.|Weka anwani yako au mahali pa biashara, ikiwemo mji, wilaya, barabara au alama ya karibu.
@@ -29,7 +51,7 @@ No payments awaiting review|Nta bwishyu butegereje kugenzurwa|Aucun paiement à 
 Submitted for review|Byoherejwe kugenzurwa|Soumis pour vérification|Imetumwa kwa ukaguzi
 Review this payment|Suzuma ubu bwishyu|Vérifier ce paiement|Kagua malipo haya
 Pending reminders stay visible until approved or returned for correction.|Imenyesha rigumaho kugeza byemejwe cyangwa bisubijwe gukosorwa.|Les rappels restent visibles jusqu’à approbation ou renvoi pour correction.|Vikumbusho vinabaki hadi kuidhinishwa au kurudishwa kwa marekebisho.
-Simeon has reached the lowest permitted commission|Simeon yageze kuri komisiyo ntoya yemerewe|Simeon a atteint la commission minimale autorisée|Simeon amefikia kamisheni ya chini inayoruhusiwa
+S has reached the lowest permitted commission|S yageze kuri komisiyo ntoya yemerewe|S a atteint la commission minimale autorisée|S amefikia kamisheni ya chini inayoruhusiwa
 Enter a counteroffer below the current percentage|Andika ijanisha riri munsi y’irisanzwe|Saisissez un taux inférieur au taux actuel|Weka asilimia iliyo chini ya ya sasa
 The negotiation changed. Refresh before continuing.|Ibiganiro byahindutse. Vugurura mbere yo gukomeza.|La négociation a changé. Actualisez avant de continuer.|Mazungumzo yamebadilika. Sasisha kabla ya kuendelea.
 Only the selected payer can negotiate or submit payment|Uwatoranyijwe kwishyura ni we wenyine uganira cyangwa wohereza ubwishyu|Seul le payeur désigné peut négocier ou soumettre un paiement|Mlipaji aliyechaguliwa pekee anaweza kujadiliana au kutuma malipo
@@ -44,7 +66,7 @@ This item request is no longer available|Ubu busabe ntibukiboneka|Cette demande 
 This request is private|Ubu busabe ni ibanga|Cette demande est privée|Ombi hili ni la faragha
 Commission settings|Igenamiterere rya komisiyo|Paramètres de commission|Mipangilio ya kamisheni
 Refresh negotiation|Vugurura ibiganiro|Actualiser la négociation|Sasisha mazungumzo
-Simeon: seller information|Simeon: amakuru y’ugurisha|Simeon : coordonnées du vendeur|Simeon: taarifa za muuzaji
+S: seller information|S: amakuru y’ugurisha|S : coordonnées du vendeur|S: taarifa za muuzaji
 Seller contacts stay locked until admin confirms the commission payment.|Aho kubariza ugurisha haguma hafunze kugeza umuyobozi yemeje ubwishyu bwa komisiyo.|Les coordonnées restent masquées jusqu’à confirmation du paiement par l’administrateur.|Mawasiliano yanafichwa hadi msimamizi athibitishe malipo ya kamisheni.
 Commission negotiations are not configured by admin yet|Umuyobozi ntarashyiraho ibiganiro bya komisiyo|La négociation des commissions n’est pas encore activée|Msimamizi hajawezesha mazungumzo ya kamisheni
 Start negotiation|Tangira ibiganiro|Commencer la négociation|Anza mazungumzo
@@ -85,7 +107,7 @@ Awaiting commission payment|Hategerejwe ubwishyu|En attente de paiement|Inasubir
 Awaiting admin review|Hategerejwe umuyobozi|En attente de vérification|Inasubiri ukaguzi
 Commission approved|Byemejwe|Approuvée|Imeidhinishwa
 Negotiation started|Ibiganiro byatangiye|Négociation commencée|Mazungumzo yameanza
-New offer from Simeon|Icyifuzo gishya cya Simeon|Nouvelle proposition de Simeon|Pendekezo jipya la Simeon
+New offer from S|Icyifuzo gishya cya S|Nouvelle proposition de S|Pendekezo jipya la S
 Commission offer accepted|Icyifuzo cyemewe|Offre acceptée|Ofa imekubaliwa
 Payment submitted|Ubwishyu bwoherejwe|Paiement soumis|Malipo yametumwa
 Payment approved by admin|Umuyobozi yemeje|Approbation de l’administrateur|Msimamizi ameidhinisha
@@ -212,14 +234,14 @@ Enter a valid price greater than zero, with up to two decimals.|Andika igiciro k
 Unable to read photo.|Ifoto ntishoboye gusomwa.|Impossible de lire la photo.|Imeshindwa kusoma picha.
 Unable to save. Your answers are still here.|Kubika byanze. Ibisubizo byawe biracyahari.|Enregistrement impossible. Vos réponses sont conservées ici.|Imeshindwa kuhifadhi. Majibu yako bado yapo hapa.
 Overview|Incamake|Vue d’ensemble|Muhtasari
-Ask Simeon|Baza Simeon|Demander à Simeon|Uliza Simeon
+Ask S|Baza S|Demander à S|Uliza S
 Home|Ahabanza|Accueil|Mwanzo
 Edit|Hindura|Modifier|Hariri
 View details|Reba ibisobanuro|Voir les détails|Angalia maelezo
 Workspace|Aho ukorera|Espace de travail|Eneo la kazi
 Workspace navigation|Kuyobora aho ukorera|Navigation de l’espace de travail|Urambazaji wa eneo la kazi
 Your workspace, at a glance|Incamake y’aho ukorera|Votre espace en un coup d’œil|Eneo lako la kazi kwa muhtasari
-Choose a task. Simeon is here to help you along the way.|Hitamo icyo gukora. Simeon aragufasha.|Choisissez une tâche. Simeon vous accompagne.|Chagua kazi. Simeon yuko hapa kukusaidia.
+Choose a task. S is here to help you along the way.|Hitamo icyo gukora. S aragufasha.|Choisissez une tâche. S vous accompagne.|Chagua kazi. S yuko hapa kukusaidia.
 Maintenance Help|Ubufasha mu gusana|Aide à la maintenance|Msaada wa matengenezo
 Spare-Part Help|Ubufasha ku bice bisimbura|Aide pour les pièces détachées|Msaada wa vipuri
 Maintenance & spare-part help|Ubufasha mu gusana no ku bice bisimbura|Aide maintenance et pièces|Msaada wa matengenezo na vipuri
@@ -228,11 +250,11 @@ Items for sale|Ibicuruzwa|Articles à vendre|Bidhaa za kuuza
 Requests & marketplace|Ubusabe n’isoko|Demandes et marché|Maombi na soko
 My account|Konti yanjye|Mon compte|Akaunti yangu
 Other items|Ibindi bicuruzwa|Autres articles|Bidhaa nyingine
-Find available items and get information from Simeon.|Shaka ibicuruzwa bihari kandi ubaze Simeon.|Trouvez les articles disponibles avec Simeon.|Tafuta bidhaa zinazopatikana kwa msaada wa Simeon.
-Record spare parts with Simeon.|Bika ibice bisimbura hamwe na Simeon.|Enregistrez les pièces avec Simeon.|Rekodi vipuri pamoja na Simeon.
+Find available items and get information from S.|Shaka ibicuruzwa bihari kandi ubaze S.|Trouvez les articles disponibles avec S.|Tafuta bidhaa zinazopatikana kwa msaada wa S.
+Record spare parts with S.|Bika ibice bisimbura hamwe na S.|Enregistrez les pièces avec S.|Rekodi vipuri pamoja na S.
 Manage equipment, prices and posted items.|Cunga ibikoresho, ibiciro n’ibyashyizwe ku isoko.|Gérez les équipements, prix et annonces.|Simamia vifaa, bei na matangazo.
 Browse posted products and follow your requests.|Reba ibicuruzwa byashyizwe ku isoko n’ubusabe bwawe.|Consultez les annonces et suivez vos demandes.|Angalia bidhaa zilizotangazwa na fuatilia maombi yako.
-Record maintenance work with Simeon.|Andika ibikorwa byo gusana hamwe na Simeon.|Enregistrez les interventions avec Simeon.|Rekodi matengenezo pamoja na Simeon.
+Record maintenance work with S.|Andika ibikorwa byo gusana hamwe na S.|Enregistrez les interventions avec S.|Rekodi matengenezo pamoja na S.
 Save a spare part and its asking price.|Bika igice gisimbura n’igiciro cyacyo.|Enregistrez une pièce et son prix.|Hifadhi kipuri na bei yake.
 Find available products and inventory information.|Shaka ibicuruzwa n’amakuru y’ububiko.|Trouvez les produits et les informations de stock.|Tafuta bidhaa na taarifa za akiba.
 Find maintenance knowledge from successful job cards.|Shaka ubumenyi mu mafishi y’isanwa ryagenze neza.|Consultez les connaissances issues des interventions réussies.|Tafuta maarifa kutoka rekodi za matengenezo yaliyofaulu.
@@ -241,12 +263,12 @@ Browse products and follow requests.|Reba ibicuruzwa n’ubusabe.|Parcourez les 
 Medical consumables|Ibikoresho by’ubuvuzi bikoreshwa bikarangira|Consommables médicaux|Vifaa tiba vinavyotumika na kuisha
 Biomedical equipment|Ibikoresho by’ubuvuzi|Équipements biomédicaux|Vifaa vya biomedikali
 Pharmacy|Farumasi|Pharmacie|Famasi
-Simeon · Medical store|Simeon · Ububiko bw’ubuvuzi|Simeon · Magasin médical|Simeon · Duka la vifaa tiba
+S · Medical store|S · Ububiko bw’ubuvuzi|S · Magasin médical|S · Duka la vifaa tiba
 Medical store navigation|Kuyobora ububiko bw’ubuvuzi|Navigation du magasin médical|Urambazaji wa duka la vifaa tiba
 Medical inventory workspace|Aho ucungira ububiko bw’ubuvuzi|Gestion du stock médical|Usimamizi wa akiba ya vifaa tiba
 Your store, at a glance|Incamake y’ububiko bwawe|Votre magasin en un coup d’œil|Duka lako kwa muhtasari
 What would you like to record today?|Urashaka kubika iki uyu munsi?|Que souhaitez-vous enregistrer aujourd’hui ?|Ungependa kurekodi nini leo?
-Choose a department. Simeon will guide you through the right questions for that stock.|Hitamo icyiciro. Simeon arakubaza ibibazo bijyanye n’ibyo ubika.|Choisissez un rayon. Simeon posera les questions adaptées à ce stock.|Chagua idara. Simeon atakuongoza kwa maswali yanayofaa akiba hiyo.
+Choose a department. S will guide you through the right questions for that stock.|Hitamo icyiciro. S arakubaza ibibazo bijyanye n’ibyo ubika.|Choisissez un rayon. S posera les questions adaptées à ce stock.|Chagua idara. S atakuongoza kwa maswali yanayofaa akiba hiyo.
 Stored products|Ibicuruzwa bibitswe|Produits en stock|Bidhaa zilizohifadhiwa
 Posted products|Ibicuruzwa byatangajwe|Produits publiés|Bidhaa zilizotangazwa
 Stock alerts|Impuruza z’ububiko|Alertes de stock|Tahadhari za akiba
@@ -258,8 +280,8 @@ No expiry or reorder alerts in your recorded stock.|Nta mpuruza yo kurangira cya
 Showing 8 of|Herekanwa 8 muri|Affichage de 8 sur|Inaonyesha 8 kati ya
 alerts. Review the inventory sections for more.|mpuruza. Reba ibyiciro by’ububiko kugira ngo ubone ibindi.|alertes. Consultez les rayons pour en savoir plus.|tahadhari. Angalia sehemu za akiba kwa zaidi.
 Your inventory assistant|Umufasha wawe mu bubiko|Votre assistant de stock|Msaidizi wako wa akiba
-Ask Simeon about stored products, prices, quantities, or available medical supplies.|Baza Simeon ibicuruzwa bibitswe, ibiciro, ingano cyangwa ibikoresho bihari.|Interrogez Simeon sur les produits, prix, quantités ou fournitures disponibles.|Uliza Simeon kuhusu bidhaa, bei, kiasi au vifaa tiba vinavyopatikana.
-Ask Simeon →|Baza Simeon →|Demander à Simeon →|Uliza Simeon →
+Ask S about stored products, prices, quantities, or available medical supplies.|Baza S ibicuruzwa bibitswe, ibiciro, ingano cyangwa ibikoresho bihari.|Interrogez S sur les produits, prix, quantités ou fournitures disponibles.|Uliza S kuhusu bidhaa, bei, kiasi au vifaa tiba vinavyopatikana.
+Ask S →|Baza S →|Demander à S →|Uliza S →
 Products appear to clients after you post them. Review stock details before posting.|Abakiriya babona ibicuruzwa umaze kubitangaza. Banza ugenzure amakuru.|Les clients voient les produits après publication. Vérifiez les détails avant de publier.|Wateja huona bidhaa baada ya kuzitangaza. Kagua taarifa kwanza.
 Expired|Igihe cyararenze|Périmé|Muda umeisha
 Expires within 30 days|Birarangira mu minsi 30|Expire sous 30 jours|Inaisha ndani ya siku 30

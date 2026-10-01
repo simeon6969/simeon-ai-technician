@@ -24,7 +24,7 @@ from backend.routes.admin_manage import router as admin_manage_router
 from backend.routes.delivery import router as delivery_router
 
 
-app = FastAPI(title="Simeon API")
+app = FastAPI(title="S API")
 
 
 ALLOWED_ORIGINS = os.getenv(
@@ -95,7 +95,7 @@ def create_missing_tables():
 @app.get("/")
 def root():
     return {
-        "message": "Simeon — Intelligent Biomedical Technician Friend",
+        "message": "S — Intelligent Biomedical Technician Friend",
         "status": "online"
     }
 
@@ -136,3 +136,17 @@ app.include_router(branding_router)
 
 from backend.routes.location import router as location_router
 app.include_router(location_router)
+
+from backend.routes.job_forms import router as job_forms_router
+app.include_router(job_forms_router)
+
+@app.on_event('startup')
+def start_google_sheet_sync():
+    from backend.sheet_sync import start_worker
+    from backend.database import SessionLocal
+    start_worker(SessionLocal)
+
+@app.on_event('shutdown')
+def stop_google_sheet_sync():
+    from backend.sheet_sync import stop_worker
+    stop_worker()

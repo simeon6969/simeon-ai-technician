@@ -57,6 +57,9 @@ def create_job_card(
     )
 
     db.add(new_job_card)
+    db.flush()
+    from backend.job_forms import record_submission
+    record_submission(db, new_job_card, job_card_data)
     db.commit()
     db.refresh(new_job_card)
 
@@ -193,6 +196,8 @@ def update_job_card(
     job_card.successful = job_card_data.successful
     job_card.updated_at = datetime.now()
 
+    from backend.job_forms import refresh_submission
+    refresh_submission(db, job_card)
     db.commit()
     db.refresh(job_card)
 
@@ -284,6 +289,8 @@ def validate_job_card(
     )
 
     db.add(knowledge)
+    from backend.job_forms import refresh_submission
+    refresh_submission(db, job_card)
     db.commit()
     db.refresh(job_card)
     db.refresh(knowledge)

@@ -468,3 +468,9 @@ export async function accountRequest(path, method = 'GET', data) {
 export function listingPhotoUrl(item, original = false) {
   return `${API_BASE_URL}/sale-items/public-photo/${item.item_type}/${item.item_id}?original=${original}`
 }
+
+export async function getJobCardForm(signal) {
+  const response = await trackedFetch(`${API_BASE_URL}/job-card-form`, { headers: getAuthHeaders(), signal })
+  if (!response.ok) throw new Error('Unable to load job-card questions')
+  return response.json()
+}

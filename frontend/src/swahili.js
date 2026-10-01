@@ -122,7 +122,7 @@ Description:|Maelezo:
 Requester:|Mwombaji:
 Contact:|Mawasiliano:
 Notes:|Maelezo ya ziada:
-Simeon Admin|Usimamizi wa Simeon
+S Admin|Usimamizi wa S
 Governance and technical knowledge control|Usimamizi na udhibiti wa maarifa ya kiufundi
 Logout|Ondoka
 Admin Dashboard|Dashibodi ya msimamizi
@@ -136,7 +136,7 @@ Password|Nenosiri
 Phone (optional)|Simu (si lazima)
 Intelligent Technician Friend|Rafiki mwerevu wa fundi
 Technician|Mhandisi au fundi
-Welcome to Simeon|Karibu Simeon
+Welcome to S|Karibu S
 What would you like to do today?|Ungependa kufanya nini leo?
 Store a Job Card or Spare Part|Hifadhi kadi ya kazi au kipuri
 Save your maintenance experience, job cards, or spare-part information to help other technicians.|Hifadhi uzoefu wako wa matengenezo, kadi za kazi au taarifa za vipuri ili kuwasaidia mafundi wengine.
@@ -145,7 +145,7 @@ Record a maintenance activity, diagnosis, and solution.|Rekodi shughuli ya maten
 🔩 Spare Part|🔩 Kipuri
 Store information about an available spare part.|Hifadhi taarifa kuhusu kipuri kinachopatikana.
 Get Maintenance or Spare-Part Help|Pata msaada wa matengenezo au vipuri
-Ask Simeon about equipment problems, maintenance procedures, or spare parts.|Muulize Simeon kuhusu matatizo ya vifaa, taratibu za matengenezo au vipuri.
+Ask S about equipment problems, maintenance procedures, or spare parts.|Muulize S kuhusu matatizo ya vifaa, taratibu za matengenezo au vipuri.
 🔧 Maintenance Help|🔧 Msaada wa matengenezo
 Find reliable maintenance knowledge from successful job cards.|Pata maarifa ya kuaminika ya matengenezo kutoka kwa kadi za kazi zilizofanikiwa.
 🔩 Spare-Part Help|🔩 Msaada wa vipuri
@@ -176,7 +176,7 @@ Diagnosis|Uchunguzi
 Solution / Repair Performed|Suluhisho / Ukarabati uliofanywa
 Parts Used|Vipuri vilivyotumika
 Job card photo (optional)|Picha ya kadi ya kazi (si lazima)
-I confirm the maintenance was completed successfully. This will validate the job card and add it to Simeon's trusted technical knowledge.|Ninathibitisha kuwa matengenezo yamekamilika kwa mafanikio. Hii itathibitisha kadi ya kazi na kuiongeza kwenye maarifa ya kiufundi yanayoaminika ya Simeon.
+I confirm the maintenance was completed successfully. This will validate the job card and add it to S's trusted technical knowledge.|Ninathibitisha kuwa matengenezo yamekamilika kwa mafanikio. Hii itathibitisha kadi ya kazi na kuiongeza kwenye maarifa ya kiufundi yanayoaminika ya S.
 Cancel|Ghairi
 Spare Part|Kipuri
 Store technical information about an available spare part.|Hifadhi taarifa za kiufundi kuhusu kipuri kinachopatikana.
@@ -189,7 +189,7 @@ Limited|Vichache vilivyobaki
 Unavailable|Hakipatikani
 Unknown|Haijulikani
 Spare-part photo (optional)|Picha ya kipuri (si lazima)
-Ask Simeon about a equipment problem.|Muulize Simeon kuhusu tatizo la kifaa.
+Ask S about a equipment problem.|Muulize S kuhusu tatizo la kifaa.
 Search for a spare part stored by another technician.|Tafuta kipuri kilichohifadhiwa na fundi mwingine.
 My requests|Maombi yangu
 Loading requests...|Inapakia maombi...
@@ -204,7 +204,7 @@ Unable to read an attachment.|Imeshindwa kusoma kiambatisho.
 Maintenance successful|Matengenezo yamefanikiwa
 Pending confirmation|Inasubiri uthibitisho
 Not recorded|Haijarekodiwa
-Simeon Job Card|Kadi ya kazi ya Simeon
+S Job Card|Kadi ya kazi ya S
 Unable to load the admin dashboard.|Imeshindwa kupakia dashibodi ya msimamizi.
 Technicians|Mafundi
 Job Cards|Kadi za kazi
@@ -237,7 +237,7 @@ Login|Ingia
 Already have an account? Log in|Tayari una akaunti? Ingia
 Need an account? Create one|Unahitaji akaunti? Fungua moja
 Job card|Kadi ya kazi
-Delete this validated job card and remove its trusted Simeon knowledge?|Ufute kadi hii ya kazi iliyothibitishwa na maarifa yake ya kuaminika ya Simeon?
+Delete this validated job card and remove its trusted S knowledge?|Ufute kadi hii ya kazi iliyothibitishwa na maarifa yake ya kuaminika ya S?
 Delete this job card?|Ufute kadi hii ya kazi?
 Unable to delete the job card.|Imeshindwa kufuta kadi ya kazi.
 Deleting...|Inafuta...
@@ -258,8 +258,8 @@ Describe the repair or maintenance performed|Eleza ukarabati au matengenezo yali
 Example: Sample probe tubing|Mfano: Mirija ya kichunguzi cha sampuli
 Job card preview|Hakiki ya kadi ya kazi
 Equipment, manufacturer, and model are required.|Kifaa, mtengenezaji na modeli vinahitajika.
-Job card validated and added to Simeon knowledge.|Kadi ya kazi imethibitishwa na kuongezwa kwenye maarifa ya Simeon.
-Job card saved. Confirm success to add it to Simeon knowledge.|Kadi ya kazi imehifadhiwa. Thibitisha mafanikio ili kuiongeza kwenye maarifa ya Simeon.
+Job card validated and added to S knowledge.|Kadi ya kazi imethibitishwa na kuongezwa kwenye maarifa ya S.
+Job card saved. Confirm success to add it to S knowledge.|Kadi ya kazi imehifadhiwa. Thibitisha mafanikio ili kuiongeza kwenye maarifa ya S.
 Unable to save the job card.|Imeshindwa kuhifadhi kadi ya kazi.
 Saving...|Inahifadhi...
 Save Job Card|Hifadhi kadi ya kazi
@@ -272,9 +272,9 @@ Spare part saved successfully.|Kipuri kimehifadhiwa kwa mafanikio.
 Unable to save the spare part.|Imeshindwa kuhifadhi kipuri.
 Save Spare Part|Hifadhi kipuri
 Example: Humacount 30TS is giving a high blank error. What should I check?|Mfano: Humacount 30TS inaonyesha hitilafu ya high blank. Nikague nini?
-Simeon could not process the request right now.|Simeon imeshindwa kushughulikia ombi kwa sasa.
+S could not process the request right now.|S imeshindwa kushughulikia ombi kwa sasa.
 Thinking...|Inafikiri...
-Ask Simeon|Muulize Simeon
+Ask S|Muulize S
 Example: Humacount 30TS sample probe|Mfano: Kichunguzi cha sampuli cha Humacount 30TS
 Unable to search spare parts.|Imeshindwa kutafuta vipuri.
 Searching...|Inatafuta...

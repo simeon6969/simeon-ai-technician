@@ -31,7 +31,7 @@ test('literal UI translation calls have entries for all three translated languag
     const source = readFileSync(new URL(file, directory), 'utf8')
     for (const match of source.matchAll(/\bt\((['"])(.*?)\1\)/g)) {
       const key = match[2]
-      if (!key || key === '?' || key === 'Simeon ·') continue
+      if (!key || key === '?' || key === 'S ·') continue
       for (const language of languages) assert.ok(workspaceTranslations[key]?.[language] || translations[key]?.[language], `${file}: ${language}: ${key}`)
     }
   }

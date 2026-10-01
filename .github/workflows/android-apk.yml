@@ -70,11 +70,11 @@ jobs:
         run: |
           TAG="android-test-${GITHUB_RUN_NUMBER}"
           cat > release-notes.md <<'NOTES'
-          Android test version of Simeon. Download Simeon-test.apk on your Android phone, open it and allow installation from that source when prompted.
+          Android test version of S. Download Simeon-test.apk on your Android phone, open it and allow installation from that source when prompted.
 
-          This connects to the live Simeon API: use your existing account. Internet is required. Any records you create are real records.
+          This connects to the live S API: use your existing account. Internet is required. Any records you create are real records.
 
           This is a debug-signed test APK, not a Google Play production release. Device testing is still required. A later production version may require uninstalling this test app first.
           NOTES
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "Simeon Android ${ANDROID_VERSION_NAME}" --notes-file release-notes.md
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --title "S Android ${ANDROID_VERSION_NAME}" --notes-file release-notes.md
           gh release upload "$TAG" Simeon-test.apk Simeon-test.apk.sha256 --clobber

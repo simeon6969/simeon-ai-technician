@@ -1,0 +1,38 @@
+const assert = require('node:assert/strict')
+const { chromium } = require('../../desktop/node_modules/playwright-core')
+;(async () => {
+ const browser = await chromium.launch({ channel: 'msedge', headless: true })
+ try {
+  const { jobFields } = await import('../src/conversationFields.js')
+  let role = 'admin', form = { version: 0, questions: jobFields.map(q => [q[0], q[1], q[2], !!q[3], q[4] || 'text']) }
+  const page = await browser.newPage()
+  await page.addInitScript(() => { localStorage.setItem('access_token', 'mock'); localStorage.setItem('user_id', '1') })
+  await page.route('**/*', route => {
+   const u = new URL(route.request().url()); if (u.port === '5199') return route.continue()
+   const json = body => route.fulfill({ json: body })
+   if (u.pathname === '/users/me') return json({ user_id: 1, full_name: 'User', role, account_field: 'medical', subscription: { plan: 'free', amount: '0', currency: 'RWF', period: 'yearly', payment_status: 'not_required' } })
+   if (u.pathname === '/job-card-form') return json(form)
+   if (u.pathname === '/admin/job-card-form') { const data = route.request().postDataJSON(); form = { version: data.version + 1, questions: data.questions.map(q => [q.key, q.label, q.help, q.required, q.kind]) }; return json(form) }
+   if (u.pathname === '/admin/job-card-sheet') return json({ spreadsheet_url: 'https://docs.google.com/spreadsheets/d/1UeIoc3SI8sU074vUiSW0ah-go-UuD9bc5bDsHBTbcyU/edit', enabled: true, credentials_configured: false, pending: 2, synced: 0, errors: [] })
+   if (['/admin/payment-reviews', '/my/commission-approvals', '/sale-items/public'].includes(u.pathname)) return json({ total: 0, items: [] })
+   return json([])
+  })
+  await page.goto('http://127.0.0.1:5199/#app')
+  await page.getByRole('navigation').getByRole('button', { name: /Job cards & Google Sheets/ }).click()
+  await page.getByText('Google credentials are not configured.', { exact: false }).waitFor()
+  assert.match(await page.getByRole('link', { name: 'Open job-card spreadsheet' }).getAttribute('href'), /1UeIoc3SI8sU074/)
+  await page.getByLabel('Question / column heading', { exact: true }).first().fill('Equipment being serviced')
+  await page.getByRole('button', { name: 'Add question', exact: true }).click()
+  await page.getByLabel('Question / column heading', { exact: true }).last().fill('Room number')
+  await page.getByRole('button', { name: 'Publish questions', exact: true }).click()
+  await page.getByText('Changes saved', { exact: true }).waitFor()
+  assert.equal(form.version, 1); assert.equal(form.questions.length, 11)
+  role = 'technician'; await page.reload()
+  await page.getByRole('button', { name: /Digital Job Card/ }).click()
+  await page.getByRole('textbox', { name: 'Equipment being serviced', exact: true }).waitFor()
+  await page.getByRole('textbox', { name: 'Equipment being serviced', exact: true }).fill('Pump')
+  await page.getByRole('button', { name: 'Send reply', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Manufacturer', exact: true }).waitFor()
+  console.log('PASS: admin sheet link, question editing, custom question publishing, and technician dynamic interview')
+ } finally { await browser.close() }
+})().catch(error => { console.error(error); process.exitCode = 1 })
