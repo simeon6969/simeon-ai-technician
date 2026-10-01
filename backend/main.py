@@ -57,6 +57,8 @@ app.include_router(admin_manage_router)
 @app.on_event("startup")
 def create_missing_tables():
     Base.metadata.create_all(bind=engine)
+    from backend.payment_review_migration import backfill_payment_reviews
+    backfill_payment_reviews(engine)
     if engine.dialect.name == "postgresql":
         with engine.begin() as connection:
             connection.exec_driver_sql("ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS medical_category VARCHAR(30)")
@@ -125,3 +127,12 @@ app.include_router(subscriptions_router)
 
 from backend.routes.inventory_chat import router as inventory_chat_router
 app.include_router(inventory_chat_router)
+
+from backend.routes.commissions import router as commissions_router
+app.include_router(commissions_router)
+
+from backend.routes.branding import router as branding_router
+app.include_router(branding_router)
+
+from backend.routes.location import router as location_router
+app.include_router(location_router)

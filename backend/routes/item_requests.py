@@ -10,6 +10,7 @@ from backend.routes.spare_parts import get_db
 from backend.models import User, SparePart, SaleItem
 from backend.models.item_requests import ItemRequest
 from backend.permissions import check_role
+from backend.models.commissions import CommissionAgreement
 
 router = APIRouter(prefix='/item-requests', tags=['Item requests'])
 
@@ -68,10 +69,13 @@ def list_requests(user_id: int = Depends(get_current_user_id), db: Session = Dep
     results = []
     for row in query.order_by(ItemRequest.created_at.desc()).all():
         item = db.get(SaleItem, row.sale_item_id) if row.sale_item_id else db.get(SparePart, row.spare_part_id)
+        commission = db.get(CommissionAgreement, row.request_id)
+        unlocked = bool(commission and commission.status == 'approved' and row.requester_id == user_id)
         requester, seller = db.get(User, row.requester_id), db.get(User, row.seller_id)
         results.append({'request_id': row.request_id, 'item_name': (item.name if row.sale_item_id else item.part_name) if item else 'Deleted item',
             'requester_id': row.requester_id, 'requester_name': requester.full_name, 'requester_phone': requester.phone,
-            **({'seller_id': row.seller_id, 'seller_name': seller.full_name, 'seller_phone': seller.phone} if account.role == 'admin' else {}),
+            **({'seller_id': row.seller_id, 'seller_name': seller.full_name, 'seller_phone': seller.phone, 'seller_email': seller.email} if account.role == 'admin' or unlocked else {}),
+            'commission_status': commission.status if commission else 'not_started',
             'account_field': seller.account_field, 'notes': row.notes, 'status': row.status,
             'created_at': row.created_at, 'can_manage': account.role == 'admin' or row.seller_id == user_id})
     return results

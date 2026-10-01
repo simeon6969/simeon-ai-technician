@@ -24,6 +24,7 @@ import HomePage from './HomePage'
 import { homeCopy } from './homeCopy'
 import { useEffect, useState } from 'react'
 import {
+  accountRequest,
   validateJobCard,
   getMyJobCards,
   updateJobCard,
@@ -43,7 +44,16 @@ import { jsPDF } from 'jspdf'
 import { exportPdf } from './exportPdf'
 
 async function downloadJobCardPdf(card) {
+  const branding = await accountRequest('/users/me/branding')
   const pdf = new jsPDF()
+  let headingY = 20
+  if (branding.image_data) {
+    const properties = pdf.getImageProperties(branding.image_data)
+    const scale = Math.min(40 / properties.width, 30 / properties.height)
+    const width = properties.width * scale, height = properties.height * scale
+    pdf.addImage(branding.image_data, 'PNG', 20, 14, width, height)
+    headingY = 14 + height + 10
+  }
   const lines = [
     `Job Card #${card.job_card_id}`,
     `Submitted by: ${card.submitter_name || 'Not recorded'}`,
@@ -62,10 +72,10 @@ async function downloadJobCardPdf(card) {
 
   pdf.setFontSize(16)
   const heading = pdf.splitTextToSize(card.account_name || 'Simeon Job Card', 170)
-  pdf.text(heading, 20, 20)
+  pdf.text(heading, 20, headingY)
   pdf.setFontSize(11)
 
-  let y = 24 + heading.length * 7
+  let y = headingY + 4 + heading.length * 7
   for (const line of lines) {
     const wrapped = pdf.splitTextToSize(line, 170)
     pdf.text(wrapped, 20, y)
@@ -112,6 +122,7 @@ const [userRole, setUserRole] = useState(
 )
 const [email, setEmail] = useState('')
 const [password, setPassword] = useState('')
+const [showPassword, setShowPassword] = useState(false)
 const [fullName, setFullName] = useState('')
 const [phone, setPhone] = useState('')
 const [isRegistering, setIsRegistering] = useState(false)
@@ -324,15 +335,29 @@ if (!loggedIn) {
         </div>
 
         <div className="mt-4">
-          <label className="mb-2 block text-sm font-medium text-slate-700"> {t("Password")} </label>
+          <label htmlFor="auth-password" className="mb-2 block text-sm font-medium text-slate-700"> {t("Password")} </label>
 
+          <div className="relative">
           <input
-            type="password"
+            id="auth-password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete={isRegistering ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t("Enter your password")}
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-slate-500"
+            className="w-full rounded-xl border border-slate-300 py-3 pl-4 pr-14 outline-none focus:border-slate-500"
           />
+          <button type="button" aria-label={t(showPassword ? 'Hide password' : 'Show password')}
+            title={t(showPassword ? 'Hide password' : 'Show password')} aria-controls="auth-password"
+            onClick={() => setShowPassword(value => !value)}
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-slate-600 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-teal-600">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+              <circle cx="12" cy="12" r="3" />
+              {showPassword && <path d="m3 3 18 18" />}
+            </svg>
+          </button>
+          </div>
         </div>
 
         {isRegistering && (

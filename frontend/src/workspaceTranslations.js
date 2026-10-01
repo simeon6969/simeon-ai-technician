@@ -1,5 +1,95 @@
 // English keys remain stable; stored enum values are never translated.
 const rows = `
+Account location|Aho konti ibarizwa|Localisation du compte|Mahali pa akaunti
+Location or address|Aho ubarizwa cyangwa aderesi|Localisation ou adresse|Mahali au anwani
+Enter your address or business location, including city, district and street or landmark.|Andika aderesi yawe cyangwa aho ukorera, harimo umujyi, akarere n’umuhanda cyangwa ahantu hazwi hafi.|Indiquez votre adresse ou celle de votre entreprise : ville, district, rue ou point de repère.|Weka anwani yako au mahali pa biashara, ikiwemo mji, wilaya, barabara au alama ya karibu.
+Leave blank and save to remove your location.|Siga ubusa ubike kugira ngo ukureho aho ubarizwa.|Laissez vide et enregistrez pour supprimer la localisation.|Acha wazi na uhifadhi ili kuondoa mahali ulipo.
+Profile picture or company logo|Ifoto ya konti cyangwa ikirango cy’ikigo|Photo de profil ou logo de l’entreprise|Picha ya wasifu au nembo ya kampuni
+Your image appears above the heading on downloaded job cards.|Ifoto yawe igaragara hejuru y’umutwe w’amafishi y’akazi ukuramo.|Votre image apparaît au-dessus du titre des fiches de travail téléchargées.|Picha yako inaonekana juu ya kichwa cha kadi za kazi zinazopakuliwa.
+Upload image|Ohereza ifoto|Téléverser une image|Pakia picha
+Remove image|Kuraho ifoto|Supprimer l’image|Ondoa picha
+Choose a valid JPEG, PNG, or WebP image up to 5 MB.|Hitamo ifoto ya JPEG, PNG cyangwa WebP itarengeje MB 5.|Choisissez une image JPEG, PNG ou WebP valide de 5 Mo maximum.|Chagua picha halali ya JPEG, PNG au WebP isiyozidi MB 5.
+Show password|Erekana ijambo ry’ibanga|Afficher le mot de passe|Onyesha nenosiri
+Hide password|Hisha ijambo ry’ibanga|Masquer le mot de passe|Ficha nenosiri
+Close|Funga|Fermer|Funga
+Approval notifications|Imenyesha ry’ibyemejwe|Notifications d’approbation|Arifa za idhini
+Refresh approvals|Vugurura ibyemejwe|Actualiser les approbations|Sasisha idhini
+Admin approved your requests. Seller contacts are unlocked.|Umuyobozi yemeje ubusabe bwawe. Amakuru y’ugurisha yafunguwe.|L’administrateur a approuvé vos demandes. Les coordonnées sont débloquées.|Msimamizi ameidhinisha maombi yako. Mawasiliano ya muuzaji yamefunguliwa.
+Approvals will appear here after admin confirms payment.|Ibyemejwe bizagaragara hano umuyobozi amaze kwemeza ubwishyu.|Les approbations apparaîtront ici après confirmation du paiement.|Idhini itaonekana hapa baada ya msimamizi kuthibitisha malipo.
+Unable to refresh approvals. Please try again.|Kuvugurura ibyemejwe byanze. Ongera ugerageze.|Impossible d’actualiser les approbations. Réessayez.|Imeshindwa kusasisha idhini. Jaribu tena.
+View unlocked seller contacts|Reba amakuru y’ugurisha yafunguwe|Voir les coordonnées débloquées|Angalia mawasiliano yaliyofunguliwa
+Refresh requests|Vugurura ubusabe|Actualiser les demandes|Sasisha maombi
+Payment notifications|Imenyesha ry’ubwishyu|Notifications de paiement|Arifa za malipo
+Payments awaiting review|Ubwishyu butegereje kugenzurwa|Paiements à vérifier|Malipo yanayosubiri ukaguzi
+Refresh payments|Vugurura ubwishyu|Actualiser les paiements|Sasisha malipo
+Oldest submissions first. Opening a notification does not clear it.|Ubwishyu bwa kera buza mbere. Gufungura imenyesha ntibirivanaho.|Les soumissions les plus anciennes apparaissent en premier. Ouvrir une notification ne l’efface pas.|Malipo ya zamani huonekana kwanza. Kufungua arifa hakuiondoi.
+Refreshes every 30 seconds while this dashboard is visible.|Bivugururwa buri masegonda 30 igihe iyi paji igaragara.|Actualisation toutes les 30 secondes lorsque ce tableau de bord est visible.|Inasasishwa kila sekunde 30 dashibodi hii inapoonekana.
+Unable to refresh payment notifications. Previously loaded reminders are kept.|Kuvugurura imenyesha ry’ubwishyu byanze. Ibyari byafunguwe biragumaho.|Impossible d’actualiser les notifications. Les rappels déjà chargés sont conservés.|Imeshindwa kusasisha arifa za malipo. Vikumbusho vilivyopakiwa vinahifadhiwa.
+No payments awaiting review|Nta bwishyu butegereje kugenzurwa|Aucun paiement à vérifier|Hakuna malipo yanayosubiri ukaguzi
+Submitted for review|Byoherejwe kugenzurwa|Soumis pour vérification|Imetumwa kwa ukaguzi
+Review this payment|Suzuma ubu bwishyu|Vérifier ce paiement|Kagua malipo haya
+Pending reminders stay visible until approved or returned for correction.|Imenyesha rigumaho kugeza byemejwe cyangwa bisubijwe gukosorwa.|Les rappels restent visibles jusqu’à approbation ou renvoi pour correction.|Vikumbusho vinabaki hadi kuidhinishwa au kurudishwa kwa marekebisho.
+Simeon has reached the lowest permitted commission|Simeon yageze kuri komisiyo ntoya yemerewe|Simeon a atteint la commission minimale autorisée|Simeon amefikia kamisheni ya chini inayoruhusiwa
+Enter a counteroffer below the current percentage|Andika ijanisha riri munsi y’irisanzwe|Saisissez un taux inférieur au taux actuel|Weka asilimia iliyo chini ya ya sasa
+The negotiation changed. Refresh before continuing.|Ibiganiro byahindutse. Vugurura mbere yo gukomeza.|La négociation a changé. Actualisez avant de continuer.|Mazungumzo yamebadilika. Sasisha kabla ya kuendelea.
+Only the selected payer can negotiate or submit payment|Uwatoranyijwe kwishyura ni we wenyine uganira cyangwa wohereza ubwishyu|Seul le payeur désigné peut négocier ou soumettre un paiement|Mlipaji aliyechaguliwa pekee anaweza kujadiliana au kutuma malipo
+Only admin can confirm payment|Umuyobozi ni we wenyine wemeza ubwishyu|Seul l’administrateur peut confirmer le paiement|Msimamizi pekee anaweza kuthibitisha malipo
+Payment must be submitted before review|Ubwishyu bugomba koherezwa mbere yo kugenzurwa|Le paiement doit être soumis avant vérification|Malipo lazima yatumwe kabla ya ukaguzi
+Explain why the payment needs correction|Sobanura impamvu ubwishyu bugomba gukosorwa|Expliquez pourquoi le paiement doit être corrigé|Eleza kwa nini malipo yanahitaji marekebisho
+This offer is already accepted|Iki cyifuzo cyamaze kwemerwa|Cette offre est déjà acceptée|Ofa hii tayari imekubaliwa
+Accept the offer and provide a payment reference first|Banza wemere icyifuzo utange nimero y’ubwishyu|Acceptez l’offre et fournissez une référence de paiement|Kubali ofa na utoe kumbukumbu ya malipo kwanza
+Start the negotiation first|Banza utangire ibiganiro|Commencez d’abord la négociation|Anza mazungumzo kwanza
+The item needs a listed price before negotiating a commission|Igicuruzwa kigomba kugira igiciro mbere yo kuganira kuri komisiyo|L’article doit avoir un prix avant la négociation de commission|Bidhaa inahitaji bei kabla ya kujadiliana kamisheni
+This item request is no longer available|Ubu busabe ntibukiboneka|Cette demande n’est plus disponible|Ombi hili halipatikani tena
+This request is private|Ubu busabe ni ibanga|Cette demande est privée|Ombi hili ni la faragha
+Commission settings|Igenamiterere rya komisiyo|Paramètres de commission|Mipangilio ya kamisheni
+Refresh negotiation|Vugurura ibiganiro|Actualiser la négociation|Sasisha mazungumzo
+Simeon: seller information|Simeon: amakuru y’ugurisha|Simeon : coordonnées du vendeur|Simeon: taarifa za muuzaji
+Seller contacts stay locked until admin confirms the commission payment.|Aho kubariza ugurisha haguma hafunze kugeza umuyobozi yemeje ubwishyu bwa komisiyo.|Les coordonnées restent masquées jusqu’à confirmation du paiement par l’administrateur.|Mawasiliano yanafichwa hadi msimamizi athibitishe malipo ya kamisheni.
+Commission negotiations are not configured by admin yet|Umuyobozi ntarashyiraho ibiganiro bya komisiyo|La négociation des commissions n’est pas encore activée|Msimamizi hajawezesha mazungumzo ya kamisheni
+Start negotiation|Tangira ibiganiro|Commencer la négociation|Anza mazungumzo
+Commission payer|Uwishyura komisiyo|Payeur de la commission|Mlipaji wa kamisheni
+Requesting client|Umukiriya wasabye|Client demandeur|Mteja anayeomba
+Listed price|Igiciro cyatangajwe|Prix affiché|Bei iliyotangazwa
+My commission offer|Komisiyo mbasaba|Ma proposition de commission|Pendekezo langu la kamisheni
+This fee is for access to seller information, separate from the item price.|Aya mafaranga ni ayo kubona amakuru y’ugurisha, atandukanye n’igiciro cy’igicuruzwa.|Ces frais donnent accès aux coordonnées du vendeur et sont distincts du prix de l’article.|Ada hii ni ya kupata taarifa za muuzaji, tofauti na bei ya bidhaa.
+Commission status|Uko komisiyo ihagaze|État de la commission|Hali ya kamisheni
+Waiting for the selected payer and admin payment confirmation.|Dutegereje uwatoranyijwe kwishyura n’icyemezo cy’umuyobozi.|En attente du payeur désigné et de la confirmation de l’administrateur.|Inasubiri mlipaji aliyechaguliwa na uthibitisho wa msimamizi.
+You can accept my offer or suggest a lower percentage. I can reduce it gradually within the approved limits.|Ushobora kwemera cyangwa gusaba ijanisha rito. Nshobora kurigabanya buhoro mu mbibi zemejwe.|Vous pouvez accepter ou proposer un taux inférieur. Je peux le réduire progressivement dans les limites autorisées.|Unaweza kukubali au kupendekeza asilimia ndogo. Ninaweza kupunguza hatua kwa hatua ndani ya mipaka iliyoruhusiwa.
+Your counteroffer (%)|Ijanisha usaba (%)|Votre contre-proposition (%)|Pendekezo lako (%)
+Negotiate|Ganira ku giciro|Négocier|Jadiliana
+Accept commission offer|Emera komisiyo|Accepter la commission|Kubali kamisheni
+Pay the agreed commission via MoMo to|Ishyura komisiyo mwumvikanye kuri MoMo|Payez la commission convenue par MoMo au|Lipa kamisheni iliyokubaliwa kupitia MoMo kwa
+Submitting a reference does not confirm payment. Admin verifies it manually.|Kohereza nimero y’ubwishyu si ukwemeza ubwishyu. Umuyobozi arabugenzura.|L’envoi d’une référence ne confirme pas le paiement. L’administrateur le vérifie manuellement.|Kutuma kumbukumbu hakuthibitishi malipo. Msimamizi atayakagua.
+MoMo transaction reference|Nimero y’ubwishyu bwa MoMo|Référence de transaction MoMo|Kumbukumbu ya muamala wa MoMo
+Submit payment for review|Ohereza ubwishyu bugenzurwe|Soumettre le paiement pour vérification|Tuma malipo yakaguliwe
+Admin review note|Icyitonderwa cy’umuyobozi|Note de vérification de l’administrateur|Maelezo ya ukaguzi wa msimamizi
+Minimum percentage|Ijanisha rito ntarengwa|Pourcentage minimum|Asilimia ya chini
+Reduction per round|Igabanywa kuri buri kiganiro|Réduction par tour|Punguzo kwa kila hatua
+Confirm payment is verified and unlock seller contacts for this client?|Emeza ko ubwishyu bwagenzuwe maze ufungurire umukiriya amakuru y’ugurisha?|Confirmer la vérification du paiement et débloquer les coordonnées pour ce client ?|Thibitisha malipo yamehakikiwa na fungua mawasiliano kwa mteja huyu?
+Confirm payment and unlock|Emeza ubwishyu ufungure amakuru|Confirmer le paiement et débloquer|Thibitisha malipo na fungua
+Return payment for correction|Subiza ubwishyu bukosorwe|Renvoyer pour correction|Rudisha malipo yasahihishwe
+Seller contacts unlocked|Amakuru y’ugurisha yafunguwe|Coordonnées du vendeur débloquées|Mawasiliano ya muuzaji yamefunguliwa
+Negotiation history|Amateka y’ibiganiro|Historique de négociation|Historia ya mazungumzo
+Changes apply to new negotiations. Existing offers keep their recorded terms.|Impinduka zireba ibiganiro bishya. Ibyatangiye bigumana amasezerano yabyo.|Les modifications concernent les nouvelles négociations. Les offres existantes conservent leurs conditions.|Mabadiliko yanahusu mazungumzo mapya. Ofa zilizopo zinabaki na masharti yake.
+Review payments in Item requests. Approval confirms all required payments and unlocks contacts for that client only.|Suzuma ubwishyu mu busabe bw’ibintu. Kwemeza byemeza ubwishyu bwose busabwa kandi bigafungurira amakuru uwo mukiriya gusa.|Vérifiez les paiements dans les demandes d’articles. L’approbation confirme tous les paiements requis et débloque les coordonnées pour ce client uniquement.|Kagua malipo kwenye maombi ya bidhaa. Idhini inathibitisha malipo yote yanayotakiwa na kufungua mawasiliano kwa mteja huyo tu.
+Load settings|Fungura igenamiterere|Charger les paramètres|Pakia mipangilio
+Enable commission negotiations|Emera ibiganiro bya komisiyo|Activer la négociation des commissions|Wezesha mazungumzo ya kamisheni
+Starting percentage|Ijanisha ritangirwaho|Pourcentage de départ|Asilimia ya kuanzia
+The reduction is measured in percentage points per round.|Igabanywa ripimwa mu ngingo z’ijanisha kuri buri kiganiro.|La réduction est exprimée en points de pourcentage par tour.|Punguzo hupimwa kwa pointi za asilimia kwa kila hatua.
+MoMo number|Nimero ya MoMo|Numéro MoMo|Nambari ya MoMo
+No commission payment is due. Admin approval is still required to unlock contacts.|Nta komisiyo igomba kwishyurwa. Umuyobozi aracyasabwa kwemeza kugira ngo amakuru afungurwe.|Aucune commission n’est due. L’approbation de l’administrateur reste nécessaire.|Hakuna kamisheni ya kulipa. Idhini ya msimamizi bado inahitajika.
+Not started|Ntibiratangira|Non commencée|Haijaanza
+Negotiating commission|Ibiganiro birakomeje|En négociation|Inajadiliwa
+Awaiting commission payment|Hategerejwe ubwishyu|En attente de paiement|Inasubiri malipo
+Awaiting admin review|Hategerejwe umuyobozi|En attente de vérification|Inasubiri ukaguzi
+Commission approved|Byemejwe|Approuvée|Imeidhinishwa
+Negotiation started|Ibiganiro byatangiye|Négociation commencée|Mazungumzo yameanza
+New offer from Simeon|Icyifuzo gishya cya Simeon|Nouvelle proposition de Simeon|Pendekezo jipya la Simeon
+Commission offer accepted|Icyifuzo cyemewe|Offre acceptée|Ofa imekubaliwa
+Payment submitted|Ubwishyu bwoherejwe|Paiement soumis|Malipo yametumwa
+Payment approved by admin|Umuyobozi yemeje|Approbation de l’administrateur|Msimamizi ameidhinisha
+Payment correction requested|Ubwishyu busabwe gukosorwa|Correction demandée|Marekebisho yameombwa
 Photo not available|Ifoto ntiboneka|Photo indisponible|Picha haipatikani
 Access will be blocked until admin confirms payment.|Kwinjira birahagarikwa kugeza umuyobozi yemeje ubwishyu.|L’accès sera bloqué jusqu’à confirmation du paiement par l’administrateur.|Ufikiaji utazuiwa hadi msimamizi athibitishe malipo.
 Confirm upgrade?|Emeza kuzamura ifatabuguzi?|Confirmer le changement d’offre ?|Unathibitisha kupandisha mpango?

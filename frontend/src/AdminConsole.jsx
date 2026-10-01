@@ -1,3 +1,7 @@
+import PaymentReviews from './PaymentReviews'
+import usePaymentReviews from './usePaymentReviews'
+import { commissionStatuses } from './commissionLabels'
+import CommissionPanel, { CommissionSettings } from './CommissionPanel'
 import UpgradeSubscription from './UpgradeSubscription'
 import { SubscriptionAdmin } from './Subscriptions'
 import { DeliverySettings } from './FastDelivery'
@@ -9,7 +13,7 @@ import DashboardLayout from './DashboardLayout'
 import AdminChat from './AdminChat'
 
 const sections = [
-  ['overview', 'Overview'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
+  ['overview', 'Overview'], ['account', 'My account'], ['payment-reviews', 'Payment notifications'], ['commissions', 'Commission settings'], ['subscriptions', 'Subscriptions'], ['delivery', 'Delivery contacts'], ['users', 'Accounts'], ['job-cards', 'Job Cards'],
   ['spare-parts', 'Spare Parts'], ['sale-items', 'Items for sale'], ['item-requests', 'Item requests'],
   ['spare-part-requests', 'Legacy requests'], ['knowledge', 'Knowledge'], ['assistant', 'Simeon'],
 ]
@@ -57,6 +61,8 @@ function Editor({ editing, onCancel, onSave, busy }) {
 export default function AdminConsole({ account, onHome, onLogout }) {
   const { t } = useLanguage()
   const [section, setSection] = useState('overview')
+  const [paymentOffset, setPaymentOffset] = useState(0)
+  const paymentQueue = usePaymentReviews(paymentOffset)
   const [data, setData] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -97,7 +103,12 @@ export default function AdminConsole({ account, onHome, onLogout }) {
   })
   const button = 'rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium disabled:opacity-50'
   function go(key) { setSection(key); setEditing(null); setSearch(''); setField(''); setRole('') }
-  return <DashboardLayout account={account} sections={sections} section={section} onNavigate={go} onHome={onHome} onLogout={onLogout}>
+  return <DashboardLayout account={account} sections={sections} badges={{ 'payment-reviews': paymentQueue.total }} section={section} onNavigate={go} onHome={onHome} onLogout={onLogout}>
+    <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+      <button className="font-semibold underline" onClick={() => { setPaymentOffset(0); go('payment-reviews') }}>{t('Payments awaiting review')}: {paymentQueue.total ?? '...'}</button>
+      <p role="status" className="mt-1 text-sm">{paymentQueue.error ? t('Unable to refresh payment notifications. Previously loaded reminders are kept.') : t('Pending reminders stay visible until approved or returned for correction.')}</p>
+    </div>
+    {section === 'payment-reviews' && <PaymentReviews queue={paymentQueue} offset={paymentOffset} onPage={setPaymentOffset} />}
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><p className="text-slate-600">{t('Manage every field, role and record from one workspace.')}</p><button disabled={loading || busy} onClick={load} className={`${button} bg-white`}>{loading && <Spinner />}{t('Refresh all')}</button></div>
         {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-red-700">{t(error)}</p>}{notice && <p role="status" className="mb-4 text-teal-800">{notice}</p>}
         {section === 'overview' && <>
@@ -106,6 +117,7 @@ export default function AdminConsole({ account, onHome, onLogout }) {
           <div className="mt-6 grid gap-4 md:grid-cols-2"><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account field')}</h3>{['medical', 'it', 'electrical', 'mechanical'].map(value => <button key={value} onClick={() => { go('users'); setField(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.account_field === value).length}</strong></button>)}</section><section className="rounded-2xl bg-white p-6"><h3 className="mb-4 text-xl font-semibold">{t('Account role')}</h3>{['technician', 'store', 'client'].map(value => <button key={value} onClick={() => { go('users'); setRole(value) }} className="flex w-full justify-between border-b py-3"><span>{t(value)}</span><strong>{users.filter(user => user.role === value).length}</strong></button>)}</section></div>
         </>}
         {section === 'assistant' && <AdminChat />}
+        {section === 'commissions' && <CommissionSettings />}
         {section === 'delivery' && <DeliverySettings />}
         {section === 'subscriptions' && <SubscriptionAdmin />}
         {ids[section] && <>
@@ -137,6 +149,7 @@ export default function AdminConsole({ account, onHome, onLogout }) {
                   if (window.confirm(`${title}\n\n${t(warning)}`)) action(`/admin/${section}/${id}`, 'DELETE')
                 }}>{t('Delete')}</button>}
               </div>}
+              {section === 'item-requests' && <><p className="mt-3 text-sm">{t('Commission status')}: {t(commissionStatuses[row.commission_status || 'not_started'])}</p><CommissionPanel requestId={id} admin /></>}
             </article>
           })}</div>
         </>}
