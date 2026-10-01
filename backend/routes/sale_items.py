@@ -2,7 +2,7 @@ from backend.permissions import require_inventory
 from datetime import datetime, timezone, date
 from decimal import Decimal
 from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, literal, String, cast
@@ -14,6 +14,18 @@ from backend.models.users import User
 from backend.schemas.spare_parts import validate_photo_data
 
 router = APIRouter(prefix='/sale-items', tags=['Items for sale'])
+
+
+@router.get('/public-photo/{item_type}/{item_id}')
+def public_photo(item_type: Literal['sale', 'spare_part'], item_id: int, request: Request,
+                 original: bool = False, db: Session = Depends(get_db)):
+    from backend.listing_photos import photo_response
+    model = SaleItem if item_type == 'sale' else SparePart
+    key = model.item_id if item_type == 'sale' else model.spare_part_id
+    row = db.query(model.photo_data).filter(key == item_id, model.posted_at.is_not(None)).first()
+    if row is None:
+        raise HTTPException(404, 'Photo not found')
+    return photo_response(row[0], original, request)
 
 
 class MedicalDetails(BaseModel):
@@ -113,19 +125,19 @@ def my_items(user_id: int = Depends(require_inventory), db: Session = Depends(ge
 @router.get('/public')
 def public_posts(
     offset: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=24),
-    search: str = Query('', max_length=200), account_field: str | None = Query(None, pattern='^(medical|it|electrical|mechanical)$'), db: Session = Depends(get_db),
+    lightweight: bool = False, search: str = Query('', max_length=200), account_field: str | None = Query(None, pattern='^(medical|it|electrical|mechanical)$'), db: Session = Depends(get_db),
 ):
     sales = db.query(
         SaleItem.item_id.label('item_id'), SaleItem.name.label('name'),
         SaleItem.description.label('description'), SaleItem.price.label('price'),
-        SaleItem.currency.label('currency'), SaleItem.photo_data.label('photo_data'),
+        SaleItem.currency.label('currency'), (SaleItem.photo_data.is_not(None) if lightweight else SaleItem.photo_data).label('has_photo' if lightweight else 'photo_data'),
         SaleItem.posted_at.label('posted_at'), User.account_field.label('account_field'),
         literal('sale').label('item_type'), cast(literal(None), String).label('availability_status'),
     ).join(User, User.user_id == SaleItem.seller_id).filter(SaleItem.posted_at.is_not(None))
     parts = db.query(
         SparePart.spare_part_id, SparePart.part_name, SparePart.description,
         SparePart.price, SparePart.currency,
-        SparePart.photo_data, SparePart.posted_at, User.account_field,
+        (SparePart.photo_data.is_not(None) if lightweight else SparePart.photo_data), SparePart.posted_at, User.account_field,
         literal('spare_part'), SparePart.availability_status,
     ).join(User, User.user_id == SparePart.submitted_by).filter(SparePart.posted_at.is_not(None))
     listings = sales.union_all(parts).subquery()

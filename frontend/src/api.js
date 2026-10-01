@@ -3,7 +3,7 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 export async function getPublicSaleItems(search = '', offset = 0, signal, field = '') {
-  const params = new URLSearchParams({ search, offset, limit: 12 })
+  const params = new URLSearchParams({ search, offset, limit: 12, lightweight: true })
   if (field) params.set('account_field', field)
   const response = await trackedFetch(`${API_BASE_URL}/sale-items/public?${params}`, { signal })
   if (!response.ok) throw new Error('Unable to load listings')
@@ -463,4 +463,8 @@ export async function accountRequest(path, method = 'GET', data) {
     throw new Error(typeof body.detail === 'string' ? body.detail : 'Unable to complete this request. Check your selections and connection.')
   }
   return response.json()
+}
+
+export function listingPhotoUrl(item, original = false) {
+  return `${API_BASE_URL}/sale-items/public-photo/${item.item_type}/${item.item_id}?original=${original}`
 }
